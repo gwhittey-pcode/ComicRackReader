@@ -1,0 +1,51 @@
+# -*- coding: ut-8 -*-
+#
+# This file created with KivyCreatorProject
+# <https://github.com/HeaTTheatR/KivyCreatorProgect
+#
+# Copyright © 2017 Easy
+#
+# For suggestions and questions:
+# <kivydevelopment@gmail.com>
+# 
+# LICENSE: MIT
+
+#:import MDList kivymd.list.MDList
+#:import OneLineListItem kivymd.list.OneLineListItem
+#:import TwoLineListItem kivymd.list.TwoLineListItem
+#:import ThreeLineListItem kivymd.list.ThreeLineListItem
+#:import OneLineAvatarListItem kivymd.list.OneLineAvatarListItem
+#:import OneLineIconListItem kivymd.list.OneLineIconListItem
+#:import OneLineAvatarIconListItem kivymd.list.OneLineAvatarIconListItem
+#:import get_hex_from_color kivy.utils.get_hex_from_color
+<BaseScreen>:
+    name: 'base'
+
+    ScrollView:
+        GridLayout:
+            id: grid_list
+            cols: 1
+            size_hint_y: None
+            height: self.minimum_height
+            
+        
+        # do_scroll_x: False
+
+        # MDList:
+        #     id: ml
+
+        #     OneLineListItem:
+        #         text: "One-line item"
+
+
+
+<Folder@MDAccordionListItem>
+    icon: 'android'
+
+    IconLeftSampleWidget:
+        icon: root.icon
+
+
+<SubFolderContent>
+    GridLayout:
+      

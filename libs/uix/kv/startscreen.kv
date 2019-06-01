@@ -1,0 +1,54 @@
+# This file created with KivyCreatorProject
+# <https://github.com/HeaTTheatR/KivyCreatorProgect
+#
+# Copyright © 2017 Easy
+#
+# For suggestions and questions:
+# <kivydevelopment@gmail.com>
+# 
+# LICENSE: MIT
+
+#:import MDToolbar kivymd.toolbar.MDToolbar
+#:import NavDrawer libs.uix.baseclass.navdrawer.NavDrawer
+#:import License libs.uix.baseclass.license.License
+#:import BaseScreen libs.uix.baseclass.basescreen.BaseScreen
+#:import About libs.uix.baseclass.about.About
+#:import ComicBookScreen libs.uix.baseclass.comicbookscreen.ComicBookScreen
+#:import ReadingListScreen libs.uix.baseclass.readinglistscreen.ReadingListScreen
+
+<StartScreen>
+    orientation: 'vertical'
+
+    NavDrawer:
+        id: nav_drawer
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: dp(5)
+
+            MDToolbar:
+                id: action_bar
+                background_color: app.theme_cls.primary_color
+                title: app.title
+                left_action_items: [['menu', lambda x: nav_drawer._toggle()]]
+                elevation: 10
+                md_bg_color: app.theme_cls.primary_color
+                right_action_items:[['settings', lambda x: app.open_settings()],['beer', lambda x: app.remove_action_bar()],['beer', lambda x: app.remove_action_bar()]]
+            ScreenManager:
+                id: manager
+
+                BaseScreen:
+                    id: base
+
+                License:
+                    id: license
+                
+                About:
+                    id: about
+
+
+                ComicBookScreen:
+                    id: comic_book_screen
+                
+                ReadingListScreen:
+                    id: readinglistscreen

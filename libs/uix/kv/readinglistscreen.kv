@@ -1,0 +1,67 @@
+# -*- coding: utf-8 -*-
+#
+# This file created with KivyCreatorProject
+# <https://github.com/HeaTTheatR/KivyCreatorProgect
+#
+# Copyright © 2017 Easy
+#
+# For suggestions and questions:
+# <kivydevelopment@gmail.com>
+# 
+# LICENSE: MIT
+#:import SmartTileWithStar kivymd.imagelists.SmartTileWithStar
+#:import SmartTileWithLabel kivymd.imagelists.SmartTileWithLabel
+#:import MDDropdownMenu kivymd.menus.MDDropdownMenu
+#:import MDRoundFlatIconButton kivymd.button.MDRoundFlatIconButton
+<ReadingListScreen>:
+    name: 'readinglistscreen'
+
+    StackLayout:
+        id:main_stack
+        orientation: 'lr-tb'
+        padding: dp(10), dp(10)
+        spacing: dp(4)
+        CustomMDRoundFlatIconButton:
+            id:prev_button
+            text: "Prev Page"
+            icon: "arrow-left"
+            width: dp(200)
+            on_release:root.get_page(self)
+        MDFlatButton:
+            id:spacer
+            width: dp(10)
+            disabled:True
+        CustomMDRoundFlatIconButton:
+            id:next_button
+            text: 'Next Page'
+            icon: "arrow-right"
+            width: dp(200)
+            on_release:root.get_page(self)
+            
+
+        ScrollView:
+            do_scroll_x: False
+            id: main_scroll
+            GridLayout:
+                id: main_grid
+                
+                row_force_default: True
+                size_hint_y: None
+                size_hint_x: None
+                height: self.minimum_height
+                padding: dp(10), dp(10)
+                spacing: dp(4)
+                col_default_width:170
+                row_default_height:250
+        
+        MDFlatButton:
+            id:spacer
+            width: dp(10)
+            disabled:False
+            icon: "arrow-right"
+
+<CustomeST@SmartTileWithLabel>
+    size: (160,240)
+    mipmap: True
+    font_style: 'Subtitle1'
+    on_release:MDDropdownMenu(items=root.menu_items, width_mult=2).open(self)
