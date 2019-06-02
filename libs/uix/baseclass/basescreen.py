@@ -32,14 +32,7 @@ from libs.applibs.kivymd.list import ILeftBody
 from kivy.uix.image import Image
 from libs.applibs.kivymd.toast import toast
 
-class AvatarSampleWidget(ILeftBody, Image):
-    pass
 
-class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
-    pass
-
-class SubFolderContent(BoxLayout):
-    callback = ObjectProperty(lambda x: None)
 
 class BaseScreen(Screen):
     def __init__(self,**kwargs):
@@ -53,11 +46,7 @@ class BaseScreen(Screen):
 
     def on_enter(self, *args):
         self.check_login()
-        self.get_reading_list()
-        
-    def get_reading_list(self):
-        url_send = f'{self.base_url}/lists/'
-        self.fetch_data.get_server_data(url_send,self)
+       
     
     def check_login(self):
         #see if user has a api key stored from server
@@ -77,78 +66,10 @@ class BaseScreen(Screen):
     def update_leaf(self):
         Window.fullscreen = 'auto'
         
-    def open_readinglist(self,instance):
-        self.app.manager.current = 'readinglistscreen'
-        readinglistscreen = self.app.manager.get_screen('readinglistscreen')
-        readinglist_slug = instance.id
-        readinglist_name = (instance.text).split(' : ')[0]
-        print(readinglist_name)
-        readinglistscreen.collect_readinglist_data(readinglist_name,readinglist_slug)
-        
-    def callback(instance):
-        print('The button <%s> is being pressed' % instance.text)
     
-    def got_json(self,req, result):
-        self.ids.grid_list.clear_widgets()
-        def callback(text):
-            toast(f'{text} to {content.name_item}')
-                
-        def walk_comiclistitemfolder(a_folder,parent_widget):
-            print(a_folder['Name'])
-            print(parent_widget)
-            if len(a_folder) >=1:
-                
-                for sub_item in a_folder['Lists']:
-                    content = SubFolderContent(callback=callback)
-                    print(f"{sub_item['Name']} : {sub_item['Type']}")
-                    if sub_item['Type'] == "ComicLibraryListItem" or sub_item['Type'] == "ComicSmartListItem" or sub_item['Type'] == 'ComicIdListItem' or sub_item['Type'] == 'ComicSmartListItem':
-                        list_item = OneLineAvatarListItem(text=strName, id=sub_item['Id'])
-                        image_widget = AvatarSampleWidget(source='assets/plus_items/ComicIdListItem.png', id=f"comic_{sub_item['Id']}")
-                        list_item.add_widget(image_widget)
-                        content.ids.grid_sublist.add_widget(list_item)
-                        list_item.bind(on_press =self.open_readinglist)  
-                    elif sub_item['Type'] == "ComicListItemFolder":
-                        
-                        c = MDAccordionListItem(content=content,
-                                                icon='assets/plus_items/ComicListItemFolder.png', title=sub_item['Name'], id=sub_item['Id'])
-                        d = content.ids.grid_sublist.add_widget(c)
-                        walk_comiclistitemfolder(sub_item,c)
-
-        
-        
-        
-        
-        content = SubFolderContent()
-        for item in result: 
-            strName = f'{item["Name"]}'
-            if item['Type'] == "ComicLibraryListItem" or item['Type'] == "ComicSmartListItem":
-                list_item = OneLineAvatarListItem(text=strName, id=item['Id'])
-                image_widget = AvatarSampleWidget(source='assets/plus_items/ComicIdListItem.png', id=f"icon_{item['Id']}")
-                list_item.add_widget(image_widget)
-                self.ids.grid_list.add_widget(list_item)
-                list_item.bind(on_press =self.open_readinglist)
-            elif item['Type'] == "ComicListItemFolder":
-                
-                c = MDAccordionListItem(content=content,
-                                        icon='assets/plus_items/ComicListItemFolder.png', title=strName, id=item['Id'])
-                self.ids.grid_list.add_widget(c)
-                #walk_comiclistitemfolder(item,c)
-        
-       
-        
-
-                
-
-        def iterate(dictionary):
-            for key, value in dictionary.items():
-                if isinstance(value, dict):
-                    iterate(value)
-                    continue
-            print('key {!r} -> value {!r}'.format(key, value))
-        for item in result:
-            print(item) 
-            iterate(item)
- 
+    def open_lists_screen(self):
+       self.app.manager.current = 'comicracklistscreen'
+       comicracklistscreen = self.app.manager.get_screen('comicracklistscreen')
 
 
     def got_error(self,req, results):

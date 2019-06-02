@@ -39,6 +39,7 @@ class ComicServerConn():
                 'Cookie': str_cookie
                 
             }
+        print(req_url)
         req = UrlRequest(req_url,req_headers=head, on_success=instance.got_json, on_error=self.got_error,on_redirect=self.got_redirect,
                             on_failure=self.got_error
                             )

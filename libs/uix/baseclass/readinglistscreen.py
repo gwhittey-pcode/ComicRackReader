@@ -42,6 +42,7 @@ class CustomeST(SmartTileWithLabel):
         self.status = StringProperty()
         self.comic_obj = ObjectProperty()
         self.readinglist_obj = ObjectProperty()
+    
         super(CustomeST, self).__init__(**kwargs)
 
     def callback_for_menu_items(self, *args):
@@ -62,7 +63,7 @@ class ReadingListScreen(Screen):
     def __init__(self,**kwargs):
         self.app = App.get_running_app()
         self.fetch_data = None
-        self.readinglist_slug = ObjectProperty()
+        self.readinglist_Id = ObjectProperty()
         self.readinglist_name = ''
         #self.bind_to_resize()
         self.bind(width=self.my_width_callback)
@@ -71,9 +72,9 @@ class ReadingListScreen(Screen):
         self.prev_button = ''
         self.next_button = ''
         self.new_readinglist = None
-        
+        self.base_url = self.app.config.get('Server', 'url') + '/BCR'
         comic_reading_list = ObjectProperty()
-
+        self.api_key = self.app.config.get('Server', 'api_key')
         super(ReadingListScreen, self).__init__(**kwargs)
 
     def on_pre_enter(self, *args):
@@ -91,13 +92,12 @@ class ReadingListScreen(Screen):
                 c = val
                 c.cols = (Window.width-20)//160
               
-    def collect_readinglist_data(self, readinglist_name,readinglist_slug):
+    def collect_readinglist_data(self, readinglist_name,readinglist_Id):
 
         self.readinglist_name = readinglist_name
+        
         self.fetch_data = ComicServerConn()
-        base_url = App.get_running_app().config.get('Server', 'url')
-        self.fetch_data = ComicServerConn()
-        url_send = f'{base_url}readinglists/{readinglist_slug}/issue_list/?page=1'        
+        url_send = f'{self.base_url}/Lists/{readinglist_Id}/Comics'        
         self.fetch_data.get_server_data(url_send,self)
 
     def get_page(self, instance):
@@ -115,41 +115,36 @@ class ReadingListScreen(Screen):
         grid.clear_widgets()
         observers = self.prev_button.get_property_observers('on_release')
         #building back and prev page buttons for pagination of reading list
-        if self.new_readinglist.data["previous"] is not None:
-            self.prev_button.opacity = 1
-            self.prev_button.disabled = False
-            _url_prev = self.new_readinglist.data["previous"]
-            self.prev_button._url = _url_prev
-        else:
-            self.prev_button.opacity = 0
-            self.prev_button.disabled = True
-            _url_prev = ''
-        if self.new_readinglist.data["next"] is not None:
-            self.next_button.opacity = 1
-            self.next_button.disabled = False
-            _url_next = self.new_readinglist.data["next"]
-            self.next_button._url = _url_next
-        else:
-            self.next_button.opacity = 0
-            self.next_button.disabled = True
-            _url_prev = ''
+        # if self.new_readinglist.data["previous"] is not None:
+        #     self.prev_button.opacity = 1
+        #     self.prev_button.disabled = False
+        #     _url_prev = self.new_readinglist.data["previous"]
+        #     self.prev_button._url = _url_prev
+        # else:
+        #     self.prev_button.opacity = 0
+        #     self.prev_button.disabled = True
+        #     _url_prev = ''
+        # if self.new_readinglist.data["next"] is not None:
+        #     self.next_button.opacity = 1
+        #     self.next_button.disabled = False
+        #     _url_next = self.new_readinglist.data["next"]
+        #     self.next_button._url = _url_next
+        # else:
+        #     self.next_button.opacity = 0
+        #     self.next_button.disabled = True
+        #     _url_prev = ''
 
-        for item in self.new_readinglist.data["reading_list"]["comics"]:
+        for item in self.new_readinglist.data["items"]:
+  
             new_comic = ComicBook(item)
             self.new_readinglist.add_comic(new_comic)
             c = CustomeST()
             c.comic_obj = new_comic
             c.readinglist_obj = self.new_readinglist
-            if item["image"] is None:
-                c.source = source=('./assets/no_cover.jpg')                
-            else:
-                c.source = source=item["image"]  
-            c.comic_slug = item["slug"]
-            c.page_count = item["page_count"]
-            c.leaf = item["leaf"]
-            c.status = item["status"]
-            c.percent_read = item["percent_read"]
-            strtxt = str(item["__str__"]) + " Order # " + str(item["order_number"][0])
+            c_image_source = f"{self.base_url}/Comics/{new_comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
+            c.source = source=c_image_source 
+            c.PageCount = item["PageCount"]
+            strtxt = f"{item['Series']} #{item['Number']}"
             c.text = strtxt
             grid.add_widget(c)
             grid.cols = (Window.width-20)//160

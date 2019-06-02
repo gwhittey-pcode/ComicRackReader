@@ -96,7 +96,7 @@ settings_json_dispaly = json.dumps(
 
     ])
 
-tap_options = ['Next Page','Prev Page','Next Comic','Prev Comic','Open Page Nav','Open Collection Browser',
+tap_options = ['Next Page','Prev Page','Open Page Nav','Open Collection Browser',
                 'Return to Comic List Screen','Go to List of Reading Lists', 'Disabled']
 settings_json_screen_tap_control = json.dumps(
     [

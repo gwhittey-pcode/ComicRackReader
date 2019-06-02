@@ -10,9 +10,15 @@ class ComicReadingList(object):
         self.mynumber = 32
         self.name= name
         self.data = data
-        self.next_page_url = data['next']
-        self.prev_page_url = data['previous']
+        #self.next_page_url = data['next']
+        #self.prev_page_url = data['previous']
     '''Group of Comics in bundlded together'''
+
+    
+    @property
+    def reverse_comics_order(self):
+        return reverse(self.comics)
+        # return comic list in reverse for comicTopNav )
 
     @property
     def do_sort_series(self):
@@ -41,7 +47,6 @@ class ComicReadingList(object):
         else:
             comic_collection_sorted = self.comics
         return comic_collection_sorted
-
 
     def add_comic(self, comic, index=0):
         '''
@@ -81,7 +86,7 @@ class ComicReadingList(object):
             Will return the comic that matches id number x this number is ATM django-db server id number.
         '''
         for comic in self.comics:
-            if comic.comic_id_number == comic_number:
+            if comic.Id == comic_number:
                 return comic
 
 class ComicBook(object):
@@ -93,20 +98,16 @@ class ComicBook(object):
 
         comic_data = data
         self.comic_json = data
-        self.comic_id_number = comic_data['id']#this is the id number used for comicstream switched to this because of id of widget
-        self.__str__ = comic_data['__str__']
-        self.slug = comic_data['slug']
-        self.name = comic_data['name']
-        self.number = comic_data['number']
-        self.data = comic_data['date']
-        self.leaf = comic_data['leaf']
-        self.page_count = comic_data['page_count']
-        self.precent_read = comic_data['percent_read']
-        self.status = comic_data['status']
-        self.desc = comic_data['desc']
-        self.image = comic_data['image']
-        self.order_number = comic_data['order_number']
+        self.Id = comic_data['Id']
+        self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
+        self.slug = str(comic_data['Id'])
+        self.name = f"{comic_data['Series']} #{comic_data['Number']}"
+        self.Number = comic_data['Number']
+        self.Series = comic_data['Series']
+        self.date = f"{comic_data['Month']}/{comic_data['Year']}"
+        
+        self.PageCount = comic_data['PageCount']
+        self.Summary = comic_data['Summary']
+        
 
 
-
- 

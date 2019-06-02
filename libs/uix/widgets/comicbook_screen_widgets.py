@@ -39,7 +39,7 @@ class ComicBookPageScatter(ScatterLayout):
          return super(ComicBookPageScatter, self).on_transform_with_touch(touch)
 
 
-class ComicBookPageImage(Image):
+class ComicBookPageImage(AsyncImage):
         '''Fired once the image is downloaded and ready to use'''
         comic_slug = StringProperty()
         fetch_data = ObjectProperty()
@@ -47,9 +47,8 @@ class ComicBookPageImage(Image):
         def __init__(self,**kwargs):
             super(ComicBookPageImage, self).__init__(**kwargs)
             base_url = App.get_running_app().config.get('Server', 'url')
-            fetch_data = ComicServerConn()
-            url_send = f'{base_url}issue/{self.comic_slug}/get-page/{self.comic_page}/'
-            fetch_data.get_server_data(url_send,self)
+            
+          
 
         def got_json(self,req, result):     
             img = convert_to_image(result["page"])
@@ -105,7 +104,7 @@ class ComicBookPageControlButton(Button):
         elif tap_option == 'Return to Comic List Screen':
             app.manager.current = 'readinglistscreen'
         elif tap_option == 'Go to List of Reading Lists':
-            app.manager.current = 'basescreen'
+            app.manager.current = 'base'
         else:
             return
 
@@ -135,9 +134,8 @@ class ThumbPopPageImage(ButtonBehavior,Image):
         def __init__(self,**kwargs):
             super(ThumbPopPageImage, self).__init__(**kwargs)
             base_url = App.get_running_app().config.get('Server', 'url')
-            fetch_data = ComicServerConn()
-            url_send = f'{base_url}issue/{self.comic_slug}/get-page/{self.comic_page}/'
-            fetch_data.get_server_data(url_send,self)
+            
+           
 
         def got_json(self,req, result):     
             img = convert_to_image(result["page"])
@@ -155,7 +153,7 @@ class ThumbPopPageImage(ButtonBehavior,Image):
                     use_slide = slide
             carousel.load_slide(use_slide)
 
-class ComicBookPageThumb(ButtonBehavior,Image):
+class ComicBookPageThumb(ButtonBehavior,AsyncImage):
         '''Fired once the image is downloaded and ready to use'''
         comic_slug = StringProperty()
         fetch_data = ObjectProperty()
@@ -163,13 +161,6 @@ class ComicBookPageThumb(ButtonBehavior,Image):
         def __init__(self,**kwargs):
             super(ComicBookPageThumb, self).__init__(**kwargs)
             base_url = App.get_running_app().config.get('Server', 'url')
-            fetch_data = ComicServerConn()
-            url_send = f'{base_url}issue/{self.comic_slug}/get-page/{self.comic_page}/'
-            fetch_data.get_server_data(url_send,self)
-
-        def got_json(self,req, result):     
-            img = convert_to_image(result["page"])
-            self.texture = img.texture
         def click(self,instance):
             app = App.get_running_app()
             # app.root.current = 'comic_book_screen'

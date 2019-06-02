@@ -244,8 +244,8 @@ class ComicRackReader(App):
             'top_right':        'Return to Home Screen',
             'top_left':         'Precodv Page',
             'top_center':       'Open Collection Browser',
-            'middle_right':     'Next Comic',
-            'middle_left':      'Prev Comic',
+            'middle_right':     '',
+            'middle_left':      '',
             'middle_center':    'Open Collection Browser',
             'dbl_tap_time':      250,
             })

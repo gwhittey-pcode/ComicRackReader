@@ -15,6 +15,7 @@
 #:import About libs.uix.baseclass.about.About
 #:import ComicBookScreen libs.uix.baseclass.comicbookscreen.ComicBookScreen
 #:import ReadingListScreen libs.uix.baseclass.readinglistscreen.ReadingListScreen
+#:import ComicRackListScreen libs.uix.baseclass.comicracklistscreen.ComicRackListScreen
 
 <StartScreen>
     orientation: 'vertical'
@@ -23,11 +24,13 @@
         id: nav_drawer
 
         BoxLayout:
+            id: mdBox
             orientation: 'vertical'
             spacing: dp(5)
 
             MDToolbar:
                 id: action_bar
+                
                 background_color: app.theme_cls.primary_color
                 title: app.title
                 left_action_items: [['menu', lambda x: nav_drawer._toggle()]]
@@ -52,3 +55,6 @@
                 
                 ReadingListScreen:
                     id: readinglistscreen
+
+                ComicRackListScreen:
+                    id: comicracklistscreen
