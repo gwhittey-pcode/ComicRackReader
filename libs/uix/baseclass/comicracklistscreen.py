@@ -38,12 +38,19 @@ class ComicRackListScreen(Screen):
         self.api_key = ''
         self.fetch_data = ComicServerConn()
         self.base_url = self.app.config.get('Server', 'url') + '/BCR'
+        
         super(ComicRackListScreen, self).__init__(**kwargs)
 
     def on_enter(self, *args):
+         self.app.screen.ids.action_bar.left_action_items = \
+            [['chevron-left', lambda x: self.app.back_screen(27)]]
          self.get_reading_list()
+
+    def on_leave(self):
+        self.app.list_previous_screens.append(self.name)
         
     def get_reading_list(self):
+        print('ok')
         url_send = f'{self.base_url}/lists/'
         self.fetch_data.get_server_data(url_send,self)
         

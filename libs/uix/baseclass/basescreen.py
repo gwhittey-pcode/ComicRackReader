@@ -27,50 +27,80 @@ from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
 from libs.applibs.kivymd.button import MDIconButton
+from libs.applibs.kivymd.label import MDLabel
 from libs.applibs.kivymd.list import ILeftBodyTouch
 from libs.applibs.kivymd.list import ILeftBody
 from kivy.uix.image import Image
 from libs.applibs.kivymd.toast import toast
+from kivy.uix.popup import Popup
 
 
+
+class LoginPopup(BoxLayout):
+    pass
 
 class BaseScreen(Screen):
     def __init__(self,**kwargs):
+        super(BaseScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.fetch_data = None
         self.Data = ''
         self.api_key = ''
         self.fetch_data = ComicServerConn()
         self.base_url = self.app.config.get('Server', 'url') + '/BCR'
-        super(BaseScreen, self).__init__(**kwargs)
-
-    def on_enter(self, *args):
-        self.check_login()
-       
-    
-    def check_login(self):
-        #see if user has a api key stored from server
+        self.myLoginPop = LoginPopup()
+        self.popup = Popup(content=self.myLoginPop,size_hint=(None, None), size=(500, 400))
         self.username = self.app.config.get('Server', 'username')
         self.password = self.app.config.get('Server', 'password')
         self.api_key = self.app.config.get('Server', 'api_key') 
-        req_url = f"{self.app.config.get('Server', 'url')}/auth"       
-        if self.api_key == '':
-            self.fetch_data.get_api_key(req_url,self.username,self.password,self)
+        self.myLoginPop.ids.username_field.text = self.username
+        self.myLoginPop.ids.pwd_field.text = self.password
+        self.myLoginPop.ids.url_field.text = self.app.config.get('Server', 'url')
+
+    def on_pre_enter(self, *args):
+        
+        self.check_login()
+
+       
     
+    def check_login(self):
+        for widget in self.walk():
+            print("{} -> {}".format(widget, widget.id))
+
+        #see if user has a api key stored from server
+        
+             
+        if self.api_key == '':
+            self.open_popup()
+            #self.fetch_data.get_api_key(req_url,self.username,self.password,self)
+   
     def got_api(self,req, result):#get api key from server and store it in settings.
         api_key = result['ApiKey']
-        self.app.config.set('Server','api_key',api_key)
-        self.app.config.write()
- 
+        App.get_running_app().config.set('Server','api_key',api_key)
+        App.get_running_app().config.write() 
+        self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
+    
+    def validate_user(self):
+        user = self.myLoginPop.ids.username_field.text
+        pwd =  self.myLoginPop.ids.pwd_field.text
+        url =  self.myLoginPop.ids.url_field.text 
+        App.get_running_app().config.set('Server', 'username',user)
+        App.get_running_app().config.set('Server', 'password', pwd)
+        App.get_running_app().config.set('Server', 'url', url)
+        App.get_running_app().config.write()
+        req_url = f"{self.app.config.get('Server', 'url')}/auth"  
+        self.fetch_data.get_api_key(req_url,user,pwd,self)
 
     def update_leaf(self):
         Window.fullscreen = 'auto'
         
     
-    def open_lists_screen(self):
-       self.app.manager.current = 'comicracklistscreen'
-       comicracklistscreen = self.app.manager.get_screen('comicracklistscreen')
+    def open_popup(self):
+        
+        self.popup.open()
 
+    def close_popup(self):
+        self.popup.dismiss()
 
     def got_error(self,req, results):
         Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))

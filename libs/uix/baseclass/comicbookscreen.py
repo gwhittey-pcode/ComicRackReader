@@ -24,7 +24,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 from kivy.uix.gridlayout import GridLayout
 from kivy.logger import Logger
-
+from kivy.metrics import dp
 from settings.settingsjson import settings_json_screen_tap_control 
 from libs.uix.widgets.comicbook_screen_widgets import *
 
@@ -43,12 +43,15 @@ class ComicBookScreen(Screen):
         self.last_load = 0
         self.base_url = self.app.config.get('Server', 'url') + '/BCR'
         self.api_key = self.app.config.get('Server', 'api_key')
+        
+
     def get_comic_from_server(self,comic_slug,page_count,leaf):
         img_a = ComicBookPageImage(id='10',comic_slug=comic_slug)
         self.ids['btn1'].add_widget(img_a)
 
     def on_enter(self):
         self.app.remove_action_bar()
+        print(self.app.list_previous_screens)
         
 
     def on_leave(self):
@@ -152,11 +155,11 @@ class ComicBookScreen(Screen):
             s_keep_ratio=True
         
         comic_page_image = ComicBookPageImage(comic_slug=comic_obj.slug,
-                                             id='pi_'+str(i),nocache=True,
+                                             id='pi_'+str(i),
                                              allow_stretch=s_allow_stretch,
                                              keep_ratio=s_keep_ratio,
                                              comic_page=i,
-                                             source=f"{self.base_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}"
+                                             source=f"{self.base_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
                                              
                                             )
         comic_page_scatter.add_widget(comic_page_image)
@@ -166,7 +169,7 @@ class ComicBookScreen(Screen):
         
         #page_thumb = ComicBookPageThumb(comic_obj.slug,id=comic_page_scatter.id,comic_page=i)
         page_thumb = ComicBookPageThumb(comic_slug=comic_obj.slug,id=comic_page_scatter.id,comic_page=i,
-                                        source=f"{self.base_url}/Comics/{comic_obj.Id}/Pages/{i}?height=240&apiKey={self.api_key}")
+                                        source=f"{self.base_url}/Comics/{comic_obj.Id}/Pages/{i}?height={round(dp(240))}&apiKey={self.api_key}")
 
         page_thumb.size_hint_y = None
         page_thumb.height = 240
@@ -205,7 +208,7 @@ class ComicBookScreen(Screen):
         rev_reading_list = reversed(self.readinglist_obj.comics)
         for comic in rev_reading_list:
             comic_name = str(comic.__str__)
-            src_thumb = f"{self.base_url}/Comics/{comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
+            src_thumb = f"{self.base_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
             inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id))
             comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id))
             comic_thumb.readinglist_obj = self.readinglist_obj

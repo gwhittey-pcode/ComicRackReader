@@ -2,7 +2,7 @@ import json
 
 settings_json_server = json.dumps([
     {'type':    'title',
-     'title':   'ComicStream Server Settings'},
+     'title':   'ComicRack Server Settings'},
 
     {'type':    'string',
      'title':   'Server URL',
@@ -12,7 +12,7 @@ settings_json_server = json.dumps([
 
     {'type':    'path',
      'title':   'Storage Directory',
-     'desc':    'Where to store Comic Pages Buffer',
+     'desc':    'Where to store Comic Pages Cache',
      'section': 'Server',
      'key':     'storagedir'},
     {

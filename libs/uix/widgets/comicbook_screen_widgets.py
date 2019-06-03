@@ -46,13 +46,6 @@ class ComicBookPageImage(AsyncImage):
         comic_page = NumericProperty()
         def __init__(self,**kwargs):
             super(ComicBookPageImage, self).__init__(**kwargs)
-            base_url = App.get_running_app().config.get('Server', 'url')
-            
-          
-
-        def got_json(self,req, result):     
-            img = convert_to_image(result["page"])
-            self.texture = img.texture
 
 
         #def _remove_widget():

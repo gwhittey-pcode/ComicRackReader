@@ -80,15 +80,46 @@ class ComicRackReader(App):
 
         config.adddefaultsection('General')
         config.setdefault('General', 'language', 'en')
+        config.setdefaults('Server', {
+            'url':          'http://',
+            'storagedir':       self.user_data_dir,
+            'max_height':       0,
+            'use_api_key':      0,
+            'max_pages_limit'   :50,
+            'api_key':          '',
+            'username':         '',
+            'password':         '',
+            })
+
+        config.setdefaults('Display', {
+            'mag_glass_size':   200,
+            'right2left':       0,
+            'dblpagesplit':     '0',
+            'stretch_image':    '0',
+            'reading_list_icon_size' :'Medium'
+            })
+
+        config.setdefaults('Screen Tap Control', {
+            'bottom_right':     'Next Page',
+            'bottom_left':      'Prev Page',
+            'bottom_center':    'Open Page Nav',
+            'top_right':        'Return to Home Screen',
+            'top_left':         'Precodv Page',
+            'top_center':       'Open Collection Browser',
+            'middle_right':     '',
+            'middle_left':      '',
+            'middle_center':    'Open Collection Browser',
+            'dbl_tap_time':      250,
+            })
 
     def set_value_from_config(self):
         '''Sets the values of variables from the settings file ComicRackReader.ini.'''
 
-        self.config.read(os.path.join(self.directory, 'ComicRackReader.ini'))
+        self.config.read(os.path.join(self.directory, 'comicrackreader.ini'))
         self.lang = self.config.get('General', 'language')
 
     def build(self):
-        self.base_url = App.get_running_app().config.get('Server', 'url')
+
         self.set_value_from_config()
         self.load_all_kv_files(os.path.join(self.directory, 'libs', 'uix', 'kv'))
         self.screen = StartScreen()  # program main screen
@@ -217,39 +248,6 @@ class ComicRackReader(App):
         self.translation.switch_lang(lang)
 
 
-    def build_config(self, config):
-        config.setdefaults('Server', {
-            'url':          'http://',
-            'storagedir':       self.user_data_dir,
-            'max_height':       0,
-            'use_api_key':      0,
-            'max_pages_limit'   :50,
-            'api_key':          '',
-            'username':         '',
-            'password':         '',
-            })
-
-        config.setdefaults('Display', {
-            'mag_glass_size':   200,
-            'right2left':       0,
-            'dblpagesplit':     '0',
-            'stretch_image':    '0',
-            'reading_list_icon_size' :'Medium'
-            })
-
-        config.setdefaults('Screen Tap Control', {
-            'bottom_right':     'Next Page',
-            'bottom_left':      'Prev Page',
-            'bottom_center':    'Open Page Nav',
-            'top_right':        'Return to Home Screen',
-            'top_left':         'Precodv Page',
-            'top_center':       'Open Collection Browser',
-            'middle_right':     '',
-            'middle_left':      '',
-            'middle_center':    'Open Collection Browser',
-            'dbl_tap_time':      250,
-            })
-
     def build_settings(self, settings):
         settings.add_json_panel('Server Settings',
                                 self.config,
@@ -264,8 +262,11 @@ class ComicRackReader(App):
     def on_config_change(self, config, section,
                          key, value):
         if key =='dbl_tap_time':
-            Config.set('postproc', 'double_tap_time', value)
-    
+            self.Config.set('postproc', 'double_tap_time', value)
+    def open_lists_screen(self):
+        self.manager.current = 'comicracklistscreen'
+        comicracklistscreen = self.manager.get_screen('comicracklistscreen')
+
     def remove_action_bar(self):
         self.screen.ids.mdBox.remove_widget(self.screen.ids.action_bar)
 

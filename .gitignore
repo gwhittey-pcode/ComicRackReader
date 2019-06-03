@@ -119,3 +119,4 @@ docs/_build
 error.log
 *.log
 libs/uix/baseclass/__pycache__/basescreen.cpython-37.pyc
+comicrackreader.ini

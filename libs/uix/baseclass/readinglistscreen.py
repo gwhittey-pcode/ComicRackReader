@@ -23,6 +23,7 @@ from libs.applibs.kivymd.button import MDRoundFlatIconButton
 import pprint
 from kivymd.toast import toast
 
+#Cusom Tiles
 class CustomeST(SmartTileWithLabel):
     def __init__(self,**kwargs):
         self.menu_items =[{'viewclass': 'MDMenuItem',
@@ -42,7 +43,7 @@ class CustomeST(SmartTileWithLabel):
         self.status = StringProperty()
         self.comic_obj = ObjectProperty()
         self.readinglist_obj = ObjectProperty()
-    
+        
         super(CustomeST, self).__init__(**kwargs)
 
     def callback_for_menu_items(self, *args):
@@ -82,8 +83,11 @@ class ReadingListScreen(Screen):
         self.m_grid = self.ids["main_grid"]
         self.prev_button = self.ids["prev_button"]
         self.next_button = self.ids["next_button"]  
+        self.app.screen.ids.action_bar.left_action_items = \
+            [['chevron-left', lambda x: self.app.back_screen(27)]]
+    def on_leave(self):
+        self.app.list_previous_screens.append(self.name)
 
-    
     def my_width_callback(self,obj, value):
         win_x = (Window.width-30)//160
         win_div = (Window.width-30) % 160

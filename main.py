@@ -82,7 +82,7 @@ def main():
                 app = None
 
         def callback_report(*args):
-            '''Функция отправки баг-репорта.'''
+            '''The function to send a bug report.'''
 
             try:
                 txt = six.moves.urllib.parse.quote(
