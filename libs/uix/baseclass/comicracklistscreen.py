@@ -37,7 +37,8 @@ class ComicRackListScreen(Screen):
         self.Data = ''
         self.api_key = ''
         self.fetch_data = ComicServerConn()
-        self.base_url = self.app.config.get('Server', 'url') + '/BCR'
+        self.base_url = self.app.base_url
+        self.api_url = self.app.api_url
         
         super(ComicRackListScreen, self).__init__(**kwargs)
 
@@ -51,7 +52,7 @@ class ComicRackListScreen(Screen):
         
     def get_reading_list(self):
         print('ok')
-        url_send = f'{self.base_url}/lists/'
+        url_send = f'{self.api_url}/lists/'
         self.fetch_data.get_server_data(url_send,self)
         
     def open_readinglist(self,instance,node):

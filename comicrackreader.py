@@ -119,7 +119,8 @@ class ComicRackReader(App):
         self.lang = self.config.get('General', 'language')
 
     def build(self):
-
+        self.base_url = self.config.get('Server', 'url')
+        self.api_url = self.base_url + "/BCR"
         self.set_value_from_config()
         self.load_all_kv_files(os.path.join(self.directory, 'libs', 'uix', 'kv'))
         self.screen = StartScreen()  # program main screen

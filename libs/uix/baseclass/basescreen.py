@@ -47,7 +47,6 @@ class BaseScreen(Screen):
         self.Data = ''
         self.api_key = ''
         self.fetch_data = ComicServerConn()
-        self.base_url = self.app.config.get('Server', 'url') + '/BCR'
         self.myLoginPop = LoginPopup()
         self.popup = Popup(content=self.myLoginPop,size_hint=(None, None), size=(500, 400))
         self.username = self.app.config.get('Server', 'username')
@@ -88,7 +87,7 @@ class BaseScreen(Screen):
         App.get_running_app().config.set('Server', 'password', pwd)
         App.get_running_app().config.set('Server', 'url', url)
         App.get_running_app().config.write()
-        req_url = f"{self.app.config.get('Server', 'url')}/auth"  
+        req_url = f"{self.app.base_url}/auth"  
         self.fetch_data.get_api_key(req_url,user,pwd,self)
 
     def update_leaf(self):

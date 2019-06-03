@@ -73,7 +73,8 @@ class ReadingListScreen(Screen):
         self.prev_button = ''
         self.next_button = ''
         self.new_readinglist = None
-        self.base_url = self.app.config.get('Server', 'url') + '/BCR'
+        self.base_url = self.app.base_url
+        self.api_url = self.app.api_url
         comic_reading_list = ObjectProperty()
         self.api_key = self.app.config.get('Server', 'api_key')
         super(ReadingListScreen, self).__init__(**kwargs)
@@ -101,7 +102,7 @@ class ReadingListScreen(Screen):
         self.readinglist_name = readinglist_name
         
         self.fetch_data = ComicServerConn()
-        url_send = f'{self.base_url}/Lists/{readinglist_Id}/Comics'        
+        url_send = f'{self.api_url}/Lists/{readinglist_Id}/Comics'        
         self.fetch_data.get_server_data(url_send,self)
 
     def get_page(self, instance):
@@ -145,7 +146,7 @@ class ReadingListScreen(Screen):
             c = CustomeST()
             c.comic_obj = new_comic
             c.readinglist_obj = self.new_readinglist
-            c_image_source = f"{self.base_url}/Comics/{new_comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
+            c_image_source = f"{self.api_url}/Comics/{new_comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
             c.source = source=c_image_source 
             c.PageCount = item["PageCount"]
             strtxt = f"{item['Series']} #{item['Number']}"
