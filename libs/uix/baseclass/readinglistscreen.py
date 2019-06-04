@@ -80,6 +80,7 @@ class ReadingListScreen(Screen):
         super(ReadingListScreen, self).__init__(**kwargs)
 
     def on_pre_enter(self, *args):
+        self.api_key = self.app.config.get('Server', 'api_key')
         self.main_stack = self.ids['main_stack']
         self.m_grid = self.ids["main_grid"]
         self.prev_button = self.ids["prev_button"]

@@ -75,18 +75,20 @@ class BaseScreen(Screen):
    
     def got_api(self,req, result):#get api key from server and store it in settings.
         api_key = result['ApiKey']
-        App.get_running_app().config.set('Server','api_key',api_key)
-        App.get_running_app().config.write() 
+        self.app.config.set('Server','api_key',api_key)
+        self.app.config.write() 
+        self.api_key = api_key
         self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
     
     def validate_user(self):
         user = self.myLoginPop.ids.username_field.text
         pwd =  self.myLoginPop.ids.pwd_field.text
         url =  self.myLoginPop.ids.url_field.text 
-        App.get_running_app().config.set('Server', 'username',user)
-        App.get_running_app().config.set('Server', 'password', pwd)
-        App.get_running_app().config.set('Server', 'url', url)
-        App.get_running_app().config.write()
+        self.app.get_running_app().config.set('Server', 'username',user)
+        self.app.get_running_app().config.set('Server', 'password', pwd)
+        self.app.get_running_app().config.set('Server', 'url', url)
+        self.app.get_running_app().config.write()
+        self.app.url = url
         req_url = f"{self.app.base_url}/auth"  
         self.fetch_data.get_api_key(req_url,user,pwd,self)
 
