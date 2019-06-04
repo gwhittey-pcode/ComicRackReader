@@ -14,6 +14,7 @@
 #:import SmartTileWithLabel kivymd.imagelists.SmartTileWithLabel
 
 <ComicBookScreen>:
+    id:comic_book_screen
     carousel_id: None
     max_height:self.max_height
     size: root.size
@@ -106,7 +107,7 @@
             text: 'Open Random'
             size_hint: .1, .1
 
-            on_release: root.load_random_comic()
+            on_release: root.open_mag_glass()
 
 <ComicBookPageControlButton>
     opacity: .5

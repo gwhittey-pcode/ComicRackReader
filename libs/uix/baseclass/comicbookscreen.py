@@ -21,6 +21,7 @@ from kivy.core.image import Image as CoreImage
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.scatter  import Scatter
 from kivy.uix.popup import Popup
 from kivy.uix.gridlayout import GridLayout
 from kivy.logger import Logger
@@ -41,7 +42,8 @@ class ComicBookScreen(Screen):
         self.fetch_data = None
         self.app =  App.get_running_app()
         self.last_load = 0
-        self.base_url = self.app.config.get('Server', 'url') + '/BCR'
+        self.base_url = self.app.base_url
+        self.api_url = self.app.api_url
         self.api_key = self.app.config.get('Server', 'api_key')
         
 
@@ -50,16 +52,16 @@ class ComicBookScreen(Screen):
         self.ids['btn1'].add_widget(img_a)
 
     def on_enter(self):
+        
         self.app.remove_action_bar()
-        print(self.app.list_previous_screens)
         
 
     def on_leave(self):
         self.app.add_action_bar()
    
     def load_comic_book(self,comic_obj,readinglist_obj):
-        
-    
+        self.api_key = self.app.config.get('Server', 'api_key')
+        print (self.app.config.get('Server', 'api_key'))
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
         for setting in settings_data:
@@ -97,8 +99,6 @@ class ComicBookScreen(Screen):
         self.scroller = scroll
         outer_grid = GridLayout(rows=1, size_hint=(None,None), spacing=5, padding=(5,0), id='outtergrd')
         outer_grid.bind(minimum_width=outer_grid.setter('width'))
-        print ('max_pages_limit:%s'%str(max_pages_limit))
-        print ('number_pages:%s'%number_pages)
         i = 0
         if number_pages<=max_pages_limit:
             
@@ -137,8 +137,51 @@ class ComicBookScreen(Screen):
                 self.build_top_nav()
                 
     
+    def open_mag_glass(self):
+        Logger.debug('my id=%s' % str(self.id))
 
-    
+        mag_glass_setting_x = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
+        mag_glass_setting_y = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
+
+        comic_image_id = self.id.replace('comic_scatter','pi_')
+        try:
+            for child in self.walk():
+                if child.id == comic_image_id:
+                    image_w = child
+                    Logger.debug('>>>>>Found grandchild named %s this is the image' %comic_image_id)
+                elif child.id == 'mag_glass':
+                    mag_glass_w = child
+        except:
+           Logger.critical('Some bad happened in _call_mag')
+        else:
+            if self.move_state == 'open':
+                self.move_state = 'locked'
+                self.do_scale=False
+                self.do_translation=False
+                Logger.debug('image_w.center = %d,%d' % (image_w.center_x,image_w.center_y))
+
+                mag_glass = MagnifyingGlassScatter(size=(mag_glass_setting_x,mag_glass_setting_y),size_hint = (None, None),
+                                                        do_rotation=False, do_scale=False,
+                                                        pos=((image_w.center_x-(mag_glass_setting_x/2)),
+                                                             (image_w.center_y-(mag_glass_setting_y/2))
+                                                         ),id='mag_glass'
+                                                  )
+                mag_glass.page_widget = image_w
+                mag_glass_image = Image(size_hint= (None,None),pos_hint={'x':1, 'y':1},id='mag_image',keep_ratio=True,
+                                        allow_stretch=False,size=mag_glass.size )
+                mag_glass.mag_img = mag_glass_image
+                mag_glass_image.texture = image_w.texture.get_region(
+                                            mag_glass.x,mag_glass.y,mag_glass_setting_x,mag_glass_setting_y)
+                mag_glass.add_widget(mag_glass_image)
+                self.add_widget(mag_glass)
+            else:
+                self.move_state = 'open'
+                self.do_scale=True
+                self.do_translation=True
+
+                self.remove_widget(mag_glass_w)
+
+   
     
     
     
@@ -159,7 +202,7 @@ class ComicBookScreen(Screen):
                                              allow_stretch=s_allow_stretch,
                                              keep_ratio=s_keep_ratio,
                                              comic_page=i,
-                                             source=f"{self.base_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
+                                             source=f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
                                              
                                             )
         comic_page_scatter.add_widget(comic_page_image)
@@ -169,7 +212,7 @@ class ComicBookScreen(Screen):
         
         #page_thumb = ComicBookPageThumb(comic_obj.slug,id=comic_page_scatter.id,comic_page=i)
         page_thumb = ComicBookPageThumb(comic_slug=comic_obj.slug,id=comic_page_scatter.id,comic_page=i,
-                                        source=f"{self.base_url}/Comics/{comic_obj.Id}/Pages/{i}?height={round(dp(240))}&apiKey={self.api_key}")
+                                        source=f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?height={round(dp(240))}&apiKey={self.api_key}")
 
         page_thumb.size_hint_y = None
         page_thumb.height = 240
@@ -207,8 +250,11 @@ class ComicBookScreen(Screen):
         grid.bind(minimum_width=grid.setter('width'))
         rev_reading_list = reversed(self.readinglist_obj.comics)
         for comic in rev_reading_list:
+           
+            if str(self.comic_obj.Id) == str(comic.Id):
+               pass
             comic_name = str(comic.__str__)
-            src_thumb = f"{self.base_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
+            src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
             inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id))
             comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id))
             comic_thumb.readinglist_obj = self.readinglist_obj
@@ -230,5 +276,36 @@ class ComicBookScreen(Screen):
     def comicscreen_open_collection_popup(self):
         self.top_pop.open()
 
+class MagnifyingGlassScatter(Scatter):
+    def __init__(self,**kwargs):
+        super(MagnifyingGlassScatter, self).__init__(**kwargs)
+        self.mag_glass_x = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
+        self.mag_glass_y = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
+        self.page_widget = ''
+        self.mag_img = ''
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            touch.grab(self)
+            # do whatever else here
+        return super(MagnifyingGlassScatter, self).on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        if touch.grab_current is self:
+            print ('touch = %s'%str(touch.pos))
+            print ('image = %s'%str(self.page_widget.size))
+            #get the middle of mag glass
+            my_x = self.x + self.mag_glass_x/2
+            m_y = self.y + self.mag_glass_y/2
+            #self.mag_img.texture = self.page_widget.texture.get_region(my_x,m_y,my_x,my_y)
+            self.mag_img.texture = self.page_widget.texture.get_region(my_x,m_y,self.mag_glass_x,self.mag_glass_y)
+            # now we only handle moves which we have grabbed
+        return super(MagnifyingGlassScatter, self).on_touch_move(touch)
+
+    def on_touch_up(self, touch):
+        if touch.grab_current is self:
+            touch.ungrab(self)
+        return super(MagnifyingGlassScatter, self).on_touch_up(touch)
+            # and finish up here
 class ComicBookPageControlButton(Button):
     pass

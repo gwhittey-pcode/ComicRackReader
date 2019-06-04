@@ -119,7 +119,9 @@ class ComicRackReader(App):
         self.lang = self.config.get('General', 'language')
 
     def build(self):
-
+        self.base_url = self.config.get('Server', 'url')
+        self.api_url = self.base_url + "/BCR"
+        self.api_key = self.config.get('Server','api_key')
         self.set_value_from_config()
         self.load_all_kv_files(os.path.join(self.directory, 'libs', 'uix', 'kv'))
         self.screen = StartScreen()  # program main screen
@@ -261,8 +263,13 @@ class ComicRackReader(App):
 
     def on_config_change(self, config, section,
                          key, value):
+        if key == 'url':
+            self.base_url = self.config.get('Server','url')
+        if key == 'api_key':
+            self.api_key = self.config.get('Server','api_key')
         if key =='dbl_tap_time':
             self.Config.set('postproc', 'double_tap_time', value)
+
     def open_lists_screen(self):
         self.manager.current = 'comicracklistscreen'
         comicracklistscreen = self.manager.get_screen('comicracklistscreen')
