@@ -77,6 +77,7 @@ class ReadingListScreen(Screen):
         self.api_url = self.app.api_url
         comic_reading_list = ObjectProperty()
         self.api_key = self.app.config.get('Server', 'api_key')
+        self.list_count = ''
         super(ReadingListScreen, self).__init__(**kwargs)
 
     def on_pre_enter(self, *args):
@@ -97,14 +98,24 @@ class ReadingListScreen(Screen):
             if key == 'main_grid':
                 c = val
                 c.cols = (Window.width-20)//160
-              
+    def got_count(self,req,results):
+        self.list_count = results  
+        self.list_num_pages = int(self.list_count)//int(self.app.config.get('Server','max_pages_limit'))
+        print(self.list_num_pages)
+        url_send = f'{self.api_url}/Lists/{self.readinglist_Id}/Comics'        
+        self.fetch_data.get_server_data(url_send,self) 
     def collect_readinglist_data(self, readinglist_name,readinglist_Id):
+       
+        
 
         self.readinglist_name = readinglist_name
-        
+        self.readinglist_Id = readinglist_Id
         self.fetch_data = ComicServerConn()
-        url_send = f'{self.api_url}/Lists/{readinglist_Id}/Comics'        
-        self.fetch_data.get_server_data(url_send,self)
+        lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/Count'
+        self.fetch_data.get_list_count(lsit_count_url,self)
+
+        
+    
 
     def get_page(self, instance):
         self.fetch_data = ComicServerConn()
@@ -113,6 +124,7 @@ class ReadingListScreen(Screen):
 
 
     def got_json(self,req, result):
+
         self.comic_collection = result
         self.new_readinglist = ComicReadingList(name=self.readinglist_name, data=result)
         

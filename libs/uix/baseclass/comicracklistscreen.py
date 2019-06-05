@@ -35,7 +35,6 @@ class ComicRackListScreen(Screen):
         self.app = App.get_running_app()
         self.fetch_data = None
         self.Data = ''
-        self.api_key = ''
         self.fetch_data = ComicServerConn()
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
@@ -43,6 +42,8 @@ class ComicRackListScreen(Screen):
         super(ComicRackListScreen, self).__init__(**kwargs)
 
     def on_enter(self, *args):
+         self.base_url = self.app.base_url
+         self.api_url = self.app.api_url
          self.app.screen.ids.action_bar.left_action_items = \
             [['chevron-left', lambda x: self.app.back_screen(27)]]
          self.get_reading_list()

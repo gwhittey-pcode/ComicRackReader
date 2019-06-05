@@ -52,6 +52,19 @@ settings_json_server = json.dumps([
     'desc':     'Number if max pages to load before pagination',
     'section':  'Server',
     'key':      'max_pages_limit'},
+    
+    {'type':    'bool',
+     'title':   'Use Pagination',
+     'desc':    'Use Pagination to limit number of books on each List/Series page',
+     'section': 'Server',
+     'key':     'use_pagination'},
+
+    {'type':     'numeric',
+    'title':    'Max ComicBooks',
+    'desc':     'Number of books to show on list page(turn pagination on)',
+    'section':  'Server',
+    'key':      'max_books_page'},
+
 
     ])
 

@@ -57,7 +57,19 @@ class ComicServerConn():
                         on_failure=self.got_error
                         )
     
-    
+    def get_list_count(self,req_url,instance):
+        username = self.app.config.get('Server', 'username')
+        api_key = self.app.config.get('Server', 'api_key') 
+        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        head = {'Content-Type': "application/json", 
+                'Accept': "application/json",
+                'Cookie': str_cookie
+                
+            }
+        req = UrlRequest(req_url,req_headers=head, on_success=instance.got_count, on_error=self.got_error,on_redirect=self.got_redirect,
+                            on_failure=self.got_error
+                            )
+                    
     def got_json(self,req, result):
         
         return result['results']      
