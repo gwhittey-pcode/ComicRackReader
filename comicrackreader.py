@@ -89,6 +89,8 @@ class ComicRackReader(App):
             'api_key':          '',
             'username':         '',
             'password':         '',
+            'use_pagination':   '1',
+            'max_books_page':   50
             })
 
         config.setdefaults('Display', {

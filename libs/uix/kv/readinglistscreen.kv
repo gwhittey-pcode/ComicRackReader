@@ -29,8 +29,9 @@
             width: dp(200)
             on_release:root.get_page(self)
         MDFlatButton:
-            id:spacer
+            id:page_count
             width: dp(10)
+            text: '1-50'
             disabled:True
         CustomMDRoundFlatIconButton:
             id:next_button
@@ -62,7 +63,7 @@
             icon: "arrow-right"
 
 <CustomeST@SmartTileWithLabel>
-    size: (160,240)
+    size: (dp(160),dp(240))
     mipmap: True
     font_style: 'Subtitle1'
     on_release:MDDropdownMenu(items=root.menu_items, width_mult=2).open(self)
