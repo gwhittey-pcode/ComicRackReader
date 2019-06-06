@@ -28,7 +28,7 @@ from kivy.logger import Logger
 from kivy.metrics import dp
 from settings.settingsjson import settings_json_screen_tap_control 
 from libs.uix.widgets.comicbook_screen_widgets import *
-
+from libs.applibs.kivymd.dialog import MDDialog
 import json
 
 
@@ -46,8 +46,7 @@ class ComicBookScreen(Screen):
         self.api_url = self.app.api_url
         self.api_key = self.app.config.get('Server', 'api_key')
         self.paginator = ObjectProperty()
-        self.current_page = None
-        
+        self.current_page = None      
 
     def get_comic_from_server(self,comic_slug,page_count,leaf):
         img_a = ComicBookPageImage(id='10',comic_slug=comic_slug)
@@ -56,7 +55,6 @@ class ComicBookScreen(Screen):
     def on_enter(self):
         
         self.app.remove_action_bar()
-        
 
     def on_leave(self):
         self.app.add_action_bar()
@@ -75,6 +73,7 @@ class ComicBookScreen(Screen):
        
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
+        
         comic_book_carousel = self.ids.comic_book_carousel
         comic_book_carousel.clear_widgets()
         if self.scroller:self.scroller.clear_widgets()
@@ -130,61 +129,11 @@ class ComicBookScreen(Screen):
 
 
         scroll.add_widget(outer_grid)
-        if self.use_pagination == True:
-            if len(self.readinglist_obj.comics)>1:
-                self.build_top_nav()
-        else:
-            if len(self.readinglist_obj.comics)>1:
-                self.build_top_nav()
-                
-    
-    def open_mag_glass(self):
-        Logger.debug('my id=%s' % str(self.id))
-
-        mag_glass_setting_x = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
-        mag_glass_setting_y = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
-
-        comic_image_id = self.id.replace('comic_scatter','pi_')
-        try:
-            for child in self.walk():
-                if child.id == comic_image_id:
-                    image_w = child
-                    Logger.debug('>>>>>Found grandchild named %s this is the image' %comic_image_id)
-                elif child.id == 'mag_glass':
-                    mag_glass_w = child
-        except:
-           Logger.critical('Some bad happened in _call_mag')
-        else:
-            if self.move_state == 'open':
-                self.move_state = 'locked'
-                self.do_scale=False
-                self.do_translation=False
-                Logger.debug('image_w.center = %d,%d' % (image_w.center_x,image_w.center_y))
-
-                mag_glass = MagnifyingGlassScatter(size=(mag_glass_setting_x,mag_glass_setting_y),size_hint = (None, None),
-                                                        do_rotation=False, do_scale=False,
-                                                        pos=((image_w.center_x-(mag_glass_setting_x/2)),
-                                                             (image_w.center_y-(mag_glass_setting_y/2))
-                                                         ),id='mag_glass'
-                                                  )
-                mag_glass.page_widget = image_w
-                mag_glass_image = Image(size_hint= (None,None),pos_hint={'x':1, 'y':1},id='mag_image',keep_ratio=True,
-                                        allow_stretch=False,size=mag_glass.size )
-                mag_glass.mag_img = mag_glass_image
-                mag_glass_image.texture = image_w.texture.get_region(
-                                            mag_glass.x,mag_glass.y,mag_glass_setting_x,mag_glass_setting_y)
-                mag_glass.add_widget(mag_glass_image)
-                self.add_widget(mag_glass)
-            else:
-                self.move_state = 'open'
-                self.do_scale=True
-                self.do_translation=True
-
-                self.remove_widget(mag_glass_w)
-
-   
-    
-    
+        self.build_top_nav()
+        self.next_comic = self.get_next_comic()
+        self.prev_comic = self.get_prev_comic()
+        self.build_next_comic_dialog()
+        self.build_prev_comic_dialog()
     
     def add_pages(self,comic_book_carousel,outer_grid,comic_obj,i):
         strech_image = App.get_running_app().config.get('Display', 'stretch_image')
@@ -249,11 +198,11 @@ class ComicBookScreen(Screen):
             self.paginator = self.app.manager.get_screen('readinglistscreen').paginator
             if self.current_page == None:
                 page = self.app.manager.get_screen('readinglistscreen').current_page
-                comic_list = page.object_list
+                comics_list = page.object_list
                 self.current_page = page
             else:
                 page = self.current_page
-                comic_list = page.object_list  
+                comics_list = page.object_list  
             if page.has_previous():
                 comic_name = 'Prev Page'
                 src_thumb = 'assets/prev_page.jpg'
@@ -269,11 +218,9 @@ class ComicBookScreen(Screen):
                 inner_grid.add_widget(smbutton)
                 grid.add_widget(inner_grid)
         else:
-            comic_list = reversed(self.readinglist_obj.comics)
+            comics_list = reversed(self.readinglist_obj.comics)
 
-        for comic in comic_list:   
-            if str(self.comic_obj.Id) == str(comic.Id):
-                pass
+        for comic in comics_list:
             comic_name = str(comic.__str__)
             src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
             inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id))
@@ -283,7 +230,7 @@ class ComicBookScreen(Screen):
             comic_thumb.readinglist_obj = self.readinglist_obj
             inner_grid.add_widget(comic_thumb)
             comic_thumb.bind(on_release=self.top_pop.dismiss)
-            comic_thumb.bind(on_release=self.load_new_page)
+            comic_thumb.bind(on_release=comic_thumb.open_collection)
             smbutton = CommonComicsCoverLabel(text=comic_name)
             inner_grid.add_widget(smbutton)
             grid.add_widget(inner_grid)
@@ -306,44 +253,224 @@ class ComicBookScreen(Screen):
     
     def load_new_page(self,instance):
         new_page = self.paginator.page(instance.new_page_num)
-        print("ok")
         self.current_page = new_page
+        
         self.build_top_nav()
         self.top_pop.open()
+
+    def load_next_page_comic(self,instance):
+        new_page = self.paginator.page(instance.new_page_num)
+        self.current_page = new_page
+        n_paginator = self.paginator
+        page = self.current_page
+        comics_list = page.object_list
+        self.load_comic_book(self.next_comic,self.readinglist_obj)
+    
+    def load_prev_page_comic(self,instance):
+        new_page = self.paginator.page(instance.new_page_num)
+        self.current_page = new_page
+        n_paginator = self.paginator
+        page = self.current_page
+        comics_list = page.object_list
+        self.load_comic_book(self.prev_comic,self.readinglist_obj)
+
+    def get_next_comic(self):
+        print(f"self.current_page : {self.current_page}")
+        n_paginator = self.paginator
+        page = self.current_page
+        comic_obj = self.comic_obj
+        comics_list = page.object_list
+        index = comics_list.index(comic_obj)
+
+        if comic_obj.Id == comics_list[-1].Id and page.has_next():
+            n_page = n_paginator.page(page.next_page_number())
+            comics_list = n_page.object_list
+            next_comic = comics_list[0]
+        else:
+            if index >= len(comics_list)-1:
+                if len(comics_list)<=1:
+                    next_comic = self.comic_obj
+                else:
+                    next_comic = comics_list[index]
+            else:
+                if len(comics_list)<=1:
+                    next_comic = self.comic_obj
+                else:
+                    next_comic = comics_list[index+1]
+        return next_comic
+
+    def get_prev_comic(self):#TODO Fix when 1 comic is loaded there should not be a next and prev comic.
+        n_paginator = self.paginator
+        page = self.current_page
+        comics_list = page.object_list
+        comic_obj = self.comic_obj
+        index = comics_list.index(comic_obj)# first index where x appears
+        if comic_obj.Id == comics_list[0].Id and page.has_previous():
+            n_page = n_paginator.page(page.previous_page_number())
+            comics_list = n_page.object_list
+            prev_comic = comics_list[-1]
+        else:
+            if index < len(comics_list):
+                if index == 0:
+                    if self.section == 'Section' or self.section == 'Last':
+                        prev_comic = self.comic_obj
+
+
+                    else:
+                        prev_comic = comics_list[index]
+                else:
+                    if self.section == 'Section' or self.section == 'Last':
+                        prev_comic = self.comic_obj
+                    else:
+                        prev_comic = comics_list[index-1]
+        return prev_comic
+
+    def build_next_comic_dialog(self):
+        ''' Make popup showing cover for next comic'''
+        n_paginator = self.paginator
+        page = self.current_page
+        comics_list = page.object_list
+        comic = self.next_comic
+        comic_obj = self.comic_obj
+        index = comics_list.index(comic_obj) # first index where x appears
+        if index+1 == len(comics_list) and page.has_next():
+            n_page = n_paginator.page(page.next_page_number())
+            comics_list = n_page.object_list
+            next_page_number = page.next_page_number()
+        comic_name = str(comic.__str__)
+        src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
+        inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id),pos_hint={.5:.5})
+        comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),pos_hint={.5:.5})
+        comic_thumb.readinglist_obj = self.readinglist_obj
+        comic_thumb.comic = comic
+        comic_thumb.readinglist_obj = self.readinglist_obj
+        if index+1 == len(comics_list) and page.has_next():
+            comic_thumb.new_page_num = next_page_number
+        else:
+            comic_thumb.new_page_num = page.number
+        inner_grid.add_widget(comic_thumb)
+        
+        smbutton = CommonComicsCoverLabel(text=comic_name)
+        inner_grid.add_widget(smbutton)
+        content = inner_grid
+        if index >= len(comics_list)-1:
+            if index+1 == page.end_index():
+                dialog_title = 'Load Next Page'
+            else:
+                dialog_title = 'On Last Comic'
+        else:
+            if index+1 == page.end_index():
+                dialog_title = 'Load Next Page'
+            else:
+                dialog_title = 'Load Next Comic'
+        self.next_dialog = Popup(id='next_pop',title=dialog_title, 
+                                content=content, pos_hint ={.5: .724},
+                                size_hint=(.25, .25)
+                                )
+        comic_thumb.bind(on_release=self.next_dialog.dismiss)
+
+        if index >= len(comics_list)-1:
+            if len(comics_list)>=1:
+                comic_thumb.bind(on_release=self.load_next_page_comic)
+            else:
+                return
+        else:
+            if len(comics_list)>=1:
+                comic_thumb.bind(on_release=self.load_next_page_comic)
+            else:
+                comic_thumb.bind(on_release=comic_thumb.open_collection)
+
+    def build_prev_comic_dialog(self):
+        n_paginator = self.paginator
+        page = self.current_page
+        comics_list = page.object_list
+        comic = self.prev_comic
+        comic_obj = self.comic_obj
+        index = comics_list.index(comic_obj) # first index where x appears
+        prev_page_number = 1
+        if index == 0 and page.has_previous():
+            n_page = n_paginator.page(page.previous_page_number())
+            comics_list = n_page.object_list
+            prev_page_number = page.previous_page_number()
+        comic_name = str(comic.__str__)
+        src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
+        inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id),pos_hint={.5:.5})
+        comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),pos_hint={.5:.5})
+        comic_thumb.readinglist_obj = self.readinglist_obj
+        comic_thumb.comic = comic
+        if index == 0 and page.has_previous():
+            comic_thumb.new_page_num = prev_page_number
+        else:
+            comic_thumb.new_page_num = page.number
+        comic_thumb.readinglist_obj = self.readinglist_obj
+        inner_grid.add_widget(comic_thumb)
+        
+        smbutton = CommonComicsCoverLabel(text=comic_name)
+        inner_grid.add_widget(smbutton)
+        content = inner_grid
+        if index >= len(comics_list)-1:
+            if len(comics_list)>=1:
+                dialog_title = 'Load Prev Page'
+            else:
+                dialog_title = 'On Last Comic'
+        else:
+            if len(comics_list)>=1:
+                dialog_title = 'Load Prev Page'
+            else:
+                dialog_title = 'Load Next Comic'
+
+        self.prev_dialog = Popup(id='prev_pop',title=dialog_title, 
+                                content=content, pos_hint ={.5: .724},
+                                size_hint=(.25, .25)
+                                )
+        comic_thumb.bind(on_release=self.prev_dialog.dismiss)
+
+        comic_thumb.bind(on_release=self.prev_dialog.dismiss)   
+        if index < len(comics_list):
+            if index == 0:
+                if len(comics_list)>1:
+                    comic_thumb.bind(on_release=self.load_prev_page_comic)
+                else:
+                    return
+            else:
+                if len(comics_list)>1:
+                    comic_thumb.bind(on_release=self.load_prev_page_comic)
+                else:
+                    comic_thumb.bind(on_release=comic_thumb.open_collection)
+
+
+
+    def open_next_dialog(self):
+         self.next_dialog.open()
+    
+    def open_prev_dialog(self):
+         self.prev_dialog.open()
+
     def load_random_comic(self):
        self.top_pop.open()
+
+    def load_next_slide(self):
+        comic_book_carousel = self.ids.comic_book_carousel
+        if comic_book_carousel.index == len(comic_book_carousel.slides)-1:
+            self.open_next_dialog()
+            return
+        else:
+            comic_book_carousel.load_next()
     
+    def load_prev_slide(self):
+        comic_book_carousel = self.ids.comic_book_carousel
+        if comic_book_carousel.index == 0:
+            self.open_prev_dialog()
+            return
+        else:
+            comic_book_carousel.load_previous()
+
     def comicscreen_open_collection_popup(self):
         self.top_pop.open()
+    
 
-class MagnifyingGlassScatter(Scatter):
-    def __init__(self,**kwargs):
-        super(MagnifyingGlassScatter, self).__init__(**kwargs)
-        self.mag_glass_x = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
-        self.mag_glass_y = int(App.get_running_app().config.get('Display', 'mag_glass_size'))
-        self.page_widget = ''
-        self.mag_img = ''
 
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            touch.grab(self)
-            # do whatever else here
-        return super(MagnifyingGlassScatter, self).on_touch_down(touch)
 
-    def on_touch_move(self, touch):
-        if touch.grab_current is self:
-            #get the middle of mag glass
-            my_x = self.x + self.mag_glass_x/2
-            m_y = self.y + self.mag_glass_y/2
-            #self.mag_img.texture = self.page_widget.texture.get_region(my_x,m_y,my_x,my_y)
-            self.mag_img.texture = self.page_widget.texture.get_region(my_x,m_y,self.mag_glass_x,self.mag_glass_y)
-            # now we only handle moves which we have grabbed
-        return super(MagnifyingGlassScatter, self).on_touch_move(touch)
 
-    def on_touch_up(self, touch):
-        if touch.grab_current is self:
-            touch.ungrab(self)
-        return super(MagnifyingGlassScatter, self).on_touch_up(touch)
-            # and finish up here
 class ComicBookPageControlButton(Button):
     pass
