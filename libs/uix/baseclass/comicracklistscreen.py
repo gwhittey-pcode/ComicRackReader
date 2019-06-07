@@ -60,6 +60,7 @@ class ComicRackListScreen(Screen):
         print(instance.id)
         self.app.manager.current = 'readinglistscreen'
         readinglistscreen = self.app.manager.get_screen('readinglistscreen')
+        
         readinglist_slug = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
         print(readinglist_name)

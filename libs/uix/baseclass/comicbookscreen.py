@@ -47,7 +47,7 @@ class ComicBookScreen(Screen):
         self.api_key = self.app.config.get('Server', 'api_key')
         self.paginator = ObjectProperty()
         self.current_page = None      
-
+    
     def get_comic_from_server(self,comic_slug,page_count,leaf):
         img_a = ComicBookPageImage(id='10',comic_slug=comic_slug)
         self.ids['btn1'].add_widget(img_a)
@@ -59,6 +59,17 @@ class ComicBookScreen(Screen):
     def on_leave(self):
         self.app.add_action_bar()
    
+    def slide_changed(self, index):
+        comic_obj = self.comic_obj
+        comic_Id = comic_obj.Id
+        self.fetch_data = ComicServerConn()
+        update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
+        self.fetch_data.update_progress(update_url,index,self)
+
+        print(index)
+    def progress_updated(self,req,results):
+        print(f'results:{results}')
+    
     def load_comic_book(self,comic_obj,readinglist_obj):
         self.api_key = self.app.config.get('Server', 'api_key')
         config_app = App.get_running_app()

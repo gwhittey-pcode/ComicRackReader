@@ -50,6 +50,7 @@ class CustomeST(SmartTileWithLabel):
         if args[0] == "Read":
             self.app.manager.current = 'comic_book_screen'
             comicbook_screen = self.app.manager.get_screen('comic_book_screen')
+            comicbook_screen.current_page = None
             comicbook_screen.load_comic_book(self.comic_obj,self.readinglist_obj)
         toast(args[0])
 
@@ -149,7 +150,6 @@ class ReadingListScreen(Screen):
             c.readinglist_obj = self.new_readinglist
             c_image_source = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
             c.source = source=c_image_source 
-            print(f"comic.PageCount:{comic.PageCount}")
             c.PageCount = comic.PageCount
             strtxt = f"{comic.Series} #{comic.Number}"
             c.text = strtxt
