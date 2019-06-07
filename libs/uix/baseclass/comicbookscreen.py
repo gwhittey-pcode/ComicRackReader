@@ -48,9 +48,6 @@ class ComicBookScreen(Screen):
         self.paginator = ObjectProperty()
         self.current_page = None      
     
-    def get_comic_from_server(self,comic_slug,page_count,leaf):
-        img_a = ComicBookPageImage(id='10',comic_slug=comic_slug)
-        self.ids['btn1'].add_widget(img_a)
 
     def on_enter(self):
         
@@ -176,7 +173,7 @@ class ComicBookScreen(Screen):
                                         source=f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?height={round(dp(240))}&apiKey={self.api_key}")
 
         page_thumb.size_hint_y = None
-        page_thumb.height = 240
+        page_thumb.height = dp(240)
         inner_grid.add_widget(page_thumb)
         page_thumb.bind(on_release=page_thumb.click)
         smbutton = ThumbPopPagebntlbl(text='P%s'%str(i+1),halign='center')
@@ -200,9 +197,11 @@ class ComicBookScreen(Screen):
                         self.scroller.scroll_to(target_thumb,padding=10, animate=True)
     
     def build_top_nav(self):
-        scroll = CommonComicsScroll(id='page_thumb_scroll')
-        self.top_pop = Popup(id='page_pop',title='Pages', content=scroll, pos_hint ={'y': .724},size_hint = (1,.379))
-        grid = CommonComicsOuterGrid(id='outtergrd')
+        scroll = CommonComicsScroll(id='page_thumb_scroll',size_hint=(1,1), do_scroll_x=True, do_scroll_y=False)
+        self.top_pop = Popup(id='page_pop',title='Comics in List', title_align = 'center', 
+                            content=scroll, pos_hint ={'y': .7},size_hint = (1,.3)
+                            )
+        grid = CommonComicsOuterGrid(id='outtergrd',size_hint=(None,None), spacing=5, padding=(5,5))
         grid.bind(minimum_width=grid.setter('width'))
         
         if int(self.app.config.get('Server','use_pagination')) == 1:
@@ -211,13 +210,15 @@ class ComicBookScreen(Screen):
                 page = self.app.manager.get_screen('readinglistscreen').current_page
                 comics_list = page.object_list
                 self.current_page = page
+                self.top_pop.title = f'Group# {page.number} of {self.paginator.num_pages()}'
             else:
                 page = self.current_page
+                self.top_pop.title = f'Group# {page.number} of {self.paginator.num_pages()}'
                 comics_list = page.object_list  
             if page.has_previous():
                 comic_name = 'Prev Page'
                 src_thumb = 'assets/prev_page.jpg'
-                inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str('prev'))
+                inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str('prev'), padding=(1,1))
                 comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str('prev'))
                 comic_thumb.readinglist_obj = self.readinglist_obj
                 comic_thumb.readinglist_obj = self.readinglist_obj

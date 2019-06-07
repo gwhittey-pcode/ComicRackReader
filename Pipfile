@@ -11,6 +11,7 @@ cython = "*"
 kivy = "*"
 requests = "*"
 pillow = "*"
+help = "*"
 
 [requires]
 python_version = "3.7"
