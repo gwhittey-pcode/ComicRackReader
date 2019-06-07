@@ -49,11 +49,11 @@ class ComicBookScreen(Screen):
         self.current_page = None      
     
 
-    def on_enter(self):
+    def on_pre_enter(self):
         
         self.app.remove_action_bar()
-
-    def on_leave(self):
+        
+    def on_pre_leave(self):
         self.app.add_action_bar()
    
     def slide_changed(self, index):
@@ -63,10 +63,9 @@ class ComicBookScreen(Screen):
         update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
         self.fetch_data.update_progress(update_url,index,self)
 
-        print(index)
     def progress_updated(self,req,results):
-        print(f'results:{results}')
-    
+        pass
+
     def load_comic_book(self,comic_obj,readinglist_obj):
         self.api_key = self.app.config.get('Server', 'api_key')
         config_app = App.get_running_app()
@@ -89,18 +88,8 @@ class ComicBookScreen(Screen):
 
     
         number_pages = int(comic_obj.PageCount)
-        max_pages_limit = int(App.get_running_app().config.get('Server', 'max_pages_limit'))
-        if number_pages<=max_pages_limit:
-            x_title = 'Pages 1 to %s of %s '%(number_pages,number_pages)
-        else:
-            if self.last_load == 0:
-                x_title = 'Pages 1 to %s of %s '%(max_pages_limit,number_pages)
-            else:
-                x_title = 'Pages %s to %s of %s '%(max_pages_limit,(self.last_load + max_pages_limit),number_pages)
-
-
-
-
+ 
+        x_title = self.comic_obj.__str__
         scroll = ScrollView( size_hint=(1,1), do_scroll_x=True, do_scroll_y=False,id='page_thumb_scroll')
         self.page_nav_popup = Popup(id='page_nav_popup',title=x_title, content=scroll, pos_hint ={'y': .0401},size_hint = (1,.35))
 
@@ -108,35 +97,14 @@ class ComicBookScreen(Screen):
         outer_grid = GridLayout(rows=1, size_hint=(None,None), spacing=5, padding=(5,0), id='outtergrd')
         outer_grid.bind(minimum_width=outer_grid.setter('width'))
         i = 0
-        if number_pages<=max_pages_limit:
             
-            self.use_pagination = False
-            for i in range(0, number_pages):
-               self.add_pages(comic_book_carousel,outer_grid,comic_obj,i)
-        else:
-            self.use_pagination = True
-            if self.last_load == 0:
-                for i in range(0,number_pages)[0:max_pages_limit]:
-                    self.add_pages(comic_book_carousel,outer_grid,comic_obj,i)
-                self.last_load = max_pages_limit
-            else:
-                for i in range(0,number_pages)[self.last_load:self.last_load + max_pages_limit]:
-                    self.add_pages(comic_book_carousel,outer_grid,comic_obj,i)
-                if (self.last_load - max_pages_limit) >=0:
-                    self.last_section = (self.last_load - max_pages_limit)
-                self.last_load = self.last_load + max_pages_limit
-
-            if self.use_pagination:
-                if i+1>=number_pages:
-                    self.use_pagination = False
-                    self.section = 'Last'
-                elif i+1==max_pages_limit:
-                    self.section = 'First'
-                else:
-                    self.section = 'Section'
+        self.use_pagination = False
+        for i in range(0, number_pages):
+            self.add_pages(comic_book_carousel,outer_grid,comic_obj,i)
 
 
         scroll.add_widget(outer_grid)
+        comic_book_carousel.index=(comic_obj.UserCurrentPage)
         self.build_top_nav()
         self.next_comic = self.get_next_comic()
         self.prev_comic = self.get_prev_comic()
@@ -161,14 +129,12 @@ class ComicBookScreen(Screen):
                                              keep_ratio=s_keep_ratio,
                                              comic_page=i,
                                              source=f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
-                                             
+
                                             )
         comic_page_scatter.add_widget(comic_page_image)
         comic_book_carousel.add_widget(comic_page_scatter)
         #Let's make the thumbs for popup
         inner_grid = ThumbPopPageInnerGrid(id='inner_grid'+str(i))
-        
-        #page_thumb = ComicBookPageThumb(comic_obj.slug,id=comic_page_scatter.id,comic_page=i)
         page_thumb = ComicBookPageThumb(comic_slug=comic_obj.slug,id=comic_page_scatter.id,comic_page=i,
                                         source=f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?height={round(dp(240))}&apiKey={self.api_key}")
 

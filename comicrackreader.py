@@ -85,7 +85,6 @@ class ComicRackReader(App):
             'storagedir':       self.user_data_dir,
             'max_height':       0,
             'use_api_key':      0,
-            'max_pages_limit'   :50,
             'api_key':          '',
             'username':         '',
             'password':         '',
@@ -277,7 +276,10 @@ class ComicRackReader(App):
         comicracklistscreen = self.manager.get_screen('comicracklistscreen')
 
     def remove_action_bar(self):
-        self.screen.ids.mdBox.remove_widget(self.screen.ids.action_bar)
+        self.screen.ids.action_bar.opacity = 0
+        self.screen.ids.action_bar.disabled = True
+        #self.screen.ids.mdBox.remove_widget(self.screen.ids.action_bar)
 
     def add_action_bar(self):
-        self.screen.ids.mdBox.add_widget(self.screen.ids.action_bar)
+        self.screen.ids.action_bar.opacity = 1
+        self.screen.ids.action_bar.disabled = False
