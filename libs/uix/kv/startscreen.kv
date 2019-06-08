@@ -28,7 +28,6 @@
             id: mdBox
             orientation: 'vertical'
             spacing: dp(5)
-
             MDToolbar:
                 id: action_bar
                 
@@ -37,7 +36,7 @@
                 left_action_items: [['menu', lambda x: nav_drawer._toggle()]]
                 elevation: 10
                 md_bg_color: app.theme_cls.primary_color
-                right_action_items:[['settings', lambda x: app.open_settings()],['book-open-variant', lambda x: app.open_comicScreen()],['beer', lambda x: app.remove_action_bar()]]
+                right_action_items:[['settings', lambda x: app.open_settings()],['book-open-variant', lambda x: app.open_comicScreen()],['beer', lambda x: app.remove_action_bar()],['book-open-variant', lambda x: app.add_action_bar()]]
             ScreenManager:
                 id: manager
 

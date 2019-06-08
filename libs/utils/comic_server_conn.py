@@ -18,16 +18,35 @@ class ComicServerConn():
         self.app = App.get_running_app()
         self.base_url = self.app.base_url
 
-    def set_leaf(self):
-            req_url  = '%s/issue/80-page-giant-009-1965/'% (self.base_url)
-                      
-            data={}
-            data['leaf'] = 2
-            data['status'] = 0
-            headers = {'Content-Type': "application/json", 'Accept': "application/json"}
-            res = requests.patch(req_url, json=data, headers=headers, auth=('gwhittey', 'kiskis1234'))
-       
-           
+    def update_progress(self,req_url,index,instance):
+            data = f'CurrentPage={index}'
+            username = self.app.config.get('Server', 'username')
+            api_key = self.app.config.get('Server', 'api_key') 
+            str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+            head = {'Content-Type': "application/x-www-form-urlencoded", 
+                'Accept': "application/json",
+                'Cookie': str_cookie
+                
+            }
+            #headers = {'Content-Type': "application/json", 'Accept': "application/json"}
+            print(req_url)
+            #res = requests.put(req_url, data=json.dumps(data), headers=head)
+            try:
+                req = requests.put(req_url, data=data,headers=head)
+
+                if req.status_code != 200:
+                    print(req.text)
+                    raise Exception('Recieved non 200 response while sending response to CFN.')
+                return
+
+            except requests.exceptions.RequestException as e:
+                if req != None:
+                    print(req.text)
+                print(e)
+                raise 
+            # req = UrlRequest(req_url,req_headers=head,req_body=json.dumps(data),method='PUT', on_success=instance.progress_updated, on_error=self.got_error,on_redirect=self.got_redirect,
+            #                 on_failure=self.got_error
+            #                )
     
     def get_server_data(self,req_url,instance): 
         

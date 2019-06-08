@@ -105,7 +105,8 @@ class ComicBook(object):
         self.Number = comic_data['Number']
         self.Series = comic_data['Series']
         self.date = f"{comic_data['Month']}/{comic_data['Year']}"
-        
+        self.UserLastPageRead = comic_data['UserLastPageRead']
+        self.UserCurrentPage = comic_data['UserCurrentPage']
         self.PageCount = comic_data['PageCount']
         self.Summary = comic_data['Summary']
         
