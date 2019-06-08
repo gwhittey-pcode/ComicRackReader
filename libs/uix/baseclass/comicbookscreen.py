@@ -57,11 +57,12 @@ class ComicBookScreen(Screen):
         self.app.add_action_bar()
    
     def slide_changed(self, index):
-        comic_obj = self.comic_obj
-        comic_Id = comic_obj.Id
-        self.fetch_data = ComicServerConn()
-        update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
-        self.fetch_data.update_progress(update_url,index,self)
+        if index != None:
+            comic_obj = self.comic_obj
+            comic_Id = comic_obj.Id
+            self.fetch_data = ComicServerConn()
+            update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
+            self.fetch_data.update_progress(update_url,index,self)
 
     def progress_updated(self,req,results):
         pass
