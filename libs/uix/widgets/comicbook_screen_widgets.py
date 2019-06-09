@@ -13,11 +13,12 @@ from kivy.graphics.transformation import Matrix
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.logger import Logger
-
+from kivy.core.window import Window
 
 
 class ComicBookPageScatter(ScatterLayout):
     zoom_state = StringProperty()
+    comic_page = NumericProperty()
     def __init__(self, **kwargs):
         super(ComicBookPageScatter, self).__init__(**kwargs)
         self.zoom_state = 'normal'
@@ -42,15 +43,73 @@ class ComicBookPageScatter(ScatterLayout):
 class ComicBookPageImage(AsyncImage):
         '''Fired once the image is downloaded and ready to use'''
         comic_slug = StringProperty()
+        comic_page_num = NumericProperty()
         fetch_data = ObjectProperty()
         comic_page = NumericProperty()
+        comic_page_type = StringProperty
         def __init__(self,**kwargs):
             super(ComicBookPageImage, self).__init__(**kwargs)
+    
+        def _new_image_downloaded(self, scatter , outer_grid,comic_obj,var_i,src_url,proxyImage):
+            '''Fired once the image is downloaded and ready to use'''
+            def _remove_widget():
+                carousel.remove_widget(scatter)
 
+            def _add_parts():
+                strech_image = App.get_running_app().config.get('Display', 'stretch_image')
+                if strech_image == '1':
+                    s_allow_stretch=True
+                    s_keep_ratio=False
+                else:
+                    s_allow_stretch=False
+                    s_keep_ratio=True
+                part_1 = ComicBookPageImage(comic_slug=comic_obj.slug,
+                                            id='pi_'+str(var_i)+'b', 
+                                            comic_page=var_i,
+                                            allow_stretch=s_allow_stretch,
+                                            keep_ratio=s_keep_ratio
+                                            )
+                part_2 = ComicBookPageImage(comic_slug=comic_obj.slug, 
+                                            id='pi_'+str(var_i)+'b', 
+                                            comic_page=var_i,
+                                            allow_stretch=s_allow_stretch, 
+                                            keep_ratio=s_keep_ratio
+                                            )
+                scatter_1 = ComicBookPageScatter(id='comic_scatter'+str(var_i), comic_page=var_i)
+                scatter_2 = ComicBookPageScatter(id='comic_scatter'+str(var_i)+'b', comic_page=var_i)
+                part_1.texture = proxyImage.image.texture.get_region(0,0,c_width/2,c_height)
+                part_2.texture = proxyImage.image.texture.get_region((c_width/2+1),0,c_width/2,c_height)
+                scatter_1.add_widget(part_1)
+                scatter_2.add_widget(part_2)
+                if last_page == True:
+                    carousel.add_widget(scatter_1)
+                    carousel.add_widget(scatter_2)
+                else:
+                    carousel.add_widget(scatter_1,i)
+                    carousel.add_widget(scatter_2,i+1)
+            if proxyImage.image.texture:
+                split_dbl_page = App.get_running_app().config.get('Display', 'dblpagesplit')
+                if proxyImage.image.texture.width > 2*Window.width and split_dbl_page == '1':
+                    last_page = False
+                    app = App.get_running_app()
+                    inner_grid_id ='inner_grid' + str(var_i)
+                    page_image_id = str(var_i)
+                    carousel = App.get_running_app().root.ids.comic_book_screen.ids.comic_book_carousel
+                    inner_grid_id = 'inner_grid%s'%str(var_i)
+                    c_width = self.texture.width
+                    c_height = self.texture.height
+                    i = 0
+                    for slide in carousel.slides:
+                        if slide.id == scatter.id:
+                            if slide.comic_page == comic_obj.PageCount-1:
+                                last_page = True
+                            _remove_widget()
+                            _add_parts()
+                        i+=1
 
-        #def _remove_widget():
-        #    carousel.remove_widget(scatter)
-
+                else:
+                    if proxyImage.image.texture.width > 2*Window.width:
+                        scatter.size_hint=(2,1)
 
 class ComicCarousel(Carousel):
     pass
@@ -59,8 +118,8 @@ class ComicCarousel(Carousel):
 
 class ComicBookPageControlButton(Button):
     location = StringProperty()
+
     def enable_me(self,instance):
-        Logger.debug('I am enabled')
         self.disabled = False
 
     def on_touch_down(self, touch):

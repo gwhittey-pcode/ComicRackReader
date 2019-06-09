@@ -51,7 +51,7 @@ class ComicRackReader(App):
     
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
-        Window.bind(on_keyboard=self.events_program)
+        #Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
         
         self.list_previous_screens = ['base']
