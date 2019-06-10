@@ -142,7 +142,7 @@ class ComicBookScreen(Screen):
             s_allow_stretch=False
             s_keep_ratio=True
         comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
-
+        #comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}"
         comic_page_image = ComicBookPageImage(comic_slug=comic_obj.slug,
                                              id='pi_'+str(i), 
                                              allow_stretch=s_allow_stretch,
@@ -170,7 +170,7 @@ class ComicBookScreen(Screen):
         self.fetch_data.get_page_size_data(get_size_url,callback=lambda req, results:got_page_size(results) )
         # proxyImage = Loader.image(comic_page_source,nocache=True)
         # proxyImage.bind(on_load=partial(
-        #                                 comic_page_image._new_image_downloaded, 
+        #                                comic_page_image._new_image_downloaded, 
         #                                 comic_page_scatter,outer_grid,comic_obj, 
         #                                 i,comic_page_source
         #                                 )

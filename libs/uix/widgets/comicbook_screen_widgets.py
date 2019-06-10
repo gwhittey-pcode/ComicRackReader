@@ -133,7 +133,9 @@ class ComicBookPageControlButton(Button):
                 return current_slide.on_touch_down(touch)
 
         return super(ComicBookPageControlButton, self).on_touch_down(touch)
-
+    def on_touch_up(self, touch):
+        print(self)
+        print(self.location)
     def click(btn):
         btn.disabled = True
         Clock.schedule_once(btn.enable_me, .5)
