@@ -110,6 +110,8 @@ class ComicBookPageImage(AsyncImage):
                 else:
                     if proxyImage.image.texture.width > 2*Window.width:
                         scatter.size_hint=(2,1)
+                if comic_obj.PageCount-1 == var_i:
+                    App.get_running_app().root.ids.comic_book_screen.load_UserCurrentPage()
 
 class ComicCarousel(Carousel):
     pass

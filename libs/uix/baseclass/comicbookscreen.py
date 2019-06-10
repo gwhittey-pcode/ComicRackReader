@@ -51,20 +51,26 @@ class ComicBookScreen(Screen):
     
     def open_mag_glass(self):
         print(self.ids.comic_book_carousel.index)
+    
     def on_pre_enter(self):
-        
+        self.fetch_data = ComicServerConn()
         self.app.remove_action_bar()
         
     def on_pre_leave(self):
         self.app.add_action_bar()
-   
+    
+    def load_UserCurrentPage(self):
+        for slide in self.ids.comic_book_carousel.slides:
+            if slide.comic_page == self.comic_obj.UserCurrentPage:
+                self.ids.comic_book_carousel.load_slide(slide)
+
     def slide_changed(self, index):
         
         if index != None:
             current_page = self.ids.comic_book_carousel.current_slide.comic_page
             comic_obj = self.comic_obj
             comic_Id = comic_obj.Id
-            self.fetch_data = ComicServerConn()
+            
             update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
             self.fetch_data.update_progress(update_url,current_page,self)
 
@@ -106,10 +112,12 @@ class ComicBookScreen(Screen):
         self.use_pagination = False
         for i in range(0, number_pages):
             self.add_pages(comic_book_carousel,outer_grid,comic_obj,i)
-
-
+            if i == comic_obj.UserCurrentPage:              
+                m_UserCurrentPage = 'comic_scatter'+str(i)
+       
         scroll.add_widget(outer_grid)
-        comic_book_carousel.index=(comic_obj.UserCurrentPage)
+        
+     
         self.build_top_nav()
         self.next_comic = self.get_next_comic()
         self.prev_comic = self.get_prev_comic()
@@ -117,6 +125,12 @@ class ComicBookScreen(Screen):
         self.build_prev_comic_dialog()
     
     def add_pages(self,comic_book_carousel,outer_grid,comic_obj,i):
+        #fire off dblpage split if server replies size of image is width>height
+        def got_page_size(results):
+            if results['width'] > results['height']:
+                proxyImage = Loader.image(comic_page_source)
+                proxyImage.bind(on_load=partial(comic_page_image._new_image_downloaded,comic_page_scatter,outer_grid,comic_obj,i,comic_page_source))
+        
         strech_image = App.get_running_app().config.get('Display', 'stretch_image')
         
         max_height = App.get_running_app().config.get('Server', 'max_height')
@@ -128,6 +142,7 @@ class ComicBookScreen(Screen):
             s_allow_stretch=False
             s_keep_ratio=True
         comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
+
         comic_page_image = ComicBookPageImage(comic_slug=comic_obj.slug,
                                              id='pi_'+str(i), 
                                              allow_stretch=s_allow_stretch,
@@ -150,13 +165,16 @@ class ComicBookScreen(Screen):
         smbutton = ThumbPopPagebntlbl(text='P%s'%str(i+1),halign='center')
         inner_grid.add_widget(smbutton)
         outer_grid.add_widget(inner_grid)
-        proxyImage = Loader.image(comic_page_source,nocache=True)
-        proxyImage.bind(on_load=partial(
-                                        comic_page_image._new_image_downloaded, 
-                                        comic_page_scatter,outer_grid,comic_obj, 
-                                        i,comic_page_source
-                                        )
-                        )
+        self.load_UserCurrentPage()
+        get_size_url = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}/size?apiKey={self.api_key}"
+        self.fetch_data.get_page_size_data(get_size_url,callback=lambda req, results:got_page_size(results) )
+        # proxyImage = Loader.image(comic_page_source,nocache=True)
+        # proxyImage.bind(on_load=partial(
+        #                                 comic_page_image._new_image_downloaded, 
+        #                                 comic_page_scatter,outer_grid,comic_obj, 
+        #                                 i,comic_page_source
+        #                                 )
+        #                 )
 
     def page_nav_popup_open(self):
         self.page_nav_popup.open()

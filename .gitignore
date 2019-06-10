@@ -121,6 +121,5 @@ error.log
 libs/uix/baseclass/__pycache__/basescreen.cpython-37.pyc
 comicrackreader.ini
 test_me.py
-Pipfile
-Pipfile.lock
 .notes
+_.ini

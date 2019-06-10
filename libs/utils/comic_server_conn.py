@@ -17,7 +17,21 @@ class ComicServerConn():
     def __init__(self,**kwargs):
         self.app = App.get_running_app()
         self.base_url = self.app.base_url
-
+    
+   
+    def get_page_size_data(self,req_url,callback):
+        username = self.app.config.get('Server', 'username')
+        api_key = self.app.config.get('Server', 'api_key') 
+        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        head = {'Content-Type': "application/json", 
+                'Accept': "application/json",
+                'Cookie': str_cookie
+                
+            }
+        print(req_url)
+        req = UrlRequest(req_url,req_headers=head, on_success=callback, on_error=self.got_error,on_redirect=self.got_redirect,
+                            on_failure=self.got_error
+                            )
     def update_progress(self,req_url,index,instance):
             data = f'CurrentPage={index}'
             username = self.app.config.get('Server', 'username')
