@@ -153,7 +153,7 @@ class ReadingListScreen(Screen):
             strtxt = f"{comic.Series} #{comic.Number}"
             c.text = strtxt
             grid.add_widget(c)
-            grid.cols = (Window.width-20)//160
+        grid.cols = ((Window.width-20)//160)
        
     def got_json(self,req, result):
         
@@ -168,7 +168,6 @@ class ReadingListScreen(Screen):
             orphans = max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics[::-1]
             self.paginator = Paginator(new_readinglist_reversed,max_books_page)
-            print(f"um_page:{self.paginator.num_pages()}")
             page = self.paginator.page(1)
             self.current_page = page
             if page.has_next():
