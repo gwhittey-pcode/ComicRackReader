@@ -28,7 +28,6 @@ class ComicServerConn():
                 'Cookie': str_cookie
                 
             }
-        print(req_url)
         req = UrlRequest(req_url,req_headers=head, on_success=callback, on_error=self.got_error,on_redirect=self.got_redirect,
                             on_failure=self.got_error
                             )
@@ -42,26 +41,21 @@ class ComicServerConn():
                 'Cookie': str_cookie
                 
             }
-            #headers = {'Content-Type': "application/json", 'Accept': "application/json"}
-            print(req_url)
-            #res = requests.put(req_url, data=json.dumps(data), headers=head)
+            
             try:
                 req = requests.put(req_url, data=data,headers=head)
 
                 if req.status_code != 200:
-                    print(req.text)
+                    Logger.critical(req.text)
                     raise Exception('Recieved non 200 response while sending response to CFN.')
                 return
 
             except requests.exceptions.RequestException as e:
                 if req != None:
-                    print(req.text)
-                print(e)
+                    Logger.critical(req.text)
+                Logger.critical(e)
                 raise 
-            # req = UrlRequest(req_url,req_headers=head,req_body=json.dumps(data),method='PUT', on_success=instance.progress_updated, on_error=self.got_error,on_redirect=self.got_redirect,
-            #                 on_failure=self.got_error
-            #                )
-    
+            
     def get_server_data(self,req_url,instance): 
         
         username = self.app.config.get('Server', 'username')
@@ -72,7 +66,7 @@ class ComicServerConn():
                 'Cookie': str_cookie
                 
             }
-        print(req_url)
+        
         req = UrlRequest(req_url,req_headers=head, on_success=instance.got_json, on_error=self.got_error,on_redirect=self.got_redirect,
                             on_failure=self.got_error
                             )
@@ -81,11 +75,8 @@ class ComicServerConn():
         
         
         head ={'Content-type': 'application/x-www-form-urlencoded',
-              'Accept': 'application/json'}    
-        
+              'Accept': 'application/json'}     
         strbody = f'username={username}&password={password}&rememberMe=True'
-        print(req_url)
-        print(strbody)
         req = UrlRequest(req_url,req_headers=head, req_body = strbody,method="POST",on_success=instance.got_api, on_error=self.got_error,on_redirect=self.got_redirect,
                         on_failure=self.got_error
                         )
@@ -108,14 +99,12 @@ class ComicServerConn():
         return result['results']      
  
     def got_error(self,req, results):
-        print ('got_error')
         Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))
     def got_time_out(self,req, results):
         Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))
     def got_failure(self,req, results):
         Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))
     def got_redirect(self,req, results):
-        print(results)
         Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))      
 
 

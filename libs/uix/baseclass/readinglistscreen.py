@@ -21,6 +21,7 @@ from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.applibs.kivymd.button import MDRaisedButton
 from libs.applibs.kivymd.button import MDRoundFlatIconButton
 from libs.utils.paginator import Paginator
+from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivymd.toast import toast
 
 #Cusom Tiles
@@ -48,10 +49,15 @@ class CustomeST(SmartTileWithLabel):
 
     def callback_for_menu_items(self, *args):
         if args[0] == "Read":
+            new_screen_name = str(self.comic_obj.Id)
+            if new_screen_name not in self.app.manager.screen_names:
+                new_screen = ComicBookScreen(readinglist_obj=self.readinglist_obj,comic_obj=self.comic_obj,name=new_screen_name)
+                self.app.manager.add_widget(new_screen)
+            self.app.manager.current = new_screen_name
+            #comicbook_screen = self.app.manager.get_screen('comic_book_screen')
             
-            comicbook_screen = self.app.manager.get_screen('comic_book_screen')
-            comicbook_screen.current_page = None
-            comicbook_screen.load_comic_book(self.comic_obj,self.readinglist_obj)
+            #comicbook_screen.current_page = None
+            #comicbook_screen.load_comic_book(self.comic_obj,self.readinglist_obj)
             
 class CustomMDRoundFlatIconButton(MDRoundFlatIconButton):
     def __init__(self,**kwargs):
@@ -119,7 +125,6 @@ class ReadingListScreen(Screen):
         page_num = instance.page_num
         page = self.paginator.page(page_num)
         self.current_page = page
-        print(f"page.has_next:{page.has_next()}")
         if page.has_next():
             self.next_button.opacity = 1
             self.next_button.disabled = False
@@ -168,7 +173,6 @@ class ReadingListScreen(Screen):
             orphans = max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics[::-1]
             self.paginator = Paginator(new_readinglist_reversed,max_books_page)
-            print(f"um_page:{self.paginator.num_pages()}")
             page = self.paginator.page(1)
             self.current_page = page
             if page.has_next():

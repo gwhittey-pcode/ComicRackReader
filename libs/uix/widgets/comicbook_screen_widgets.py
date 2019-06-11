@@ -8,6 +8,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from libs.utils.comic_server_conn import ComicServerConn
+
 from libs.utils.convert_base64 import convert_to_image
 from kivy.graphics.transformation import Matrix
 from kivy.app import App
@@ -94,7 +95,7 @@ class ComicBookPageImage(AsyncImage):
                     app = App.get_running_app()
                     inner_grid_id ='inner_grid' + str(var_i)
                     page_image_id = str(var_i)
-                    carousel = App.get_running_app().root.ids.comic_book_screen.ids.comic_book_carousel
+                    carousel = App.get_running_app().manager.get_screen(comic_obj.Id).ids.comic_book_carousel
                     inner_grid_id = 'inner_grid%s'%str(var_i)
                     c_width = self.texture.width
                     c_height = self.texture.height
@@ -111,13 +112,60 @@ class ComicBookPageImage(AsyncImage):
                     if proxyImage.image.texture.width > 2*Window.width:
                         scatter.size_hint=(2,1)
                 if comic_obj.PageCount-1 == var_i:
-                    App.get_running_app().root.ids.comic_book_screen.load_UserCurrentPage()
+                    App.get_running_app().manager.get_screen(comic_obj.Id).load_UserCurrentPage()
 
 class ComicCarousel(Carousel):
-    pass
+    def on_touch_move(self, touch):
+        if not self.touch_mode_change:
+            if self.ignore_perpendicular_swipes and \
+                    self.direction in ('top', 'bottom'):
+                if abs(touch.oy - touch.y) < self.scroll_distance:
+                    if abs(touch.ox - touch.x) > self.scroll_distance:
+                        self._change_touch_mode()
+                        self.touch_mode_change = True
+            elif self.ignore_perpendicular_swipes and \
+                    self.direction in ('right', 'left'):
+                if abs(touch.ox - touch.x) < self.scroll_distance:
+                    if abs(touch.oy - touch.y) > self.scroll_distance:
+                        self._change_touch_mode()
+                        self.touch_mode_change = True
+
+        if self._get_uid('cavoid') in touch.ud:
+            return
+        if self._touch is not touch:
+            super(ComicCarousel, self).on_touch_move(touch)
+            return self._get_uid() in touch.ud
+        if touch.grab_current is not self:
+            return True
+        ud = touch.ud[self._get_uid()]
+        direction = self.direction
+        if ud['mode'] == 'unknown':
+            if direction[0] in ('r', 'l'):
+                distance = abs(touch.ox - touch.x)
+            else:
+                distance = abs(touch.oy - touch.y)
+            if distance > self.scroll_distance:
+                if self.index != None:
+                    current_slide = self.current_slide
+                    
+                    if current_slide == self.slides[-1]:
+                        comic_book_screen =App.get_running_app().manager.current_screen
+                        comic_book_screen.open_next_dialog()
+                
+                ev = self._change_touch_mode_ev
+                if ev is not None:
+                    ev.cancel()
+                ud['mode'] = 'scroll'
+        else:
+            if direction[0] in ('r', 'l'):
+                self._offset += touch.dx
+            if direction[0] in ('t', 'b'):
+                self._offset += touch.dy
+        return super(ComicCarousel, self).on_touch_move(touch)
+
+
 
 #Button for screen tapping control
-
 class ComicBookPageControlButton(Button):
     location = StringProperty()
 
@@ -127,14 +175,13 @@ class ComicBookPageControlButton(Button):
     def on_touch_down(self, touch):
         if touch.is_double_tap:
              if self.collide_point(*touch.pos):
-                print('ok')
-                comic_book_screen =App.get_running_app().root.ids.comic_book_screen
+                comic_book_screen =App.get_running_app().manager.current_screen
                 comic_book_carousel = comic_book_screen.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
                 return current_slide.on_touch_down(touch)
         if self.disabled:
             if self.collide_point(*touch.pos):
-                comic_book_screen =App.get_running_app().root.ids.comic_book_screen
+                comic_book_screen =App.get_running_app().manager.current_screen
                 comic_book_carousel = comic_book_screen.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
                 return current_slide.on_touch_down(touch)
@@ -143,7 +190,7 @@ class ComicBookPageControlButton(Button):
     def on_touch_up(self, touch):
         if touch.is_double_tap:
             if self.collide_point(*touch.pos):
-                comic_book_screen =App.get_running_app().root.ids.comic_book_screen
+                comic_book_screen =App.get_running_app().manager.current_screen
                 comic_book_carousel = comic_book_screen.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
                 return current_slide.on_touch_up(touch)
@@ -155,8 +202,10 @@ class ComicBookPageControlButton(Button):
     def click(btn):
         btn.disabled = True
         Clock.schedule_once(btn.enable_me, .5)
-        comic_book_screen =App.get_running_app().root.ids.comic_book_screen
+        comic_book_screen = App.get_running_app().manager.current_screen
         app = App.get_running_app()
+        if btn.location == '':
+            return
         tap_option =  App.get_running_app().config.get('Screen Tap Control', str(btn.location))
         if tap_option == 'Next Page':
             comic_book_screen.load_next_slide()
@@ -219,7 +268,7 @@ class ThumbPopPageImage(ButtonBehavior,Image):
             # app.root.current = 'comic_book_screen'
             page_nav_popup = app.root.ids.comic_book_screen.page_nav_popup
             page_nav_popup.dismiss()
-            carousel = App.get_running_app().root.ids.comic_book_screen.ids.comic_book_carousel
+            carousel = App.get_running_app().manager.current_screen.ids.comic_book_carousel
             for slide in carousel.slides:
                 if slide.id == self.id:
                     use_slide = slide
@@ -236,9 +285,9 @@ class ComicBookPageThumb(ButtonBehavior,AsyncImage):
         def click(self,instance):
             app = App.get_running_app()
             # app.root.current = 'comic_book_screen'
-            page_nav_popup = app.root.ids.comic_book_screen.page_nav_popup
+            page_nav_popup = app.manager.current_screen.page_nav_popup
             page_nav_popup.dismiss()
-            carousel = App.get_running_app().root.ids.comic_book_screen.ids.comic_book_carousel
+            carousel =App.get_running_app().manager.current_screen.ids.comic_book_carousel
             for slide in carousel.slides:
                 if slide.id == self.id:
                     use_slide = slide
@@ -256,7 +305,7 @@ class CommonComicsCoverInnerGrid(GridLayout):
     pass
 
 class CommonComicsCoverImage(ButtonBehavior,AsyncImage):
-    comic = ObjectProperty()
+    comic_obj = ObjectProperty()
     readinglist_obj = ObjectProperty()
     clock_set = StringProperty()
 
@@ -265,40 +314,40 @@ class CommonComicsCoverImage(ButtonBehavior,AsyncImage):
         Logger.debug('enabling %s'%self.id)
         self.disabled = False
 
-    def open_comic(self,*args):
-        self.disabled = True
-        app = App.get_running_app()
-        app.root.current = 'comic_book_screen'
-        new_reading_list = ComicReadingList()
-        new_reading_list.add_comic(self.comic)
-        comic_screen = app.manager.get_screen('comic_book_screen')
-        comic_screen.load_comic_book(self.comic,new_reading_list)
-        Clock.schedule_once(self.enable_me, .5)
+    # def open_comic(self,*args):
+    #     self.disabled = True
+    #     app = App.get_running_app()
+    #     app.root.current = 'comic_book_screen'
+    #     new_reading_list = ComicReadingList()
+    #     new_reading_list.add_comic(self.comic)
+    #     comic_screen = app.manager.get_screen('comic_book_screen')
+    #     comic_screen.load_comic_book(self.comic,new_reading_list)
+    #     Clock.schedule_once(self.enable_me, .5)
 
     def open_collection(self,*args):
         self.disabled = True
         app = App.get_running_app()
-        app.root.current = 'comic_book_screen'
-        comic_screen = app.manager.get_screen('comic_book_screen')
-        comic_screen.use_pagination = False
-        comic_screen.last_load = 0
-        comic_screen.load_comic_book(self.comic,self.readinglist_obj)
+        from libs.uix.baseclass.comicbookscreen import ComicBookScreen
+        new_screen_name = str(self.comic_obj.Id)
+        if new_screen_name not in app.manager.screen_names:
+            new_screen = ComicBookScreen(readinglist_obj=self.readinglist_obj,comic_obj=self.comic_obj,name=new_screen_name)
+            app.manager.add_widget(new_screen)
+        app.manager.current = new_screen_name
         Clock.schedule_once(self.enable_me, .5)
 
     def open_next_section(self, *args):
         self.disabled = True
         app = App.get_running_app()
-        app.root.current = 'comic_book_screen'
-        comic_screen = app.manager.get_screen('comic_book_screen')
-        comic_screen.load_comic_book(self.comic,self.readinglist_obj)
+        comic_screen = app.manager.current_screen
+        comic_screen.load_comic_book(self.comic_obj,self.readinglist_obj)
         Clock.schedule_once(self.enable_me, .5)
 
     def open_prev_section(self, *args):
         self.disabled = True
         app = App.get_running_app()
-        app.root.current = 'comic_book_screen'
-        comic_screen = app.manager.get_screen('comic_book_screen')
+       
+        comic_screen = app.manager.current_screen
         comic_screen.last_load = comic_screen.last_section
-        comic_screen.load_comic_book(self.comic,self.readinglist_obj)
+        comic_screen.load_comic_book(self.comic_obj,self.readinglist_obj)
         Clock.schedule_once(self.enable_me, .5)
 

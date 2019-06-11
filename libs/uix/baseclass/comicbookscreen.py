@@ -27,7 +27,12 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.logger import Logger
 from kivy.metrics import dp
 from settings.settingsjson import settings_json_screen_tap_control 
-from libs.uix.widgets.comicbook_screen_widgets import *
+from libs.uix.widgets.comicbook_screen_widgets import ComicBookPageImage,ComicBookPageThumb, \
+    ComicBookPageScatter,ComicCarousel,ComicBookPageControlButton, \
+    ThumbPopPageInnerGrid,ThumbPopPagebntlbl,CommonComicsScroll, \
+    CommonComicsOuterGrid,CommonComicsCoverInnerGrid, \
+    CommonComicsCoverImage,CommonComicsCoverLabel
+from kivymd.toast import toast
 from libs.applibs.kivymd.dialog import MDDialog
 from kivy.loader import Loader
 import json
@@ -38,7 +43,7 @@ class ComicBookScreen(Screen):
     top_pop = ObjectProperty()
     section = StringProperty()
     sort_by = StringProperty()
-    def __init__(self,**kwargs):
+    def __init__(self,readinglist_obj=None,comic_obj=None,**kwargs):
         super(ComicBookScreen, self).__init__(**kwargs)
         self.fetch_data = None
         self.app =  App.get_running_app()
@@ -51,37 +56,6 @@ class ComicBookScreen(Screen):
         self.comic_obj = ObjectProperty()
         self.comic_obj = None
         self.fetch_data = ComicServerConn()
-    def open_mag_glass(self):
-        print(self.ids.comic_book_carousel.index)
-    
-    def on_pre_enter(self):
-        self.app.remove_action_bar()
-        
-    def on_pre_leave(self):
-        self.app.add_action_bar()
-    
-    def load_UserCurrentPage(self):
-        for slide in self.ids.comic_book_carousel.slides:
-            if slide.comic_page == self.comic_obj.UserCurrentPage:
-                self.ids.comic_book_carousel.load_slide(slide)
-
-    def slide_changed(self, index):
-        
-        if index != None:
-            current_page = self.ids.comic_book_carousel.current_slide.comic_page
-            comic_obj = self.comic_obj
-            comic_Id = comic_obj.Id
-            
-            update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
-            self.fetch_data.update_progress(update_url,current_page,self)
-
-    def progress_updated(self,req,results):
-        pass
-
-    def load_comic_book(self,comic_obj,readinglist_obj):
-        if self.comic_obj !=None:
-            if comic_obj.Id == self.comic_obj.Id:
-                return
         self.api_key = self.app.config.get('Server', 'api_key')
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
@@ -92,7 +66,7 @@ class ComicBookScreen(Screen):
                 if tap_config == 'Disabled':
                       self.ids[setting[u'key']].disabled = True
 
-        Loader.pool.tasks.queue.clear()
+        #Loader.pool.tasks.queue.clear()
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
         
@@ -125,7 +99,42 @@ class ComicBookScreen(Screen):
         self.prev_comic = self.get_prev_comic()
         self.build_next_comic_dialog()
         self.build_prev_comic_dialog()
-        self.app.manager.current = 'comic_book_screen'
+
+
+
+    def open_mag_glass(self):
+        screen_names = self.app.manager.screen_names
+        for name in screen_names:
+            if name in ['base', 'license', 'about', 'readinglistscreen', 'comicracklistscreen']:
+                print('skip') 
+            else:
+                print(name)
+        #self.app.manager.current = next_screen_name
+    def on_pre_enter(self):
+        self.app.remove_action_bar()
+        
+    def on_pre_leave(self):
+        self.app.add_action_bar()
+    
+    def load_UserCurrentPage(self):
+        for slide in self.ids.comic_book_carousel.slides:
+            if slide.comic_page == self.comic_obj.UserCurrentPage:
+                self.ids.comic_book_carousel.load_slide(slide)
+
+    def slide_changed(self, index):
+        
+        if index != None:
+            current_page = self.ids.comic_book_carousel.current_slide.comic_page
+            comic_obj = self.comic_obj
+            comic_Id = comic_obj.Id
+            
+            update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
+            self.fetch_data.update_progress(update_url,current_page,self)
+
+    def progress_updated(self,req,results):
+        pass
+
+   
         
     def add_pages(self,comic_book_carousel,outer_grid,comic_obj,i):
         #fire off dblpage split if server replies size of image is width>height
@@ -221,7 +230,6 @@ class ComicBookScreen(Screen):
                 inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str('prev'), padding=(1,1))
                 comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str('prev'))
                 comic_thumb.readinglist_obj = self.readinglist_obj
-                comic_thumb.readinglist_obj = self.readinglist_obj
                 comic_thumb.new_page_num = page.previous_page_number()
                 inner_grid.add_widget(comic_thumb)
                 comic_thumb.bind(on_release=self.top_pop.dismiss)
@@ -236,10 +244,9 @@ class ComicBookScreen(Screen):
             comic_name = str(comic.__str__)
             src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
             inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id))
-            comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id))
+            comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),comic_obj=comic)
             comic_thumb.readinglist_obj = self.readinglist_obj
-            comic_thumb.comic = comic
-            comic_thumb.readinglist_obj = self.readinglist_obj
+            comic_thumb.comic_obj = comic
             inner_grid.add_widget(comic_thumb)
             comic_thumb.bind(on_release=self.top_pop.dismiss)
             comic_thumb.bind(on_release=comic_thumb.open_collection)
@@ -251,8 +258,7 @@ class ComicBookScreen(Screen):
                 comic_name = 'Next Page'
                 src_thumb = 'assets/next_page.jpg'
                 inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str('next'))
-                comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str('next'))
-                comic_thumb.readinglist_obj = self.readinglist_obj
+                comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str('next'),)
                 comic_thumb.readinglist_obj = self.readinglist_obj
                 comic_thumb.new_page_num = page.next_page_number()
                 inner_grid.add_widget(comic_thumb)
@@ -276,7 +282,14 @@ class ComicBookScreen(Screen):
         n_paginator = self.paginator
         page = self.current_page
         comics_list = page.object_list
-        self.load_comic_book(self.next_comic,self.readinglist_obj)
+        new_screen_name = str(self.next_comic.Id)
+        if new_screen_name not in self.app.manager.screen_names:
+            new_screen = ComicBookScreen(readinglist_obj=self.readinglist_obj,comic_obj=self.next_comic,name=new_screen_name)
+            self.app.manager.add_widget(new_screen)
+        self.app.manager.current = new_screen_name
+
+       
+        
     
     def load_prev_page_comic(self,instance):
         new_page = self.paginator.page(instance.new_page_num)
@@ -284,7 +297,12 @@ class ComicBookScreen(Screen):
         n_paginator = self.paginator
         page = self.current_page
         comics_list = page.object_list
-        self.load_comic_book(self.prev_comic,self.readinglist_obj)
+        new_screen_name = str(self.prev_comic.Id)
+        if new_screen_name not in self.app.manager.screen_names:
+            new_screen = ComicBookScreen(readinglist_obj=self.readinglist_obj,comic_obj=self.prev_comic,name=new_screen_name)
+            self.app.manager.add_widget(new_screen)
+        self.app.manager.current = new_screen_name
+        
 
     def get_next_comic(self):
         n_paginator = self.paginator
@@ -351,7 +369,7 @@ class ComicBookScreen(Screen):
         comic_name = str(comic.__str__)
         src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
         inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id),pos_hint={.5:.5})
-        comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),pos_hint={.5:.5})
+        comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),pos_hint={.5:.5},comic_obj=comic)
         comic_thumb.readinglist_obj = self.readinglist_obj
         comic_thumb.comic = comic
         comic_thumb.readinglist_obj = self.readinglist_obj
@@ -406,7 +424,7 @@ class ComicBookScreen(Screen):
         comic_name = str(comic.__str__)
         src_thumb = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height={round(dp(240))}&apiKey={self.api_key}"
         inner_grid = CommonComicsCoverInnerGrid(id='inner_grid'+str(comic.Id),pos_hint={.5:.5})
-        comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),pos_hint={.5:.5})
+        comic_thumb = CommonComicsCoverImage(source=src_thumb,id=str(comic.Id),pos_hint={.5:.5},comic_obj=comic)
         comic_thumb.readinglist_obj = self.readinglist_obj
         comic_thumb.comic = comic
         if index == 0 and page.has_previous():
@@ -452,13 +470,17 @@ class ComicBookScreen(Screen):
 
 
     def open_next_dialog(self):
+         toast('At last page open next comic')
          self.next_dialog.open()
     
     def open_prev_dialog(self):
-         self.prev_dialog.open()
+        toast('At first page open prev comic')
+        self.prev_dialog.open()
 
     def load_random_comic(self):
-       self.top_pop.open()
+        next_screen_name = self.app.manager.next()
+        print(next_screen_name)
+        self.app.manager.current = next_screen_name
 
     def load_next_slide(self):
         comic_book_carousel = self.ids.comic_book_carousel
