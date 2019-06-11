@@ -48,12 +48,11 @@ class CustomeST(SmartTileWithLabel):
 
     def callback_for_menu_items(self, *args):
         if args[0] == "Read":
-            self.app.manager.current = 'comic_book_screen'
+            
             comicbook_screen = self.app.manager.get_screen('comic_book_screen')
             comicbook_screen.current_page = None
             comicbook_screen.load_comic_book(self.comic_obj,self.readinglist_obj)
-        toast(args[0])
-
+            
 class CustomMDRoundFlatIconButton(MDRoundFlatIconButton):
     def __init__(self,**kwargs):
         

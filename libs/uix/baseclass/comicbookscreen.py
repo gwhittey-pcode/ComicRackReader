@@ -48,12 +48,13 @@ class ComicBookScreen(Screen):
         self.api_key = self.app.config.get('Server', 'api_key')
         self.paginator = ObjectProperty()
         self.current_page = None      
-    
+        self.comic_obj = ObjectProperty()
+        self.comic_obj = None
+        self.fetch_data = ComicServerConn()
     def open_mag_glass(self):
         print(self.ids.comic_book_carousel.index)
     
     def on_pre_enter(self):
-        self.fetch_data = ComicServerConn()
         self.app.remove_action_bar()
         
     def on_pre_leave(self):
@@ -78,6 +79,9 @@ class ComicBookScreen(Screen):
         pass
 
     def load_comic_book(self,comic_obj,readinglist_obj):
+        if self.comic_obj !=None:
+            if comic_obj.Id == self.comic_obj.Id:
+                return
         self.api_key = self.app.config.get('Server', 'api_key')
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
@@ -115,15 +119,14 @@ class ComicBookScreen(Screen):
             if i == comic_obj.UserCurrentPage:              
                 m_UserCurrentPage = 'comic_scatter'+str(i)
        
-        scroll.add_widget(outer_grid)
-        
-     
+        scroll.add_widget(outer_grid)    
         self.build_top_nav()
         self.next_comic = self.get_next_comic()
         self.prev_comic = self.get_prev_comic()
         self.build_next_comic_dialog()
         self.build_prev_comic_dialog()
-    
+        self.app.manager.current = 'comic_book_screen'
+        
     def add_pages(self,comic_book_carousel,outer_grid,comic_obj,i):
         #fire off dblpage split if server replies size of image is width>height
         def got_page_size(results):
@@ -165,7 +168,8 @@ class ComicBookScreen(Screen):
         smbutton = ThumbPopPagebntlbl(text='P%s'%str(i+1),halign='center')
         inner_grid.add_widget(smbutton)
         outer_grid.add_widget(inner_grid)
-        self.load_UserCurrentPage()
+        if comic_obj.PageCount-1 == i:
+            self.load_UserCurrentPage()
         get_size_url = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}/size?apiKey={self.api_key}"
         self.fetch_data.get_page_size_data(get_size_url,callback=lambda req, results:got_page_size(results) )
         # proxyImage = Loader.image(comic_page_source,nocache=True)

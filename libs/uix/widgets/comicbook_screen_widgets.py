@@ -125,6 +125,13 @@ class ComicBookPageControlButton(Button):
         self.disabled = False
 
     def on_touch_down(self, touch):
+        if touch.is_double_tap:
+             if self.collide_point(*touch.pos):
+                print('ok')
+                comic_book_screen =App.get_running_app().root.ids.comic_book_screen
+                comic_book_carousel = comic_book_screen.ids.comic_book_carousel
+                current_slide = comic_book_carousel.current_slide
+                return current_slide.on_touch_down(touch)
         if self.disabled:
             if self.collide_point(*touch.pos):
                 comic_book_screen =App.get_running_app().root.ids.comic_book_screen
@@ -134,8 +141,17 @@ class ComicBookPageControlButton(Button):
 
         return super(ComicBookPageControlButton, self).on_touch_down(touch)
     def on_touch_up(self, touch):
-        print(self)
-        print(self.location)
+        if touch.is_double_tap:
+            if self.collide_point(*touch.pos):
+                comic_book_screen =App.get_running_app().root.ids.comic_book_screen
+                comic_book_carousel = comic_book_screen.ids.comic_book_carousel
+                current_slide = comic_book_carousel.current_slide
+                return current_slide.on_touch_up(touch)
+        else:
+            
+            return super(ComicBookPageControlButton, self).on_touch_up(touch)
+
+    
     def click(btn):
         btn.disabled = True
         Clock.schedule_once(btn.enable_me, .5)

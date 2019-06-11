@@ -51,7 +51,7 @@ class ComicRackReader(App):
     
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
-        #Window.bind(on_keyboard=self.events_program)
+        Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
         
         self.list_previous_screens = ['base']
@@ -274,8 +274,8 @@ class ComicRackReader(App):
     def remove_action_bar(self):
         self.screen.ids.action_bar.opacity = 0
         self.screen.ids.action_bar.disabled = True
-        #self.screen.ids.mdBox.remove_widget(self.screen.ids.action_bar)
-
+        self.screen.ids.action_bar.size = (1,1)
     def add_action_bar(self):
         self.screen.ids.action_bar.opacity = 1
         self.screen.ids.action_bar.disabled = False
+        self.screen.ids.action_bar.size = (Window.width ,self.theme_cls.standard_increment)
