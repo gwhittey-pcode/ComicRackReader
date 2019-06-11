@@ -75,8 +75,10 @@ class ComicBookPageImage(AsyncImage):
                                             allow_stretch=s_allow_stretch, 
                                             keep_ratio=s_keep_ratio
                                             )
-                scatter_1 = ComicBookPageScatter(id='comic_scatter'+str(var_i), comic_page=var_i)
-                scatter_2 = ComicBookPageScatter(id='comic_scatter'+str(var_i)+'b', comic_page=var_i)
+                scatter_1 = ComicBookPageScatter(id='comic_scatter'+str(var_i), comic_page=var_i, do_rotation=False, do_scale=False,
+                                                    do_translation=False)
+                scatter_2 = ComicBookPageScatter(id='comic_scatter'+str(var_i)+'b', comic_page=var_i, do_rotation=False, do_scale=False,
+                                                    do_translation=False)
                 part_1.texture = proxyImage.image.texture.get_region(0,0,c_width/2,c_height)
                 part_2.texture = proxyImage.image.texture.get_region((c_width/2+1),0,c_width/2,c_height)
                 scatter_1.add_widget(part_1)

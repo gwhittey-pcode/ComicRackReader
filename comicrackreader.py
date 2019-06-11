@@ -96,6 +96,7 @@ class ComicRackReader(App):
             'right2left':       0,
             'dblpagesplit':     '0',
             'stretch_image':    '0',
+            'keep_ratio':       '0',
             'reading_list_icon_size' :'Medium'
             })
 

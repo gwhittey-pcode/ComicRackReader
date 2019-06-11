@@ -51,6 +51,7 @@ class ComicBookScreen(Screen):
         self.comic_obj = ObjectProperty()
         self.comic_obj = None
         self.fetch_data = ComicServerConn()
+        self.last_page_done = False
     def open_mag_glass(self):
         print(self.ids.comic_book_carousel.index)
     
@@ -79,9 +80,11 @@ class ComicBookScreen(Screen):
         pass
 
     def load_comic_book(self,comic_obj,readinglist_obj):
+        
         if self.comic_obj !=None:
             if comic_obj.Id == self.comic_obj.Id:
                 return
+        self.last_page_done = False
         self.api_key = self.app.config.get('Server', 'api_key')
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
@@ -133,19 +136,24 @@ class ComicBookScreen(Screen):
             if results['width'] > results['height']:
                 proxyImage = Loader.image(comic_page_source)
                 proxyImage.bind(on_load=partial(comic_page_image._new_image_downloaded,comic_page_scatter,outer_grid,comic_obj,i,comic_page_source))
+
         
-        strech_image = App.get_running_app().config.get('Display', 'stretch_image')
         
         max_height = App.get_running_app().config.get('Server', 'max_height')
-        comic_page_scatter = ComicBookPageScatter(id='comic_scatter'+str(i),comic_page=i)
-        if strech_image == '1':
-            s_allow_stretch=True
-            s_keep_ratio=False
+        comic_page_scatter = ComicBookPageScatter(id='comic_scatter'+str(i),comic_page=i,do_rotation=False, do_scale=False,
+                  do_translation=False)
+        s_allow_stretch = App.get_running_app().config.get('Display', 'stretch_image')
+        s_keep_ratio = App.get_running_app().config.get('Display', 'keep_ratio')
+        # if strech_image == '1':
+        #     s_allow_stretch=True
+        #     s_keep_ratio=False
+        # else:
+        #     s_allow_stretch=False
+        #     s_keep_ratio=True
+        if max_height == 0:
+            comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}"
         else:
-            s_allow_stretch=False
-            s_keep_ratio=True
-        comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
-        #comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}"
+            comic_page_source = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}?apiKey={self.api_key}&height={round(dp(max_height))}"
         comic_page_image = ComicBookPageImage(comic_slug=comic_obj.slug,
                                              id='pi_'+str(i), 
                                              allow_stretch=s_allow_stretch,
@@ -168,8 +176,7 @@ class ComicBookScreen(Screen):
         smbutton = ThumbPopPagebntlbl(text='P%s'%str(i+1),halign='center')
         inner_grid.add_widget(smbutton)
         outer_grid.add_widget(inner_grid)
-        if comic_obj.PageCount-1 == i:
-            self.load_UserCurrentPage()
+        
         get_size_url = f"{self.api_url}/Comics/{comic_obj.Id}/Pages/{i}/size?apiKey={self.api_key}"
         self.fetch_data.get_page_size_data(get_size_url,callback=lambda req, results:got_page_size(results) )
         # proxyImage = Loader.image(comic_page_source,nocache=True)
@@ -179,7 +186,10 @@ class ComicBookScreen(Screen):
         #                                 i,comic_page_source
         #                                 )
         #                 )
-
+        if comic_obj.PageCount-1 == i:
+            self.last_page_done = True
+            self.load_UserCurrentPage()
+    
     def page_nav_popup_open(self):
         self.page_nav_popup.open()
         comic_book_carousel = self.ids.comic_book_carousel

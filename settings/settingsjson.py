@@ -18,10 +18,10 @@ settings_json_server = json.dumps([
     {
     'type':     'options',
     'title':    'Maximum Page Height',
-    'desc':     'This will set the max height that image will be be grabbed from server default is 1500 due to memory constainst',
+    'desc':     'This will set the max height that image will be be grabbed from server Set to 0 to use orginal image',
     'section':  'Server',
     'key':      'max_height',
-    'options': ['2000','1500','1280','1200','1024']
+    'options': ['0','2000','1500','1280','1200','1024']
     },
     {'type':    'bool',
      'title':   'Use Api key',
@@ -86,6 +86,12 @@ settings_json_dispaly = json.dumps(
      'desc':    'If on will stretch to fill page',
      'section': 'Display',
      'key':     'stretch_image'},
+     
+     {'type':    'bool',
+     'title':   'Keep Page Ration',
+     'desc':    'If on will keep image ratio',
+     'section': 'Display',
+     'key':     'keep_ratio'},
 
     {'type':     'numeric',
     'title':    'Magnifying Glass Size',
