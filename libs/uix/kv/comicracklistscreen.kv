@@ -2,9 +2,10 @@
 <ComicRackListScreen>:
     name: 'comicracklistscreen'
     ScrollView:
-        BoxLayout:
-            
-            id: grid_list
-            MyTv:
-                id:mytv
+        do_scroll_x: False
+        do_scroll_y: True
+        MyTv:
+            id:mytv
+            size_hint_x: 1
+            size_hint_y: None
             

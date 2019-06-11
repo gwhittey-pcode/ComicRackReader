@@ -12,7 +12,7 @@
 # LICENSE: MIT
 #:import SmartTileWithStar kivymd.imagelists.SmartTileWithStar
 #:import SmartTileWithLabel kivymd.imagelists.SmartTileWithLabel
-
+#:import ComicBookPageControlButton libs.uix.widgets.comicbook_screen_widgets.ComicBookPageControlButton
 <ComicBookScreen>:
     id:comic_book_screen
     carousel_id: None
@@ -25,94 +25,103 @@
         ComicCarousel:
             id: comic_book_carousel
             on_index: root.slide_changed(args[1])
+            
     #top control taps
-        ComicBookPageControlButton:
+        myComicBookPageControlButton:
             id: top_left
             location: 'top_left'
-            pos_hint: {'x': .0000000001, 'y': .85}
+            #pos_hint: {'x': .0000000001, 'y': .85}
+            center_y:root.top - (self.height/2)
+            center_x:root.x + (self.width/2)
             text: "Top Left"
-            size_hint: .2, .20
+            size_hint: .2, .15
            
-            on_release: self.click()
-        ComicBookPageControlButton:
+            
+        myComicBookPageControlButton:
             id: top_center
             location: 'top_center'
-            pos_hint: {'x': .3, 'y': .85}
+            center_x:root.center_x
+            center_y:root.top - (self.height/2)
             text: 'Top Center'
-            size_hint: .4, .20
+            size_hint: .2, .15
            
-            on_release: self.click()
-        ComicBookPageControlButton:
+            
+        myComicBookPageControlButton:
             id: top_right
             location: 'top_right'
-            pos_hint: {'x': .8, 'y': .85}
+            center_y:root.top - (self.height/2)
+            center_x:root.right - (self.width/2)
             text: "Top Right"
-            size_hint: .2, .20
+            size_hint: .2, .15
            
-            on_release: self.click()
+            
     #middle control taps
-        ComicBookPageControlButton:
+        myComicBookPageControlButton:
             id: middle_left
             location: 'middle_left'
-            pos_hint: {'x': .0000000001, 'y': .5}
+            center_y: root.center_y
+            center_x:root.x + (self.width/2)
             text: "Middle Left"
-            size_hint: .12, .1
+            size_hint: .2, .15
            
-            on_release: self.click()
-        ComicBookPageControlButton:
+            
+        myComicBookPageControlButton:
             id: middle_center
             location: 'middle_center'
-            pos_hint: {'x': .4, 'y': .5}
+            center: (root.center_x,root.center_y)
             text: 'Middle Center'
-            size_hint: .2, .20
-           
-            on_release: self.click()
-        ComicBookPageControlButton:
+            size_hint: .2, .15
+            
+        myComicBookPageControlButton:
             id: middle_right
             location: 'middle_right'
-            pos_hint: {'x': .9, 'y': .5}
+            center_y: root.center_y
+            center_x:root.right - (self.width/2)
             text: "Middle Right"
-            size_hint: .12, .10
-           
-            on_release: self.click()
+            size_hint: .2, .15
+            
 
     #bottom control taps
-        ComicBookPageControlButton:
+        myComicBookPageControlButton:
             id: bottom_left
             location: 'bottom_left'
-            pos_hint: {'x': .0000000001, 'y': .0001}
+            center_x:root.x + (self.width/2)
+            center_y: root.y + (self.height/2)
+#            pos_hint: {'x': .0000000001, 'y': .0001}
             text: "Bottom Left"
-            size_hint: .2, .2
+            size_hint: .2, .15
            
-            on_release: self.click()
+            
 
-        ComicBookPageControlButton:
+        myComicBookPageControlButton:
             id: bottom_center
             location:'bottom_center'
-            pos_hint: {'x': .3, 'y': .0001}
+            center_x: root.center_x
+            center_y: root.y + (self.height/2)
             text: 'Botttom Center'
-            size_hint: .4, .2
+            size_hint: .2, .15
            
-            on_release: self.click()
+            
 
-        ComicBookPageControlButton:
+        myComicBookPageControlButton:
             id: bottom_right
             location: 'bottom_right'
-            pos_hint: {'x': .8, 'y': .0001}
+            center_x:root.right - (self.width/2)
+            center_y: root.y + (self.height/2)
             text: "Bottom Right"
-            size_hint: .2, .2
-            on_release: self.click()
+            size_hint: .2, .15
+            
 
-        ComicBookPageControlButton:
+        myComicBookPageControlButton:
             pos_hint: {'x': .6, 'y': .6}
             text: 'Open Random'
             size_hint: .1, .1
 
             on_release: root.open_mag_glass()
 
-<ComicBookPageControlButton>
+<myComicBookPageControlButton@ComicBookPageControlButton>
     opacity: .5
-   
+    on_release: self.click()
 
 <ThumbPopPageInnerGrid>:
     cols: 1

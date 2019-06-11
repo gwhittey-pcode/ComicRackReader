@@ -274,8 +274,8 @@ class ComicRackReader(App):
     def remove_action_bar(self):
         self.screen.ids.action_bar.opacity = 0
         self.screen.ids.action_bar.disabled = True
-        #self.screen.ids.mdBox.remove_widget(self.screen.ids.action_bar)
-
+        self.screen.ids.action_bar.size = (1,1)
     def add_action_bar(self):
         self.screen.ids.action_bar.opacity = 1
         self.screen.ids.action_bar.disabled = False
+        self.screen.ids.action_bar.size = (Window.width ,self.theme_cls.standard_increment)

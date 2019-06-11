@@ -21,7 +21,7 @@ settings_json_server = json.dumps([
     'desc':     'This will set the max height that image will be be grabbed from server default is 1500 due to memory constainst',
     'section':  'Server',
     'key':      'max_height',
-    'options': ['1500','1280','1200','1024']
+    'options': ['2000','1500','1280','1200','1024']
     },
     {'type':    'bool',
      'title':   'Use Api key',
