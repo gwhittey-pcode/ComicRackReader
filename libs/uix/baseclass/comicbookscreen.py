@@ -206,7 +206,10 @@ class ComicBookScreen(Screen):
         #                                 i,comic_page_source
         #                                 )
         #                 )
-
+        if comic_obj.PageCount-1 == i:
+            self.last_page_done = True
+            self.load_UserCurrentPage()
+    
     def page_nav_popup_open(self):
         self.page_nav_popup.open()
         comic_book_carousel = self.ids.comic_book_carousel
