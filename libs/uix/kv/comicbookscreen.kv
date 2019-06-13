@@ -1,4 +1,4 @@
- #:kivy 1.10.1
+ #:kivy 1.11.0
 # -*- coding: utf-8 -*-
 #
 # This file created with KivyCreatorProject
@@ -10,6 +10,7 @@
 # <kivydevelopment@gmail.com>
 # 
 # LICENSE: MIT
+#impoart MDToolBar kivymd.toolbar.MDToolbar
 #:import SmartTileWithStar kivymd.imagelists.SmartTileWithStar
 #:import SmartTileWithLabel kivymd.imagelists.SmartTileWithLabel
 #:import ComicBookPageControlButton libs.uix.widgets.comicbook_screen_widgets.ComicBookPageControlButton
@@ -17,10 +18,9 @@
     id:comic_book_screen
     carousel_id: None
     max_height:self.max_height
-    
+    size: root.size
     name: 'comic_book_screen'
     FloatLayout:
-        size_hint: (1,1)
         size: root.size
         id: comic_screen_float
         ComicCarousel:
@@ -113,7 +113,7 @@
             size_hint: .2, .15
             
 
-        myComicBookPageControlButton:
+        ComicBookPageControlButton:
             pos_hint: {'x': .6, 'y': .6}
             text: 'Open Random'
             size_hint: .1, .1
@@ -175,3 +175,10 @@
     halign:				'center'
     text_color: (0,0,0)
     background_color: (1,1,1,.5)
+
+<OptionToolBar@MDToolbar>
+    title: "Options"
+    background_color: app.theme_cls.primary_color
+    right_action_items:[['book-multiple', lambda x: None]]
+    elevation: 10
+    md_bg_color: app.theme_cls.primary_color

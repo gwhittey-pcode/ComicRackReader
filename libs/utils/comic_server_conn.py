@@ -6,6 +6,8 @@ from kivy.logger import Logger
 from kivy.network.urlrequest import UrlRequest
 from kivy.storage.jsonstore import JsonStore
 import inspect
+
+
 class ComicDataType:
     Arc = 'arc'
     Issue = 'issue'
@@ -13,110 +15,115 @@ class ComicDataType:
     Series = 'series'
     ReadingLists = 'readinglists'
 
+
 class ComicServerConn():
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         self.app = App.get_running_app()
         self.base_url = self.app.base_url
-    
-   
-    def get_page_size_data(self,req_url,callback):
+
+    def get_page_size_data(self, req_url, callback):
         username = self.app.config.get('Server', 'username')
-        api_key = self.app.config.get('Server', 'api_key') 
+        api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
-        head = {'Content-Type': "application/json", 
+        head = {'Content-Type': "application/json",
                 'Accept': "application/json",
                 'Cookie': str_cookie
-                
-            }
-        print(req_url)
-        req = UrlRequest(req_url,req_headers=head, on_success=callback, on_error=self.got_error,on_redirect=self.got_redirect,
-                            on_failure=self.got_error
-                            )
-    def update_progress(self,req_url,index,instance):
-            data = f'CurrentPage={index}'
-            username = self.app.config.get('Server', 'username')
-            api_key = self.app.config.get('Server', 'api_key') 
-            str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
-            head = {'Content-Type': "application/x-www-form-urlencoded", 
-                'Accept': "application/json",
-                'Cookie': str_cookie
-                
-            }
-            #headers = {'Content-Type': "application/json", 'Accept': "application/json"}
-            print(req_url)
-            #res = requests.put(req_url, data=json.dumps(data), headers=head)
-            try:
-                req = requests.put(req_url, data=data,headers=head)
 
-                if req.status_code != 200:
-                    print(req.text)
-                    raise Exception('Recieved non 200 response while sending response to CFN.')
-                return
+                }
+        req = UrlRequest(req_url, req_headers=head, on_success=callback,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error
+                         )
 
-            except requests.exceptions.RequestException as e:
-                if req != None:
-                    print(req.text)
-                print(e)
-                raise 
-            # req = UrlRequest(req_url,req_headers=head,req_body=json.dumps(data),method='PUT', on_success=instance.progress_updated, on_error=self.got_error,on_redirect=self.got_redirect,
-            #                 on_failure=self.got_error
-            #                )
-    
-    def get_server_data(self,req_url,instance): 
-        
+    def update_progress(self, req_url, index, instance):
+        data = f'CurrentPage={index}'
         username = self.app.config.get('Server', 'username')
-        api_key = self.app.config.get('Server', 'api_key') 
+        api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
-        head = {'Content-Type': "application/json", 
+        head = {'Content-Type': "application/x-www-form-urlencoded",
                 'Accept': "application/json",
                 'Cookie': str_cookie
-                
-            }
-        print(req_url)
-        req = UrlRequest(req_url,req_headers=head, on_success=instance.got_json, on_error=self.got_error,on_redirect=self.got_redirect,
-                            on_failure=self.got_error
-                            )
 
-    def get_api_key(self,req_url,username,password,instance):
-        
-        
-        head ={'Content-type': 'application/x-www-form-urlencoded',
-              'Accept': 'application/json'}    
-        
+                }
+
+        try:
+            req = requests.put(req_url, data=data, headers=head)
+
+            if req.status_code != 200:
+                Logger.critical(req.text)
+                raise Exception(
+                    'Recieved non 200 response while sending response to CFN.')
+            return
+
+        except requests.exceptions.RequestException as e:
+            if req is not None:
+                Logger.critical(req.text)
+            Logger.critical(e)
+            raise
+
+    def get_server_data(self, req_url, instance):
+
+        username = self.app.config.get('Server', 'username')
+        api_key = self.app.config.get('Server', 'api_key')
+        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        head = {'Content-Type': "application/json",
+                'Accept': "application/json",
+                'Cookie': str_cookie
+
+                }
+
+        req = UrlRequest(req_url, req_headers=head,
+                         on_success=instance.got_json,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error
+                         )
+
+    def get_api_key(self, req_url, username, password, instance):
+
+        head = {'Content-type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'}
         strbody = f'username={username}&password={password}&rememberMe=True'
-        print(req_url)
-        print(strbody)
-        req = UrlRequest(req_url,req_headers=head, req_body = strbody,method="POST",on_success=instance.got_api, on_error=self.got_error,on_redirect=self.got_redirect,
-                        on_failure=self.got_error
-                        )
-    
-    def get_list_count(self,req_url,instance):
+        req = UrlRequest(req_url, req_headers=head,
+                         req_body=strbody, method="POST",
+                         on_success=instance.got_api,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error
+                         )
+
+    def get_list_count(self, req_url, instance):
         username = self.app.config.get('Server', 'username')
-        api_key = self.app.config.get('Server', 'api_key') 
+        api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
-        head = {'Content-Type': "application/json", 
+        head = {'Content-Type': "application/json",
                 'Accept': "application/json",
                 'Cookie': str_cookie
-                
-            }
-        req = UrlRequest(req_url,req_headers=head, on_success=instance.got_count, on_error=self.got_error,on_redirect=self.got_redirect,
-                            on_failure=self.got_error
-                            )
-                    
-    def got_json(self,req, result):
-        
-        return result['results']      
- 
-    def got_error(self,req, results):
-        print ('got_error')
-        Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))
-    def got_time_out(self,req, results):
-        Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))
-    def got_failure(self,req, results):
-        Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))
-    def got_redirect(self,req, results):
-        print(results)
-        Logger.critical('ERROR in %s %s'%(inspect.stack()[0][3],results))      
+
+                }
+        req = UrlRequest(req_url, req_headers=head,
+                         on_success=instance.got_count,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error
+                         )
+
+    def got_json(self, req, result):
+
+        return result['results']
+
+    def got_error(self, req, results):
+        Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
+
+    def got_time_out(self, req, results):
+        Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
+
+    def got_failure(self, req, results):
+        Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
+
+    def got_redirect(self, req, results):
+        Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
 
 
 class JsonToObject:

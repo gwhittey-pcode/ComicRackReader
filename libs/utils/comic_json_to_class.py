@@ -1,20 +1,22 @@
-from kivy.properties import ListProperty,ObjectProperty,DictProperty,StringProperty
+from kivy.properties import ListProperty, ObjectProperty, DictProperty,\
+    StringProperty
 from operator import attrgetter
+
+
 class ComicReadingList(object):
 
     # ids = DictProperty({})
     # name = StringProperty()
-    def __init__(self,name='',data=None):
+    def __init__(self, name='', data=None):
         self.size = 65
         self.comics = []
         self.mynumber = 32
-        self.name= name
+        self.name = name
         self.data = data
-        #self.next_page_url = data['next']
-        #self.prev_page_url = data['previous']
+        # self.next_page_url = data['next']
+        # self.prev_page_url = data['previous']
     '''Group of Comics in bundlded together'''
 
-    
     @property
     def reverse_comics_order(self):
         return reverse(self.comics)
@@ -22,22 +24,23 @@ class ComicReadingList(object):
 
     @property
     def do_sort_series(self):
-        return sorted(self.comics,key=attrgetter('series'))
+        return sorted(self.comics, key=attrgetter('series'))
 
     @property
     def do_sort_issue(self):
-        return sorted(self.comics,key=attrgetter('series','issue'))
-        # return sorted(comic.issue for comic in sorted(comic.series for comic in self.comics) )
+        return sorted(self.comics, key=attrgetter('series', 'issue'))
+        # return sorted(comic.issue for comic in
+        # sorted(comic.series for comic in self.comics) )
 
     @property
     def do_sort_pub_date(self):
-        return sorted(self.comics,key=attrgetter('pubdate'))
-    
+        return sorted(self.comics, key=attrgetter('pubdate'))
+
     @property
     def do_sort_order_number(self):
-        return sorted(self.comics,key=attrgetter('order_number'))
+        return sorted(self.comics, key=attrgetter('order_number'))
 
-    def do_sort(self,sort_by):
+    def do_sort(self, sort_by):
         if sort_by == 'Issue':
             comic_collection_sorted = self.do_sort_issue
         elif sort_by == 'Pub Date':
@@ -81,20 +84,23 @@ class ComicReadingList(object):
         for comic in comics[:]:
             remove_comic(comic)
 
-    def get_comic_by_number(self,comic_number):
+    def get_comic_by_number(self, comic_number):
         '''
-            Will return the comic that matches id number x this number is ATM django-db server id number.
+            Will return the comic that matches id number x this number is
+            ATM django-db server id number.
         '''
         for comic in self.comics:
             if comic.Id == comic_number:
                 return comic
+
 
 class ComicBook(object):
     cover = ObjectProperty()
     '''
     class representing a single comic
     '''
-    def __init__(self, data,*args, **kwargs):
+
+    def __init__(self, data, * args, **kwargs):
 
         comic_data = data
         self.comic_json = data
@@ -109,6 +115,3 @@ class ComicBook(object):
         self.UserCurrentPage = comic_data['UserCurrentPage']
         self.PageCount = comic_data['PageCount']
         self.Summary = comic_data['Summary']
-        
-
-
