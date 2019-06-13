@@ -7,7 +7,7 @@
 #
 # For suggestions and questions:
 # <kivydevelopment@gmail.com>
-# 
+#
 # LICENSE: MIT
 
 import os
@@ -34,11 +34,11 @@ from kivymd.label import MDLabel
 from kivymd.toast import toast
 
 from dialogs import card
-#####End KivyMD imports
-from settings.settingsjson import settings_json_server,settings_json_dispaly,settings_json_screen_tap_control
+# End KivyMD imports
+from settings.settingsjson import settings_json_server, settings_json_dispaly,\
+    settings_json_screen_tap_control
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.settings import SettingsWithSidebar
-
 
 
 class ComicRackReader(App):
@@ -48,12 +48,12 @@ class ComicRackReader(App):
     theme_cls = ThemeManager()
     theme_cls.primary_palette = 'Red'
     lang = StringProperty('en')
-    
+
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
-        
+
         self.list_previous_screens = ['base']
         self.window = Window
         self.config = ConfigParser()
@@ -62,17 +62,18 @@ class ComicRackReader(App):
         self.exit_interval = False
         self.dict_language = literal_eval(
             open(
-                os.path.join(self.directory, 'data', 'locales', 'locales.txt')).read()
+                os.path.join(self.directory, 'data', 'locales',
+                             'locales.txt')).read()
         )
         self.translation = Translation(
             self.lang, 'Ttest', os.path.join(self.directory, 'data', 'locales')
         )
         self.base_url = ''
         self.settings_cls = SettingsWithSidebar
-        
+
     def get_application_config(self):
         return super(ComicRackReader, self).get_application_config(
-                        '{}/%(appname)s.ini'.format(self.directory))
+            '{}/%(appname)s.ini'.format(self.directory))
 
     def build_config(self, config):
         '''Creates an application settings file ComicRackReader.ini.'''
@@ -89,15 +90,15 @@ class ComicRackReader(App):
             'password':         '',
             'use_pagination':   '1',
             'max_books_page':   50
-            })
+        })
 
         config.setdefaults('Display', {
             'mag_glass_size':   200,
             'right2left':       0,
             'dblpagesplit':     '0',
             'stretch_image':    '0',
-            'reading_list_icon_size' :'Medium'
-            })
+            'reading_list_icon_size': 'Medium'
+        })
 
         config.setdefaults('Screen Tap Control', {
             'bottom_right':     'Next Page',
@@ -108,12 +109,13 @@ class ComicRackReader(App):
             'top_center':       'Open Collection Browser',
             'middle_right':     '',
             'middle_left':      '',
-            'middle_center':    'Open Collection Browser',
+            'middle_center':    'Open Options Popup',
             'dbl_tap_time':      250,
-            })
+        })
 
     def set_value_from_config(self):
-        '''Sets the values of variables from the settings file ComicRackReader.ini.'''
+        '''Sets the values of variables from the settings
+        file ComicRackReader.ini.'''
 
         self.config.read(os.path.join(self.directory, 'comicrackreader.ini'))
         self.lang = self.config.get('General', 'language')
@@ -121,9 +123,10 @@ class ComicRackReader(App):
     def build(self):
         self.base_url = self.config.get('Server', 'url')
         self.api_url = self.base_url + "/BCR"
-        self.api_key = self.config.get('Server','api_key')
+        self.api_key = self.config.get('Server', 'api_key')
         self.set_value_from_config()
-        self.load_all_kv_files(os.path.join(self.directory, 'libs', 'uix', 'kv'))
+        self.load_all_kv_files(os.path.join(
+            self.directory, 'libs', 'uix', 'kv'))
         self.screen = StartScreen()  # program main screen
         self.manager = self.screen.ids.manager
         self.nav_drawer = self.screen.ids.nav_drawer
@@ -136,10 +139,10 @@ class ComicRackReader(App):
             if os.path.isfile(kv_file):
                 with open(kv_file, encoding='utf-8') as kv:
                     Builder.load_string(kv.read())
-                
+
     def events_program(self, instance, keyboard, keycode, text, modifiers):
         '''Called when you press the Menu button or Back Key
-         on mobile device.'''
+             on mobile device.'''
 
         if keyboard in (1001, 27):
             if self.nav_drawer.state == 'open':
@@ -152,7 +155,7 @@ class ComicRackReader(App):
 
     def back_screen(self, event=None):
         '''Screen manager Called when the Back Key is pressed.
-         and chevron "Back" в ToolBar.'''
+          and chevron "Back" в ToolBar.'''
 
         # BackKey pressed.
         if event in (1001, 27):
@@ -191,7 +194,8 @@ class ComicRackReader(App):
         if not PY2:
             self.screen.ids.license.ids.text_license.text = \
                 self.translation._('%s') % open(
-                    os.path.join(self.directory, 'LICENSE'), encoding='utf-8').read()
+                    os.path.join(self.directory, 'LICENSE'),
+                    encoding='utf-8').read()
         else:
             self.screen.ids.license.ids.text_license.text = \
                 self.translation._('%s') % open(
@@ -205,7 +209,7 @@ class ComicRackReader(App):
 
     def select_locale(self, *args):
         '''Displays a window with a list of available language localizations for
-         application language settings.'''
+           application language settings.'''
 
         def select_locale(name_locale):
             '''Sets the selected location..'''
@@ -240,12 +244,12 @@ class ComicRackReader(App):
 
         if self.exit_interval:
             sys.exit(0)
-            
+
         Clock.schedule_interval(check_interval_press, 1)
         toast(self.translation._('Press Back to Exit'))
+
     def on_lang(self, instance, lang):
         self.translation.switch_lang(lang)
-
 
     def build_settings(self, settings):
         settings.add_json_panel('Server Settings',
@@ -261,10 +265,10 @@ class ComicRackReader(App):
     def on_config_change(self, config, section,
                          key, value):
         if key == 'url':
-            self.base_url = self.config.get('Server','url')
+            self.base_url = self.config.get('Server', 'url')
         if key == 'api_key':
-            self.api_key = self.config.get('Server','api_key')
-        if key =='dbl_tap_time':
+            self.api_key = self.config.get('Server', 'api_key')
+        if key == 'dbl_tap_time':
             self.Config.set('postproc', 'double_tap_time', value)
 
     def open_lists_screen(self):
@@ -274,8 +278,11 @@ class ComicRackReader(App):
     def remove_action_bar(self):
         self.screen.ids.action_bar.opacity = 0
         self.screen.ids.action_bar.disabled = True
-        self.screen.ids.action_bar.size = (1,1)
+        self.screen.ids.action_bar.size_hint_y = None
+        self.screen.ids.action_bar.size = (0, 0)
+
     def add_action_bar(self):
         self.screen.ids.action_bar.opacity = 1
         self.screen.ids.action_bar.disabled = False
-        self.screen.ids.action_bar.size = (Window.width ,self.theme_cls.standard_increment)
+        self.screen.ids.action_bar.size = (
+            Window.width, self.theme_cls.standard_increment)

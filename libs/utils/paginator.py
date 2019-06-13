@@ -2,6 +2,8 @@ import collections.abc
 import inspect
 import warnings
 from math import ceil
+
+
 class UnorderedObjectListWarning(RuntimeWarning):
     pass
 
@@ -76,7 +78,6 @@ class Paginator:
         """
         return Page(*args, **kwargs)
 
-   
     def count(self):
         """Return the total number of objects, across all pages."""
         c = getattr(self.object_list, 'count', None)
@@ -106,7 +107,8 @@ class Paginator:
         ordered = getattr(self.object_list, 'ordered', None)
         if ordered is not None and not ordered:
             obj_list_repr = (
-                '{} {}'.format(self.object_list.model, self.object_list.__class__.__name__)
+                '{} {}'.format(self.object_list.model,
+                               self.object_list.__class__.__name__)
                 if hasattr(self.object_list, 'model')
                 else '{!r}'.format(self.object_list)
             )
@@ -115,8 +117,10 @@ class Paginator:
                 'object_list: {}.'.format(obj_list_repr),
                 UnorderedObjectListWarning,
                 stacklevel=3
- 
-           )
+
+            )
+
+
 class Page(collections.abc.Sequence):
 
     def __init__(self, object_list, number, paginator):

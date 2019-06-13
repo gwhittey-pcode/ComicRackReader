@@ -5,6 +5,10 @@ verify_ssl = true
 
 [dev-packages]
 
+pep8 = "*"
+pycodestyle = "*"
+autopep8 = "*"
+
 [packages]
 kivy = {git = "https://github.com/kivy/kivy.git",ref = "master"}
 cython = "*"

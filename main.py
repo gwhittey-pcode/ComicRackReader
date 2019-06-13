@@ -7,7 +7,7 @@
 #
 # For suggestions and questions:
 # <kivydevelopment@gmail.com>
-# 
+#
 # LICENSE: MIT
 
 # Entry point to the application. Runs the main program.py program code.
@@ -17,7 +17,8 @@ import os
 import sys
 import traceback
 
-NICK_NAME_AND_NAME_REPOSITORY = 'git@github.com:gwhittey-pcode/ComicRackReader.git'
+NICK_NAME_AND_NAME_REPOSITORY = \
+    'git@github.com:gwhittey-pcode/ComicRackReader.git'
 
 directory = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0, os.path.join(directory, 'libs/applibs'))
@@ -70,10 +71,9 @@ def main():
     except Exception:
         from kivy.app import App
         from kivy.uix.boxlayout import BoxLayout
-
-
         text_error = traceback.format_exc()
-        traceback.print_exc(file=open(os.path.join(directory, 'error.log'), 'w'))
+        traceback.print_exc(file=open(os.path.join(
+            directory, 'error.log'), 'w'))
 
         if app:
             try:
@@ -88,7 +88,8 @@ def main():
                 txt = six.moves.urllib.parse.quote(
                     report.txt_traceback.text.encode('utf-8')
                 )
-                url = 'https://github.com/%s/issues/new?body=' % NICK_NAME_AND_NAME_REPOSITORY + txt
+                url = 'https://github.com/%s/issues/new?body=' %\
+                    NICK_NAME_AND_NAME_REPOSITORY + txt
                 webbrowser.open(url)
             except Exception:
                 sys.exit(1)
@@ -103,7 +104,7 @@ def main():
                 app.screen.clear_widgets()
                 app.screen.add_widget(report)
             except AttributeError:
-            	create_error_monitor()
+                create_error_monitor()
         else:
             create_error_monitor()
 
