@@ -54,7 +54,9 @@ class CustomeST(SmartTileWithLabel):
                     comic_obj=self.comic_obj,
                     name=new_screen_name)
                 self.app.manager.add_widget(new_screen)
-            self.app.manager.current = new_screen_name
+                #open_comics_list = self.app.open_comics_list
+                #open_comics_list.append(new_screen)
+                self.app.manager.current = new_screen_name
 
 
 class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
@@ -65,6 +67,7 @@ class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
 
 class ReadingListScreen(Screen):
     def __init__(self, **kwargs):
+        super(ReadingListScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.fetch_data = None
         self.readinglist_Id = ObjectProperty()
@@ -83,7 +86,6 @@ class ReadingListScreen(Screen):
         self.list_count = ''
         self.paginator = ObjectProperty()
         self.current_page = ObjectProperty()
-        super(ReadingListScreen, self).__init__(**kwargs)
 
     def on_pre_enter(self, *args):
         self.api_key = self.app.config.get('Server', 'api_key')
