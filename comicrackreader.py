@@ -46,7 +46,7 @@ class ComicRackReader(App):
     icon = 'icon.png'
     nav_drawer = ObjectProperty()
     theme_cls = ThemeManager()
-    theme_cls.primary_palette = 'Red'
+    theme_cls.primary_palette = 'Amber'
     lang = StringProperty('en')
 
     def __init__(self, **kvargs):

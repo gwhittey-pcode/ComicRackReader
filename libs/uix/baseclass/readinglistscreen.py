@@ -18,7 +18,7 @@ from libs.applibs.kivymd.imagelists import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.applibs.kivymd.button import MDRaisedButton
-from libs.applibs.kivymd.button import MDRoundFlatIconButton
+from libs.applibs.kivymd.button import MDFillRoundFlatIconButton
 from libs.utils.paginator import Paginator
 from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivymd.toast import toast
@@ -27,13 +27,13 @@ from kivymd.toast import toast
 class CustomeST(SmartTileWithLabel):
     def __init__(self, **kwargs):
         self.menu_items = [{'viewclass': 'MDMenuItem',
-                            'text': 'Read',
+                            'text': '[color=#000000]Read[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
-                            'text': 'Mark as Read',
+                            'text': '[color=#000000]Mark as Read[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
-                            'text': 'Mark as UnRead',
+                            'text': '[color=#000000]Mark as UnRead[/color]',
                             'callback': self.callback_for_menu_items}]
         self.app = App.get_running_app()
         self.comic_slug = StringProperty()
@@ -57,10 +57,10 @@ class CustomeST(SmartTileWithLabel):
             self.app.manager.current = new_screen_name
 
 
-class CustomMDRoundFlatIconButton(MDRoundFlatIconButton):
+class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
     def __init__(self, **kwargs):
         _url = ObjectProperty()
-        super(CustomMDRoundFlatIconButton, self).__init__(**kwargs)
+        super(CustomMDFillRoundFlatIconButton, self).__init__(**kwargs)
 
 
 class ReadingListScreen(Screen):
@@ -150,6 +150,7 @@ class ReadingListScreen(Screen):
             c.PageCount = comic.PageCount
             strtxt = f"{comic.Series} #{comic.Number}"
             c.text = strtxt
+            c.text_color = (0, 0, 0, 1)
             grid.add_widget(c)
             grid.cols = (Window.width-20)//160
 

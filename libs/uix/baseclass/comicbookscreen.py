@@ -22,8 +22,10 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.scatter import Scatter
 from kivy.uix.popup import Popup
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.stacklayout import StackLayout
 from kivy.logger import Logger
 from kivy.metrics import dp
+from kivy.uix.modalview import ModalView
 from settings.settingsjson import settings_json_screen_tap_control
 from libs.uix.widgets.comicbook_screen_widgets import ComicBookPageImage,\
     ComicBookPageThumb, ComicBookPageScatter, ComicCarousel,\
@@ -58,9 +60,11 @@ class ComicBookScreen(Screen):
         self.comic_obj = None
         self.fetch_data = ComicServerConn()
         self.api_key = self.app.config.get('Server', 'api_key')
+        self.popup_bkcolor = (.5, .5, .5, .87)
         self.build_option_pop()
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
+
         for setting in settings_data:
             if setting['type'] == 'options':
 
@@ -68,7 +72,7 @@ class ComicBookScreen(Screen):
                                                    setting[u'key'])
                 if tap_config == 'Disabled':
                     self.ids[setting[u'key']].disabled = True
-        # Loader.pool.tasks.queue.clear()
+
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
         comic_book_carousel = self.ids.comic_book_carousel
@@ -80,14 +84,17 @@ class ComicBookScreen(Screen):
         number_pages = int(comic_obj.PageCount)
         x_title = self.comic_obj.__str__
         scroll = ScrollView(size_hint=(1, 1), do_scroll_x=True,
-                            do_scroll_y=False, id='page_thumb_scroll')
+                            do_scroll_y=False, id='page_thumb_scroll',
+                            scroll_type=['bars', 'content']
+                            )
         self.page_nav_popup = Popup(id='page_nav_popup', title=x_title,
-                                    content=scroll, pos_hint={'y': .0401},
-                                    size_hint=(1, .35),
-                                    background_color=[.3, .3, .3, 0])
+                                    pos_hint={'y': 0},
+                                    size_hint=(1, .32),
 
+                                    )
+        self.page_nav_popup.add_widget(scroll)
         self.scroller = scroll
-        outer_grid = GridLayout(rows=1, size_hint=(None, None), spacing=5,
+        outer_grid = GridLayout(rows=1, size_hint=(None, None), spacing=(5, 0),
                                 padding=(5, 0), id='outtergrd')
         outer_grid.bind(minimum_width=outer_grid.setter('width'))
         i = 0
@@ -154,8 +161,11 @@ class ComicBookScreen(Screen):
                                                         'stretch_image')
 
         max_height = App.get_running_app().config.get('Server', 'max_height')
-        comic_page_scatter = ComicBookPageScatter(
-            id='comic_scatter'+str(i), comic_page=i)
+        comic_page_scatter = ComicBookPageScatter(id='comic_scatter'+str(i),
+                                                  comic_page=i,
+                                                  do_rotation=False,
+                                                  do_translation=False,
+                                                  scale_min=1)
         if strech_image == '1':
             s_allow_stretch = True
             s_keep_ratio = False
@@ -181,17 +191,25 @@ class ComicBookScreen(Screen):
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_height}"
         s_url_api = f"&apiKey={self.api_key}"
         src_img = f"{self.api_url}{s_url_part}{s_url_api}"
-        inner_grid = ThumbPopPageInnerGrid(id='inner_grid'+str(i))
+        inner_grid = ThumbPopPageInnerGrid(
+            id='inner_grid'+str(i), spacing=(0, 0))
         page_thumb = ComicBookPageThumb(comic_slug=comic_obj.slug,
-                                        id=comic_page_scatter.id, comic_page=i,
-                                        source=src_img)
-
+                                        id='page_thumb' + str(i), comic_page=i,
+                                        source=src_img,
+                                        allow_stretch=True)
         page_thumb.size_hint_y = None
         page_thumb.height = dp(240)
         inner_grid.add_widget(page_thumb)
         page_thumb.bind(on_release=page_thumb.click)
-        smbutton = ThumbPopPagebntlbl(text='P%s' % str(i+1), halign='center')
+        smbutton = ThumbPopPagebntlbl(text='P%s' % str(i+1),
+                                      elevation_normal=2, padding=(0, 0),
+                                      id=f'page_thumb_lbl{i}',
+                                      comic_slug=comic_obj.slug,
+                                      comic_page=i, 
+                                      text_color=(0, 0, 0, 1)
+                                      )
         inner_grid.add_widget(smbutton)
+        smbutton.bind(on_release=smbutton.click)
         outer_grid.add_widget(inner_grid)
         if comic_obj.PageCount-1 == i:
             self.load_UserCurrentPage()
@@ -209,7 +227,7 @@ class ComicBookScreen(Screen):
         if comic_obj.PageCount-1 == i:
             self.last_page_done = True
             self.load_UserCurrentPage()
-    
+
     def page_nav_popup_open(self):
         self.page_nav_popup.open()
         comic_book_carousel = self.ids.comic_book_carousel
@@ -217,13 +235,17 @@ class ComicBookScreen(Screen):
         for child in self.walk():
             if child.id == current_slide.id:
                 current_page = child
+                comic_page = current_page.comic_page
 
         for child in self.page_nav_popup.walk():
             if child.id == 'page_thumb_scroll':
                 scroller = child
                 for grandchild in scroller.walk():
-                    if grandchild.id == current_page.id:
+                    c_page_thumb = f'page_thumb{comic_page}'
+                    c_page_lbl = f'page_thumb_lbl{comic_page}'
+                    if grandchild.id == c_page_thumb:
                         target_thumb = grandchild
+                        print(f'found:{grandchild.id}')
                         self.scroller.scroll_to(
                             target_thumb, padding=10, animate=True)
 
@@ -233,7 +255,8 @@ class ComicBookScreen(Screen):
             1, 1), do_scroll_x=True, do_scroll_y=False)
         self.top_pop = Popup(id='page_pop', title='Comics in List',
                              title_align='center', content=scroll,
-                             pos_hint={'y': .7}, size_hint=(1, .3)
+                             pos_hint={'y': .718}, size_hint=(1, .3),
+
                              )
         self.top_pop
         grid = CommonComicsOuterGrid(id='outtergrd', size_hint=(
@@ -248,12 +271,12 @@ class ComicBookScreen(Screen):
                     'readinglistscreen').current_page
                 comics_list = page.object_list
                 self.current_page = page
-                self.top_pop.title = f'Group# {page.number} of\
-                 {self.paginator.num_pages()}'
+                page_num = self.paginator.num_pages()
+                self.top_pop.title = f'Group# {page.number} of {page_num}'
             else:
                 page = self.current_page
-                self.top_pop.title = f'Group# {page.number} of\
-                 {self.paginator.num_pages()}'
+                page_num = self.paginator.num_pages()
+                self.top_pop.title = f'Group# {page.number} of {page_num}'
                 comics_list = page.object_list
             if page.has_previous():
                 comic_name = 'Prev Page'
@@ -307,6 +330,9 @@ class ComicBookScreen(Screen):
                 inner_grid.add_widget(smbutton)
                 grid.add_widget(inner_grid)
         scroll.add_widget(grid)
+
+    def comicscreen_open_collection_popup(self):
+        self.top_pop.open()
 
     def load_new_page(self, instance):
         new_page = self.paginator.page(instance.new_page_num)
@@ -548,19 +574,14 @@ class ComicBookScreen(Screen):
         else:
             comic_book_carousel.load_previous()
 
-    def comicscreen_open_collection_popup(self):
-        self.top_pop.open()
-
     def build_option_pop(self):
         bg_color = self.app.theme_cls.primary_color
         option_bar = OptionToolBar()
-        option_pop = Popup(title=' ',
-                           content=option_bar,
-                           pos_hint={'y': .9},
-                           size_hint=(1, .1)
+        self.option_pop = Popup(pos_hint={'y': .9},
+                                size_hint=(1, .1),
 
-                           )
-        self.option_pop = option_pop
+                                )
+        self.option_pop.add_widget(option_bar)
 
     def open_option(self):
         self.option_pop.open()

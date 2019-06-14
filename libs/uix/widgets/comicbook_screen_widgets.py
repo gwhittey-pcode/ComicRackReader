@@ -9,7 +9,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from libs.utils.comic_server_conn import ComicServerConn
-
+from libs.applibs.kivymd.button import MDRaisedButton
 from libs.utils.convert_base64 import convert_to_image
 from kivy.graphics.transformation import Matrix
 from kivy.app import App
@@ -82,10 +82,16 @@ class ComicBookPageImage(AsyncImage):
                                         allow_stretch=s_allow_stretch,
                                         keep_ratio=s_keep_ratio
                                         )
-            scatter_1 = ComicBookPageScatter(
-                id='comic_scatter'+str(var_i), comic_page=var_i)
-            scatter_2 = ComicBookPageScatter(
-                id='comic_scatter'+str(var_i)+'b', comic_page=var_i)
+            scatter_1 = ComicBookPageScatter(id='comic_scatter'+str(var_i),
+                                             comic_page=var_i,
+                                             do_rotation=False,
+                                             do_translation=False,
+                                             scale_min=1)
+            scatter_2 = ComicBookPageScatter(id='comic_scatter'+str(var_i)+'b',
+                                             comic_page=var_i,
+                                             do_rotation=False,
+                                             do_translation=False,
+                                             scale_min=1)
             part_1.texture = proxyImage.image.texture.get_region(
                 0, 0, c_width/2, c_height)
             part_2.texture = proxyImage.image.texture.get_region(
@@ -272,38 +278,55 @@ class ThumbPopPageInnerGrid(GridLayout):
     pass
 
 
-class ThumbPopPagebntlbl(Button):
-    pass
+class ThumbPopPagebntlbl(MDRaisedButton):
+    comic_slug = StringProperty()
+    fetch_data = ObjectProperty()
+    comic_page = NumericProperty()
+
+    def __init__(self, **kwargs):
+        super(ThumbPopPagebntlbl, self).__init__(**kwargs)
+        base_url = App.get_running_app().config.get('Server', 'url')
+        opposite_colors = True
+
+    def click(self, instance):
+        app = App.get_running_app()
+        page_nav_popup = app.manager.current_screen.page_nav_popup
+        page_nav_popup.dismiss()
+        carousel = app.manager.current_screen.ids.comic_book_carousel
+        for slide in carousel.slides:
+            if slide.comic_page == self.comic_page:
+                use_slide = slide
+        carousel.load_slide(use_slide)
 
 
 class ThumbPopPageSmallButton(Button):
     pass
 
 
-class ThumbPopPageImage(ButtonBehavior, Image):
-    comic_slug = StringProperty()
-    fetch_data = ObjectProperty()
-    comic_page = NumericProperty()
+# class ThumbPopPageImage(ButtonBehavior, Image):
+#     comic_slug = StringProperty()
+#     fetch_data = ObjectProperty()
+#     comic_page = NumericProperty()
 
-    def __init__(self, **kwargs):
-        super(ThumbPopPageImage, self).__init__(**kwargs)
-        base_url = App.get_running_app().config.get('Server', 'url')
+#     def __init__(self, **kwargs):
+#         super(ThumbPopPageImage, self).__init__(**kwargs)
+#         base_url = App.get_running_app().config.get('Server', 'url')
 
-    def got_json(self, req, result):
-        img = convert_to_image(result["page"])
-        self.texture = img.texture
+#     def got_json(self, req, result):
+#         img = convert_to_image(result["page"])
+#         self.texture = img.texture
 
-    def click(self, instance):
-        app = App.get_running_app()
-        # app.root.current = 'comic_book_screen'
-        page_nav_popup = app.root.ids.comic_book_screen.page_nav_popup
-        page_nav_popup.dismiss()
-        app = App.get_running_app()
-        carousel = app.manager.current_screen.ids.comic_book_carousel
-        for slide in carousel.slides:
-            if slide.id == self.id:
-                use_slide = slide
-        carousel.load_slide(use_slide)
+#     def click(self, instance):
+#         app = App.get_running_app()
+#         # app.root.current = 'comic_book_screen'
+#         page_nav_popup = app.root.ids.comic_book_screen.page_nav_popup
+#         page_nav_popup.dismiss()
+#         app = App.get_running_app()
+#         carousel = app.manager.current_screen.ids.comic_book_carousel
+#         for slide in carousel.slides:
+#             if slide.id == self.id:
+#                 use_slide = slide
+#         carousel.load_slide(use_slide)
 
 
 class ComicBookPageThumb(ButtonBehavior, AsyncImage):
@@ -318,13 +341,11 @@ class ComicBookPageThumb(ButtonBehavior, AsyncImage):
 
     def click(self, instance):
         app = App.get_running_app()
-        # app.root.current = 'comic_book_screen'
         page_nav_popup = app.manager.current_screen.page_nav_popup
         page_nav_popup.dismiss()
-        app = App.get_running_app()
         carousel = app.manager.current_screen.ids.comic_book_carousel
         for slide in carousel.slides:
-            if slide.id == self.id:
+            if slide.comic_page == self.comic_page:
                 use_slide = slide
         carousel.load_slide(use_slide)
 
