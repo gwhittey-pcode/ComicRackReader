@@ -46,7 +46,7 @@ class CustomeST(SmartTileWithLabel):
         super(CustomeST, self).__init__(**kwargs)
 
     def callback_for_menu_items(self, *args):
-        if args[0] == "Read":
+        if args[0] == "[color=#000000]Read[/color]":
             new_screen_name = str(self.comic_obj.Id)
             if new_screen_name not in self.app.manager.screen_names:
                 new_screen = ComicBookScreen(
