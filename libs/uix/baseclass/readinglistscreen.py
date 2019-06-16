@@ -12,7 +12,7 @@ from kivy.core.window import Window
 
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
 from kivy.uix.image import AsyncImage
 from libs.applibs.kivymd.imagelists import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
@@ -26,6 +26,7 @@ from kivymd.toast import toast
 
 class CustomeST(SmartTileWithLabel):
     def __init__(self, **kwargs):
+        super(CustomeST, self).__init__(**kwargs)
         self.menu_items = [{'viewclass': 'MDMenuItem',
                             'text': '[color=#000000]Read[/color]',
                             'callback': self.callback_for_menu_items},
@@ -43,18 +44,21 @@ class CustomeST(SmartTileWithLabel):
         self.status = StringProperty()
         self.comic_obj = ObjectProperty()
         self.readinglist_obj = ObjectProperty()
-        super(CustomeST, self).__init__(**kwargs)
+        self.paginator_obj = ObjectProperty()
+        self.pag_pagenum = NumericProperty()
 
     def callback_for_menu_items(self, *args):
-        if args[0] == "Read":
+        if args[0] == "[color=#000000]Read[/color]":
             new_screen_name = str(self.comic_obj.Id)
             if new_screen_name not in self.app.manager.screen_names:
                 new_screen = ComicBookScreen(
                     readinglist_obj=self.readinglist_obj,
                     comic_obj=self.comic_obj,
+                    paginator_obj=self.paginator_obj,
+                    pag_pagenum=self.pag_pagenum,
                     name=new_screen_name)
                 self.app.manager.add_widget(new_screen)
-            self.app.manager.current = new_screen_name
+                self.app.manager.current = new_screen_name
 
 
 class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
@@ -65,6 +69,7 @@ class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
 
 class ReadingListScreen(Screen):
     def __init__(self, **kwargs):
+        super(ReadingListScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.fetch_data = None
         self.readinglist_Id = ObjectProperty()
@@ -81,9 +86,10 @@ class ReadingListScreen(Screen):
         comic_reading_list = ObjectProperty()
         self.api_key = self.app.config.get('Server', 'api_key')
         self.list_count = ''
-        self.paginator = ObjectProperty()
+        self.paginator_obj = ObjectProperty()
         self.current_page = ObjectProperty()
-        super(ReadingListScreen, self).__init__(**kwargs)
+        self.list_loaded = BooleanProperty()
+        self.list_loaded = False
 
     def on_pre_enter(self, *args):
         self.api_key = self.app.config.get('Server', 'api_key')
@@ -92,8 +98,6 @@ class ReadingListScreen(Screen):
         self.m_grid = self.ids["main_grid"]
         self.prev_button = self.ids["prev_button"]
         self.next_button = self.ids["next_button"]
-        self.app.screen.ids.action_bar.left_action_items = \
-            [['chevron-left', lambda x: self.app.back_screen(27)]]
 
     def on_leave(self):
         self.app.list_previous_screens.append(self.name)
@@ -107,8 +111,8 @@ class ReadingListScreen(Screen):
                 c.cols = (Window.width-20)//160
 
     def collect_readinglist_data(self, readinglist_name, readinglist_Id):
-
         self.readinglist_name = readinglist_name
+        self.app.set_screen(self.readinglist_name + ' Page 1')
         self.readinglist_Id = readinglist_Id
         self.fetch_data = ComicServerConn()
         lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
@@ -117,7 +121,8 @@ class ReadingListScreen(Screen):
 
     def get_page(self, instance):
         page_num = instance.page_num
-        page = self.paginator.page(page_num)
+        self.app.set_screen(self.readinglist_name + f' Page {page_num}')
+        page = self.paginator_obj.page(page_num)
         self.current_page = page
         if page.has_next():
             self.next_button.opacity = 1
@@ -145,9 +150,11 @@ class ReadingListScreen(Screen):
             c = CustomeST()
             c.comic_obj = comic
             c.readinglist_obj = self.new_readinglist
+            c.paginator_obj = self.paginator_obj
             c_image_source = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
+            c.pag_pagenum = self.current_page.number
             strtxt = f"{comic.Series} #{comic.Number}"
             c.text = strtxt
             c.text_color = (0, 0, 0, 1)
@@ -168,9 +175,9 @@ class ReadingListScreen(Screen):
                 'Server', 'max_books_page'))
             orphans = max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics[::-1]
-            self.paginator = Paginator(
+            self.paginator_obj = Paginator(
                 new_readinglist_reversed, max_books_page)
-            page = self.paginator.page(1)
+            page = self.paginator_obj.page(1)
             self.current_page = page
             if page.has_next():
                 self.next_button.opacity = 1
@@ -191,7 +198,7 @@ class ReadingListScreen(Screen):
             self.build_page(page.object_list)
         else:
             self.build_page(self.new_readinglist.comics)
-
+        self.list_loaded = True
         # building back and prev page buttons for pagination of reading list
         # if self.new_readinglist.data["previous"] is not None:
         #     self.prev_button.opacity = 1

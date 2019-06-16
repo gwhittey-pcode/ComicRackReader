@@ -11,7 +11,8 @@
 import webbrowser
 from functools import partial
 from kivy.uix.screenmanager import Screen
-from kivy.properties import ObjectProperty, StringProperty, ListProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty,\
+    NumericProperty
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.app import App
 from libs.utils.convert_base64 import convert_to_image
@@ -46,7 +47,8 @@ class ComicBookScreen(Screen):
     section = StringProperty()
     sort_by = StringProperty()
 
-    def __init__(self, readinglist_obj=None, comic_obj=None, **kwargs):
+    def __init__(self, readinglist_obj=None, comic_obj=None,
+                 paginator_obj=None, pag_pagenum=1, **kwargs):
         super(ComicBookScreen, self).__init__(**kwargs)
         self.fetch_data = None
         self.app = App.get_running_app()
@@ -54,14 +56,15 @@ class ComicBookScreen(Screen):
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
         self.api_key = self.app.config.get('Server', 'api_key')
-        self.paginator = ObjectProperty()
         self.current_page = None
         self.comic_obj = ObjectProperty()
         self.comic_obj = None
+        self.paginator_obj = ObjectProperty()
+        self.paginator_obj = None
         self.fetch_data = ComicServerConn()
         self.api_key = self.app.config.get('Server', 'api_key')
         self.popup_bkcolor = (.5, .5, .5, .87)
-        self.build_option_pop()
+        self.pag_pagenum = NumericProperty()
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
 
@@ -75,6 +78,8 @@ class ComicBookScreen(Screen):
 
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
+        self.paginator_obj = paginator_obj
+        self.pag_pagenum = pag_pagenum
         comic_book_carousel = self.ids.comic_book_carousel
         comic_book_carousel.clear_widgets()
         if self.scroller:
@@ -116,16 +121,19 @@ class ComicBookScreen(Screen):
         screen_names = self.app.manager.screen_names
         for name in screen_names:
             if name in ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen']:
+                        'comicracklistscreen', 'open_comicscreen']:
                 print('skip')
             else:
                 print(name)
 
     def on_pre_enter(self):
-        self.app.remove_action_bar()
+        self.app.hide_action_bar()
+
+    def on_enter(self):
+        self.build_option_pop()
 
     def on_pre_leave(self):
-        self.app.add_action_bar()
+        self.app.show_action_bar()
 
     def load_UserCurrentPage(self):
         for slide in self.ids.comic_book_carousel.slides:
@@ -205,7 +213,7 @@ class ComicBookScreen(Screen):
                                       elevation_normal=2, padding=(0, 0),
                                       id=f'page_thumb_lbl{i}',
                                       comic_slug=comic_obj.slug,
-                                      comic_page=i, 
+                                      comic_page=i,
                                       text_color=(0, 0, 0, 1)
                                       )
         inner_grid.add_widget(smbutton)
@@ -264,18 +272,22 @@ class ComicBookScreen(Screen):
         grid.bind(minimum_width=grid.setter('width'))
 
         if int(self.app.config.get('Server', 'use_pagination')) == 1:
-            self.paginator = self.app.manager.get_screen(
-                'readinglistscreen').paginator
+
             if self.current_page is None:
-                page = self.app.manager.get_screen(
-                    'readinglistscreen').current_page
+                if self.pag_pagenum == 0:
+                    page = self.paginator_obj.page(1)
+                    c_pag_pagenum = page.number
+                else:
+                    page = self.paginator_obj.page(self.pag_pagenum)
                 comics_list = page.object_list
                 self.current_page = page
-                page_num = self.paginator.num_pages()
+                c_pag_pagenum = page.number
+                page_num = self.paginator_obj.num_pages()
                 self.top_pop.title = f'Group# {page.number} of {page_num}'
             else:
                 page = self.current_page
-                page_num = self.paginator.num_pages()
+                c_pag_pagenum = page.number
+                page_num = self.paginator_obj.num_pages()
                 self.top_pop.title = f'Group# {page.number} of {page_num}'
                 comics_list = page.object_list
             if page.has_previous():
@@ -286,6 +298,7 @@ class ComicBookScreen(Screen):
                 comic_thumb = CommonComicsCoverImage(
                     source=src_thumb, id=str('prev'))
                 comic_thumb.readinglist_obj = self.readinglist_obj
+                comic_thumb.paginator_obj = self.paginator_obj
                 comic_thumb.new_page_num = page.previous_page_number()
                 inner_grid.add_widget(comic_thumb)
                 comic_thumb.bind(on_release=self.top_pop.dismiss)
@@ -306,6 +319,8 @@ class ComicBookScreen(Screen):
             comic_thumb = CommonComicsCoverImage(
                 source=src_thumb, id=str(comic.Id), comic_obj=comic)
             comic_thumb.readinglist_obj = self.readinglist_obj
+            comic_thumb.paginator_obj = self.paginator_obj
+            comic_thumb.new_page_num = c_pag_pagenum
             comic_thumb.comic_obj = comic
             inner_grid.add_widget(comic_thumb)
             comic_thumb.bind(on_release=self.top_pop.dismiss)
@@ -323,6 +338,7 @@ class ComicBookScreen(Screen):
                     source=src_thumb, id=str('next'),)
                 comic_thumb.readinglist_obj = self.readinglist_obj
                 comic_thumb.new_page_num = page.next_page_number()
+                comic_thumb.paginator_obj = self.paginator_obj
                 inner_grid.add_widget(comic_thumb)
                 comic_thumb.bind(on_release=self.top_pop.dismiss)
                 comic_thumb.bind(on_release=self.load_new_page)
@@ -335,42 +351,48 @@ class ComicBookScreen(Screen):
         self.top_pop.open()
 
     def load_new_page(self, instance):
-        new_page = self.paginator.page(instance.new_page_num)
+        new_page = self.paginator_obj.page(instance.new_page_num)
         self.current_page = new_page
 
         self.build_top_nav()
         self.top_pop.open()
 
     def load_next_page_comic(self, instance):
-        new_page = self.paginator.page(instance.new_page_num)
+        new_page = self.paginator_obj.page(instance.new_page_num)
         self.current_page = new_page
-        n_paginator = self.paginator
+        n_paginator = self.paginator_obj
         page = self.current_page
+        c_pag_pagenum = new_page.number
         comics_list = page.object_list
         new_screen_name = str(self.next_comic.Id)
         if new_screen_name not in self.app.manager.screen_names:
             new_screen = ComicBookScreen(
                 readinglist_obj=self.readinglist_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=c_pag_pagenum,
                 comic_obj=self.next_comic, name=new_screen_name)
             self.app.manager.add_widget(new_screen)
         self.app.manager.current = new_screen_name
 
     def load_prev_page_comic(self, instance):
-        new_page = self.paginator.page(instance.new_page_num)
+        new_page = self.paginator_obj.page(instance.new_page_num)
         self.current_page = new_page
-        n_paginator = self.paginator
+        n_paginator = self.paginator_obj
         page = self.current_page
+        c_pag_pagenum = new_page.number
         comics_list = page.object_list
         new_screen_name = str(self.prev_comic.Id)
         if new_screen_name not in self.app.manager.screen_names:
             new_screen = ComicBookScreen(
                 readinglist_obj=self.readinglist_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=c_pag_pagenum,
                 comic_obj=self.prev_comic, name=new_screen_name)
             self.app.manager.add_widget(new_screen)
         self.app.manager.current = new_screen_name
 
     def get_next_comic(self):
-        n_paginator = self.paginator
+        n_paginator = self.paginator_obj
         page = self.current_page
         comic_obj = self.comic_obj
         comics_list = page.object_list
@@ -396,7 +418,7 @@ class ComicBookScreen(Screen):
     # TODO Fix when 1 comic is loaded there should not be a
     # next and prev comic.
     def get_prev_comic(self):
-        n_paginator = self.paginator
+        n_paginator = self.paginator_obj
         page = self.current_page
         comics_list = page.object_list
         comic_obj = self.comic_obj
@@ -422,7 +444,7 @@ class ComicBookScreen(Screen):
 
     def build_next_comic_dialog(self):
         ''' Make popup showing cover for next comic'''
-        n_paginator = self.paginator
+        n_paginator = self.paginator_obj
         page = self.current_page
         comics_list = page.object_list
         comic = self.next_comic
@@ -442,7 +464,7 @@ class ComicBookScreen(Screen):
             comic.Id), pos_hint={.5: .5}, comic_obj=comic)
         comic_thumb.readinglist_obj = self.readinglist_obj
         comic_thumb.comic = comic
-        comic_thumb.readinglist_obj = self.readinglist_obj
+        comic_thumb.paginator_obj = self.paginator_obj
         if index+1 == len(comics_list) and page.has_next():
             comic_thumb.new_page_num = next_page_number
         else:
@@ -480,7 +502,7 @@ class ComicBookScreen(Screen):
                 comic_thumb.bind(on_release=comic_thumb.open_collection)
 
     def build_prev_comic_dialog(self):
-        n_paginator = self.paginator
+        n_paginator = self.paginator_obj
         page = self.current_page
         comics_list = page.object_list
         comic = self.prev_comic
@@ -576,11 +598,11 @@ class ComicBookScreen(Screen):
 
     def build_option_pop(self):
         bg_color = self.app.theme_cls.primary_color
-        option_bar = OptionToolBar()
-        self.option_pop = Popup(pos_hint={'y': .9},
-                                size_hint=(1, .1),
+        option_bar = OptionToolBar(comic_Id=self.comic_obj.Id)
+        self.option_pop = ModalView(pos_hint={'y': .917},
+                                    size_hint=(1, .1),
 
-                                )
+                                    )
         self.option_pop.add_widget(option_bar)
 
     def open_option(self):
@@ -596,4 +618,20 @@ class OptionPopup(Popup):
 
 
 class OptionToolBar(MDToolbar):
-    pass
+    title = StringProperty()
+    comic_Id = StringProperty()
+
+    def __init__(self, **kwargs):
+        super(OptionToolBar, self).__init__(**kwargs)
+        app = App.get_running_app()
+        screen_manager = app.manager
+        comic_book_screen = screen_manager.get_screen(app.manager.current)
+        self.title = comic_book_screen.comic_obj.__str__
+
+    def option_bar_action(self, *args):
+        app = App.get_running_app()
+        screen_manager = app.manager
+        comic_book_screen = screen_manager.get_screen(self.comic_Id)
+        s_name = comic_book_screen.comic_obj.Id
+        comic_book_screen.option_pop.dismiss()
+        app.manager.current = str(args[0])
