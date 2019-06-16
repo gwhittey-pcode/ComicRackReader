@@ -48,6 +48,9 @@ class OpenComicScreen(Screen):
         self.app = App.get_running_app()
         self.fetch_data = None
 
+    def on_pre_enter(self):
+        self.app.show_action_bar()
+
     def on_enter(self):
         self.api_key = self.app.config.get('Server', 'api_key')
         self.api_url = self.app.api_url

@@ -98,6 +98,7 @@ class ReadingListScreen(Screen):
         self.m_grid = self.ids["main_grid"]
         self.prev_button = self.ids["prev_button"]
         self.next_button = self.ids["next_button"]
+        self.app.show_action_bar()
 
     def on_leave(self):
         self.app.list_previous_screens.append(self.name)

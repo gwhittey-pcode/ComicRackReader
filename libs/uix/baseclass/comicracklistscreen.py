@@ -29,6 +29,9 @@ class ComicRackListScreen(Screen):
         self.lists_loaded = BooleanProperty()
         self.lists_loaded = False
 
+    def on_pre_enter(self):
+        self.app.show_action_bar()
+
     def on_enter(self, *args):
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url

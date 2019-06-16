@@ -132,9 +132,6 @@ class ComicBookScreen(Screen):
     def on_enter(self):
         self.build_option_pop()
 
-    def on_pre_leave(self):
-        self.app.show_action_bar()
-
     def load_UserCurrentPage(self):
         for slide in self.ids.comic_book_carousel.slides:
             if slide.comic_page == self.comic_obj.UserCurrentPage:
@@ -283,12 +280,16 @@ class ComicBookScreen(Screen):
                 self.current_page = page
                 c_pag_pagenum = page.number
                 page_num = self.paginator_obj.num_pages()
-                self.top_pop.title = f'Group# {page.number} of {page_num}'
+                c_readinglist_name = self.readinglist_obj.name
+                c_title = f'{c_readinglist_name} - Group# {page.number} of {page_num}'
+                self.top_pop.title = c_title
             else:
                 page = self.current_page
                 c_pag_pagenum = page.number
                 page_num = self.paginator_obj.num_pages()
-                self.top_pop.title = f'Group# {page.number} of {page_num}'
+                c_readinglist_name = self.readinglist_obj.name
+                c_title = f'{c_readinglist_name} - Group# {page.number} of {page_num}'
+                self.top_pop.title = c_title
                 comics_list = page.object_list
             if page.has_previous():
                 comic_name = 'Prev Page'
