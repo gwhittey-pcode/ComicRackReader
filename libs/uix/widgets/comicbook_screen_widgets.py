@@ -369,6 +369,8 @@ class CommonComicsCoverInnerGrid(GridLayout):
 class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     comic_obj = ObjectProperty()
     readinglist_obj = ObjectProperty()
+    paginator_obj = ObjectProperty()
+    new_page_num = NumericProperty()
     clock_set = StringProperty()
 
     def enable_me(self, instance):
@@ -393,6 +395,8 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
         if new_screen_name not in app.manager.screen_names:
             new_screen = ComicBookScreen(
                 readinglist_obj=self.readinglist_obj, comic_obj=self.comic_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=self.new_page_num,
                 name=new_screen_name)
             app.manager.add_widget(new_screen)
         app.manager.current = new_screen_name

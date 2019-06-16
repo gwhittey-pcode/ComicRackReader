@@ -59,7 +59,6 @@ class BaseScreen(Screen):
             'Server', 'url')
 
     def on_pre_enter(self, *args):
-
         self.check_login()
 
     def check_login(self):

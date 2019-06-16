@@ -22,7 +22,7 @@ from kivy.config import ConfigParser
 from kivy.clock import Clock
 from kivy.utils import get_color_from_hex, get_hex_from_color
 from kivy.metrics import dp
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty
 
 from main import __version__
 from libs.translation import Translation
@@ -48,6 +48,7 @@ class ComicRackReader(App):
     theme_cls = ThemeManager()
     theme_cls.primary_palette = 'Amber'
     lang = StringProperty('en')
+    open_comics_list = ListProperty()
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
@@ -99,7 +100,7 @@ class ComicRackReader(App):
             'stretch_image':    '0',
             'keep_ratio':       '0',
             'reading_list_icon_size': 'Medium'
-            })
+        })
 
         config.setdefaults('Screen Tap Control', {
             'bottom_right':     'Next Page',
@@ -143,7 +144,7 @@ class ComicRackReader(App):
 
     def events_program(self, instance, keyboard, keycode, text, modifiers):
         '''Called when you press the Menu button or Back Key
-             on mobile device.'''
+                          on mobile device.'''
 
         if keyboard in (1001, 27):
             if self.nav_drawer.state == 'open':
@@ -156,7 +157,7 @@ class ComicRackReader(App):
 
     def back_screen(self, event=None):
         '''Screen manager Called when the Back Key is pressed.
-          and chevron "Back" в ToolBar.'''
+                    and chevron "Back" в ToolBar.'''
 
         # BackKey pressed.
         if event in (1001, 27):
@@ -167,7 +168,7 @@ class ComicRackReader(App):
                 self.manager.current = self.list_previous_screens.pop()
             except:
                 self.manager.current = 'base'
-            self.screen.ids.action_bar.title = self.title
+            # self.screen.ids.action_bar.title = self.title
             self.screen.ids.action_bar.left_action_items = \
                 [['menu', lambda x: self.nav_drawer._toggle()]]
 
@@ -192,15 +193,11 @@ class ComicRackReader(App):
             [['chevron-left', lambda x: self.back_screen(27)]]
 
     def show_license(self, *args):
-        if not PY2:
-            self.screen.ids.license.ids.text_license.text = \
-                self.translation._('%s') % open(
-                    os.path.join(self.directory, 'LICENSE'),
-                    encoding='utf-8').read()
-        else:
-            self.screen.ids.license.ids.text_license.text = \
-                self.translation._('%s') % open(
-                    os.path.join(self.directory, 'LICENSE')).read()
+        self.screen.ids.license.ids.text_license.text = \
+            self.translation._('%s') % open(
+                os.path.join(self.directory, 'LICENSE'),
+                encoding='utf-8').read()
+
         self.nav_drawer._toggle()
         self.manager.current = 'license'
         self.screen.ids.action_bar.left_action_items = \
@@ -210,7 +207,7 @@ class ComicRackReader(App):
 
     def select_locale(self, *args):
         '''Displays a window with a list of available language localizations for
-           application language settings.'''
+                      application language settings.'''
 
         def select_locale(name_locale):
             '''Sets the selected location..'''
@@ -272,17 +269,30 @@ class ComicRackReader(App):
         if key == 'dbl_tap_time':
             self.Config.set('postproc', 'double_tap_time', value)
 
-    def open_lists_screen(self):
+    def switch_lists_screen(self):
         self.manager.current = 'comicracklistscreen'
         comicracklistscreen = self.manager.get_screen('comicracklistscreen')
 
-    def remove_action_bar(self):
+    def switch_open_comics_screen(self):
+        self.manager.current = 'open_comicscreen'
+
+    def switch_readinglists_screen_switch(self):
+        self.manager.current = 'readinglistscreen'
+
+    def switch_base_screen_switch(self):
+        self.set_screen("Home Screen")
+        self.manager.current = 'base'
+    
+    def set_screen(self, title):
+        self.screen.ids.action_bar.title = title
+
+    def hide_action_bar(self):
         self.screen.ids.action_bar.opacity = 0
         self.screen.ids.action_bar.disabled = True
         self.screen.ids.action_bar.size_hint_y = None
         self.screen.ids.action_bar.size = (0, 0)
 
-    def add_action_bar(self):
+    def show_action_bar(self):
         self.screen.ids.action_bar.opacity = 1
         self.screen.ids.action_bar.disabled = False
         self.screen.ids.action_bar.size = (
