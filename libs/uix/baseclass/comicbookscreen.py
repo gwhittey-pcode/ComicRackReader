@@ -118,13 +118,12 @@ class ComicBookScreen(Screen):
         self.build_prev_comic_dialog()
 
     def open_mag_glass(self):
-        screen_names = self.app.manager.screen_names
-        for name in screen_names:
-            if name in ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen', 'open_comicscreen']:
-                print('skip')
-            else:
-                print(name)
+        comic_book_carousel = self.ids.comic_book_carousel
+        current_slide = comic_book_carousel.current_slide
+        current_page = comic_book_carousel.current_slide.comic_page
+        for child in current_slide.walk():
+            print(child.id)
+        print(current_page)
 
     def on_pre_enter(self):
         self.app.hide_action_bar()
@@ -144,9 +143,17 @@ class ComicBookScreen(Screen):
             current_page = comic_book_carousel.current_slide.comic_page
             comic_obj = self.comic_obj
             comic_Id = comic_obj.Id
-
+            prev_id = f'comic_scatter{current_page-1}'
+            next_id = f'comic_scatter{current_page+1}'
             update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
             self.fetch_data.update_progress(update_url, current_page, self)
+            p_slide = comic_book_carousel.previous_slide
+            for slide in comic_book_carousel.slides:
+                for child in slide.walk():
+                    if child.id is not None:
+                        if "comic_scatter" in child.id:
+                            if child.zoom_state == 'zoomed':
+                                child.do_zoom(False)
 
     def progress_updated(self, req, results):
         pass
@@ -170,6 +177,7 @@ class ComicBookScreen(Screen):
                                                   comic_page=i,
                                                   do_rotation=False,
                                                   do_translation=False,
+                                                  size_hint=(1, 1),
                                                   scale_min=1)
         if strech_image == '1':
             s_allow_stretch = True
@@ -250,7 +258,6 @@ class ComicBookScreen(Screen):
                     c_page_lbl = f'page_thumb_lbl{comic_page}'
                     if grandchild.id == c_page_thumb:
                         target_thumb = grandchild
-                        print(f'found:{grandchild.id}')
                         self.scroller.scroll_to(
                             target_thumb, padding=10, animate=True)
 
@@ -281,14 +288,16 @@ class ComicBookScreen(Screen):
                 c_pag_pagenum = page.number
                 page_num = self.paginator_obj.num_pages()
                 c_readinglist_name = self.readinglist_obj.name
-                c_title = f'{c_readinglist_name} - Group# {page.number} of {page_num}'
+                group_str = f' - Group# {page.number} of {page_num}'
+                c_title = f'{c_readinglist_name}{group_str}'
                 self.top_pop.title = c_title
             else:
                 page = self.current_page
                 c_pag_pagenum = page.number
                 page_num = self.paginator_obj.num_pages()
                 c_readinglist_name = self.readinglist_obj.name
-                c_title = f'{c_readinglist_name} - Group# {page.number} of {page_num}'
+                group_str = f" - Group# {page.number} of {page_num}"
+                c_title = f'{c_readinglist_name}{group_str}'
                 self.top_pop.title = c_title
                 comics_list = page.object_list
             if page.has_previous():
@@ -304,8 +313,19 @@ class ComicBookScreen(Screen):
                 inner_grid.add_widget(comic_thumb)
                 comic_thumb.bind(on_release=self.top_pop.dismiss)
                 comic_thumb.bind(on_release=self.load_new_page)
-                smbutton = CommonComicsCoverLabel(text=comic_name)
+                # smbutton = CommonComicsCoverLabel(text=comic_name)
+                smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                              elevation_normal=2,
+                                              padding=(0, 0),
+                                              id=f'comic_lbl{comic.Id}',
+                                              comic_slug=comic.slug,
+
+                                              font_size=10.5,
+                                              text_color=(0, 0, 0, 1)
+                                              )
                 inner_grid.add_widget(smbutton)
+                smbutton.bind(on_release=self.top_pop.dismiss)
+                smbutton.bind(on_release=comic_thumb.load_new_page)
                 grid.add_widget(inner_grid)
         else:
             comics_list = reversed(self.readinglist_obj.comics)
@@ -326,8 +346,19 @@ class ComicBookScreen(Screen):
             inner_grid.add_widget(comic_thumb)
             comic_thumb.bind(on_release=self.top_pop.dismiss)
             comic_thumb.bind(on_release=comic_thumb.open_collection)
-            smbutton = CommonComicsCoverLabel(text=comic_name)
+            # smbutton = CommonComicsCoverLabel(text=comic_name)
+            smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                          elevation_normal=2,
+                                          padding=(0, 0),
+                                          id=f'comic_lbl{comic.Id}',
+                                          comic_slug=comic.slug,
+
+                                          font_size=10.5,
+                                          text_color=(0, 0, 0, 1)
+                                          )
             inner_grid.add_widget(smbutton)
+            smbutton.bind(on_release=self.top_pop.dismiss)
+            smbutton.bind(on_release=comic_thumb.open_collection)
             grid.add_widget(inner_grid)
         if int(self.app.config.get('Server', 'use_pagination')) == 1:
             if page.has_next():
@@ -343,8 +374,19 @@ class ComicBookScreen(Screen):
                 inner_grid.add_widget(comic_thumb)
                 comic_thumb.bind(on_release=self.top_pop.dismiss)
                 comic_thumb.bind(on_release=self.load_new_page)
-                smbutton = CommonComicsCoverLabel(text=comic_name)
+                # smbutton = CommonComicsCoverLabel(text=comic_name)
+                smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                              elevation_normal=2,
+                                              padding=(0, 0),
+                                              id=f'comic_lbl{comic.Id}',
+                                              comic_slug=comic.slug,
+
+                                              font_size=10.5,
+                                              text_color=(0, 0, 0, 1)
+                                              )
                 inner_grid.add_widget(smbutton)
+                smbutton.bind(on_release=self.top_pop.dismiss)
+                smbutton.bind(on_release=self.load_new_page)
                 grid.add_widget(inner_grid)
         scroll.add_widget(grid)
 

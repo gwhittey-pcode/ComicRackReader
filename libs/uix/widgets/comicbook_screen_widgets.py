@@ -29,19 +29,25 @@ class ComicBookPageScatter(ScatterLayout):
 
     def on_touch_down(self, touch):
         if touch.is_double_tap:
-            if self.zoom_state == 'zoomed':
-                self.zoom_state = 'normal'
-                mat = self.transform_inv
-                self.apply_transform(mat, anchor=(0, 0))
-            elif self.zoom_state == 'normal':
-                self.zoom_state = 'zoomed'
-                mat = Matrix().scale(2, 2, 2)
-                self.apply_transform(mat, anchor=touch.pos)
+            self.do_zoom(touch)
         return super(ComicBookPageScatter, self).on_touch_down(touch)
 
     def on_transform_with_touch(self, touch):
         self.zoom_state = 'zoomed'
         return super(ComicBookPageScatter, self).on_transform_with_touch(touch)
+
+    def do_zoom(self, touch):
+        if self.zoom_state == 'zoomed':
+            self.zoom_state = 'normal'
+            self.do_translation = False
+            mat = self.transform_inv
+            self.apply_transform(mat, anchor=(0, 0))
+        elif self.zoom_state == 'normal'\
+                and touch is not False:
+            self.zoom_state = 'zoomed'
+            self.do_translation = True
+            mat = Matrix().scale(2, 2, 2)
+            self.apply_transform(mat, anchor=touch.pos)
 
 
 class ComicBookPageImage(AsyncImage):
