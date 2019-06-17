@@ -55,7 +55,7 @@ class MySmartTileWithLabel(SmartTileWithLabel):
     def menu(self, *args):
         print('do')
         self.do_action = 'menu'
-       
+
     def on_release(self):
         Clock.unschedule(self.my_clock)
         self.do_action = 'read'
@@ -101,7 +101,9 @@ class OpenComicScreen(Screen):
                     c = MySmartTileWithLabel()
                     c.comic_obj = c_screen.comic_obj
                     c.readinglist_obj = c_screen.readinglist_obj
-                    c_image_source = f"{self.api_url}/Comics/{c.comic_obj.Id}/Pages/0?height=240&apiKey={self.api_key}"
+                    c_img_s1 = f'/Comics/{c.comic_obj.Id}/Pages/0?height=240'
+                    c_api_url = f'&apiKey={self.api_key}'
+                    c_image_source = f'{self.api_url}{c_img_s1}{c_api_url}'
                     c.source = c_image_source
                     c.PageCount = c.comic_obj.PageCount
                     strtxt = f"{c.comic_obj.Series} #{c.comic_obj.Number}"

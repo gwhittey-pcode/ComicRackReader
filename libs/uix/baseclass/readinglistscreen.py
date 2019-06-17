@@ -12,7 +12,8 @@ from kivy.core.window import Window
 
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
+    BooleanProperty
 from kivy.uix.image import AsyncImage
 from libs.applibs.kivymd.imagelists import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
@@ -70,7 +71,7 @@ class CustomeST(SmartTileWithLabel):
         self.do_action = 'read'
         Clock.schedule_once(callback, 1.5)
         self.my_clock = callback
-    
+
     def menu(self, *args):
         print('do')
         self.do_action = 'menu'
