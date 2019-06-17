@@ -72,4 +72,6 @@
     size: (dp(160),dp(240))
     mipmap: True
     font_style: 'Subtitle1'
-    on_release:MDDropdownMenu(items=root.menu_items, width_mult=2).open(self)
+    on_release:
+        if self.do_action is 'read': self.open_comic()
+        else: MDDropdownMenu(items=root.menu_items, width_mult=2).open(self)

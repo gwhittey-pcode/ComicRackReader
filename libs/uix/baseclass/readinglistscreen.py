@@ -22,9 +22,14 @@ from libs.applibs.kivymd.button import MDFillRoundFlatIconButton
 from libs.utils.paginator import Paginator
 from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivymd.toast import toast
+from kivy.clock import Clock
+from functools import partial
 
 
 class CustomeST(SmartTileWithLabel):
+    my_clock = ObjectProperty()
+    do_action = StringProperty()
+
     def __init__(self, **kwargs):
         super(CustomeST, self).__init__(**kwargs)
         self.menu_items = [{'viewclass': 'MDMenuItem',
@@ -59,6 +64,33 @@ class CustomeST(SmartTileWithLabel):
                     name=new_screen_name)
                 self.app.manager.add_widget(new_screen)
                 self.app.manager.current = new_screen_name
+
+    def on_press(self):
+        callback = partial(self.menu)
+        self.do_action = 'read'
+        Clock.schedule_once(callback, 1.5)
+        self.my_clock = callback
+    
+    def menu(self, *args):
+        print('do')
+        self.do_action = 'menu'
+
+    def on_release(self):
+        Clock.unschedule(self.my_clock)
+        self.do_action = 'read'
+        return super(CustomeST, self).on_press()
+
+    def open_comic(self):
+        new_screen_name = str(self.comic_obj.Id)
+        if new_screen_name not in self.app.manager.screen_names:
+            new_screen = ComicBookScreen(
+                readinglist_obj=self.readinglist_obj,
+                comic_obj=self.comic_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=self.pag_pagenum,
+                name=new_screen_name)
+            self.app.manager.add_widget(new_screen)
+            self.app.manager.current = new_screen_name
 
 
 class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
@@ -152,7 +184,9 @@ class ReadingListScreen(Screen):
             c.comic_obj = comic
             c.readinglist_obj = self.new_readinglist
             c.paginator_obj = self.paginator_obj
-            c_image_source = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
+            part_url = f'/Comics/{comic.Id}/Pages/0?height=240'
+            part_api = f'&apiKey={self.api_key}'
+            c_image_source = f"{self.api_url}{part_url}{part_api}"
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
