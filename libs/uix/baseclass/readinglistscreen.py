@@ -205,52 +205,29 @@ class ReadingListScreen(Screen):
         for item in self.new_readinglist.data["items"]:
             new_comic = ComicBook(item)
             self.new_readinglist.add_comic(new_comic)
-
-        if int(self.app.config.get('Server', 'use_pagination')) == 1:
-            max_books_page = int(self.app.config.get(
-                'Server', 'max_books_page'))
-            orphans = max_books_page - 1
-            new_readinglist_reversed = self.new_readinglist.comics[::-1]
-            self.paginator_obj = Paginator(
-                new_readinglist_reversed, max_books_page)
-            page = self.paginator_obj.page(1)
-            self.current_page = page
-            if page.has_next():
-                self.next_button.opacity = 1
-                self.next_button.disabled = False
-                self.next_button.page_num = page.next_page_number()
-            else:
-                self.next_button.opacity = 0
-                self.next_button.disabled = True
-                self.next_button.page_num = ''
-            if page.has_previous():
-                self.prev_button.opacity = 1
-                self.prev_button.disabled = False
-                self.prev_button.page_num = page.previous_page_number()
-            else:
-                self.prev_button.opacity = 0
-                self.prev_button.disabled = True
-                self.prev_button.page_num = ''
-            self.build_page(page.object_list)
+        max_books_page = int(self.app.config.get(
+            'Server', 'max_books_page'))
+        orphans = max_books_page - 1
+        new_readinglist_reversed = self.new_readinglist.comics[::-1]
+        self.paginator_obj = Paginator(
+            new_readinglist_reversed, max_books_page)
+        page = self.paginator_obj.page(1)
+        self.current_page = page
+        if page.has_next():
+            self.next_button.opacity = 1
+            self.next_button.disabled = False
+            self.next_button.page_num = page.next_page_number()
         else:
-            self.build_page(self.new_readinglist.comics)
+            self.next_button.opacity = 0
+            self.next_button.disabled = True
+            self.next_button.page_num = ''
+        if page.has_previous():
+            self.prev_button.opacity = 1
+            self.prev_button.disabled = False
+            self.prev_button.page_num = page.previous_page_number()
+        else:
+            self.prev_button.opacity = 0
+            self.prev_button.disabled = True
+            self.prev_button.page_num = ''
+        self.build_page(page.object_list)
         self.list_loaded = True
-        # building back and prev page buttons for pagination of reading list
-        # if self.new_readinglist.data["previous"] is not None:
-        #     self.prev_button.opacity = 1
-        #     self.prev_button.disabled = False
-        #     _url_prev = self.new_readinglist.data["previous"]
-        #     self.prev_button._url = _url_prev
-        # else:
-        #     self.prev_button.opacity = 0
-        #     self.prev_button.disabled = True
-        #     _url_prev = ''
-        # if self.new_readinglist.data["next"] is not None:
-        #     self.next_button.opacity = 1
-        #     self.next_button.disabled = False
-        #     _url_next = self.new_readinglist.data["next"]
-        #     self.next_button._url = _url_next
-        # else:
-        #     self.next_button.opacity = 0
-        #     self.next_button.disabled = True
-        #     _url_prev = ''

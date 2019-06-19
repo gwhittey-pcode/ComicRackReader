@@ -178,6 +178,7 @@ class ComicBookScreen(Screen):
                                                   do_rotation=False,
                                                   do_translation=False,
                                                   size_hint=(1, 1),
+                                                  auto_bring_to_front=True,
                                                   scale_min=1)
         if strech_image == '1':
             s_allow_stretch = True
@@ -274,61 +275,56 @@ class ComicBookScreen(Screen):
         grid = CommonComicsOuterGrid(id='outtergrd', size_hint=(
             None, None), spacing=5, padding=(5, 5))
         grid.bind(minimum_width=grid.setter('width'))
-
-        if int(self.app.config.get('Server', 'use_pagination')) == 1:
-
-            if self.current_page is None:
-                if self.pag_pagenum == 0:
-                    page = self.paginator_obj.page(1)
-                    c_pag_pagenum = page.number
-                else:
-                    page = self.paginator_obj.page(self.pag_pagenum)
-                comics_list = page.object_list
-                self.current_page = page
+        if self.current_page is None:
+            if self.pag_pagenum == 0:
+                page = self.paginator_obj.page(1)
                 c_pag_pagenum = page.number
-                page_num = self.paginator_obj.num_pages()
-                c_readinglist_name = self.readinglist_obj.name
-                group_str = f' - Group# {page.number} of {page_num}'
-                c_title = f'{c_readinglist_name}{group_str}'
-                self.top_pop.title = c_title
             else:
-                page = self.current_page
-                c_pag_pagenum = page.number
-                page_num = self.paginator_obj.num_pages()
-                c_readinglist_name = self.readinglist_obj.name
-                group_str = f" - Group# {page.number} of {page_num}"
-                c_title = f'{c_readinglist_name}{group_str}'
-                self.top_pop.title = c_title
-                comics_list = page.object_list
-            if page.has_previous():
-                comic_name = 'Prev Page'
-                src_thumb = 'assets/prev_page.jpg'
-                inner_grid = CommonComicsCoverInnerGrid(
-                    id='inner_grid'+str('prev'), padding=(1, 1))
-                comic_thumb = CommonComicsCoverImage(
-                    source=src_thumb, id=str('prev'))
-                comic_thumb.readinglist_obj = self.readinglist_obj
-                comic_thumb.paginator_obj = self.paginator_obj
-                comic_thumb.new_page_num = page.previous_page_number()
-                inner_grid.add_widget(comic_thumb)
-                comic_thumb.bind(on_release=self.top_pop.dismiss)
-                comic_thumb.bind(on_release=self.load_new_page)
-                # smbutton = CommonComicsCoverLabel(text=comic_name)
-                smbutton = ThumbPopPagebntlbl(text=comic_name,
-                                              elevation_normal=2,
-                                              padding=(0, 0),
-                                              id=f'comic_lbl{comic.Id}',
-                                              comic_slug=comic.slug,
-
-                                              font_size=10.5,
-                                              text_color=(0, 0, 0, 1)
-                                              )
-                inner_grid.add_widget(smbutton)
-                smbutton.bind(on_release=self.top_pop.dismiss)
-                smbutton.bind(on_release=comic_thumb.load_new_page)
-                grid.add_widget(inner_grid)
+                page = self.paginator_obj.page(self.pag_pagenum)
+            comics_list = page.object_list
+            self.current_page = page
+            c_pag_pagenum = page.number
+            page_num = self.paginator_obj.num_pages()
+            c_readinglist_name = self.readinglist_obj.name
+            group_str = f' - Group# {page.number} of {page_num}'
+            c_title = f'{c_readinglist_name}{group_str}'
+            self.top_pop.title = c_title
         else:
-            comics_list = reversed(self.readinglist_obj.comics)
+            page = self.current_page
+            c_pag_pagenum = page.number
+            page_num = self.paginator_obj.num_pages()
+            c_readinglist_name = self.readinglist_obj.name
+            group_str = f" - Group# {page.number} of {page_num}"
+            c_title = f'{c_readinglist_name}{group_str}'
+            self.top_pop.title = c_title
+            comics_list = page.object_list
+        if page.has_previous():
+            comic_name = 'Prev Page'
+            src_thumb = 'assets/prev_page.jpg'
+            inner_grid = CommonComicsCoverInnerGrid(
+                id='inner_grid'+str('prev'), padding=(1, 1))
+            comic_thumb = CommonComicsCoverImage(
+                source=src_thumb, id=str('prev'))
+            comic_thumb.readinglist_obj = self.readinglist_obj
+            comic_thumb.paginator_obj = self.paginator_obj
+            comic_thumb.new_page_num = page.previous_page_number()
+            inner_grid.add_widget(comic_thumb)
+            comic_thumb.bind(on_release=self.top_pop.dismiss)
+            comic_thumb.bind(on_release=self.load_new_page)
+            # smbutton = CommonComicsCoverLabel(text=comic_name)
+            smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                          elevation_normal=2,
+                                          padding=(0, 0),
+                                          id=f'comic_lbl_prev',
+                                          comic_slug="Prev Comic",
+
+                                          font_size=10.5,
+                                          text_color=(0, 0, 0, 1)
+                                          )
+            inner_grid.add_widget(smbutton)
+            smbutton.bind(on_release=self.top_pop.dismiss)
+            smbutton.bind(on_release=self.load_new_page)
+            grid.add_widget(inner_grid)
 
         for comic in comics_list:
             comic_name = str(comic.__str__)
@@ -360,34 +356,34 @@ class ComicBookScreen(Screen):
             smbutton.bind(on_release=self.top_pop.dismiss)
             smbutton.bind(on_release=comic_thumb.open_collection)
             grid.add_widget(inner_grid)
-        if int(self.app.config.get('Server', 'use_pagination')) == 1:
-            if page.has_next():
-                comic_name = 'Next Page'
-                src_thumb = 'assets/next_page.jpg'
-                inner_grid = CommonComicsCoverInnerGrid(
-                    id='inner_grid'+str('next'))
-                comic_thumb = CommonComicsCoverImage(
-                    source=src_thumb, id=str('next'),)
-                comic_thumb.readinglist_obj = self.readinglist_obj
-                comic_thumb.new_page_num = page.next_page_number()
-                comic_thumb.paginator_obj = self.paginator_obj
-                inner_grid.add_widget(comic_thumb)
-                comic_thumb.bind(on_release=self.top_pop.dismiss)
-                comic_thumb.bind(on_release=self.load_new_page)
-                # smbutton = CommonComicsCoverLabel(text=comic_name)
-                smbutton = ThumbPopPagebntlbl(text=comic_name,
-                                              elevation_normal=2,
-                                              padding=(0, 0),
-                                              id=f'comic_lbl{comic.Id}',
-                                              comic_slug=comic.slug,
 
-                                              font_size=10.5,
-                                              text_color=(0, 0, 0, 1)
-                                              )
-                inner_grid.add_widget(smbutton)
-                smbutton.bind(on_release=self.top_pop.dismiss)
-                smbutton.bind(on_release=self.load_new_page)
-                grid.add_widget(inner_grid)
+        if page.has_next():
+            comic_name = 'Next Page'
+            src_thumb = 'assets/next_page.jpg'
+            inner_grid = CommonComicsCoverInnerGrid(
+                id='inner_grid'+str('next'))
+            comic_thumb = CommonComicsCoverImage(
+                source=src_thumb, id=str('next'),)
+            comic_thumb.readinglist_obj = self.readinglist_obj
+            comic_thumb.new_page_num = page.next_page_number()
+            comic_thumb.paginator_obj = self.paginator_obj
+            inner_grid.add_widget(comic_thumb)
+            comic_thumb.bind(on_release=self.top_pop.dismiss)
+            comic_thumb.bind(on_release=self.load_new_page)
+            # smbutton = CommonComicsCoverLabel(text=comic_name)
+            smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                          elevation_normal=2,
+                                          padding=(0, 0),
+                                          id=f'comic_lbl_next',
+                                          comic_slug='Next Comic',
+
+                                          font_size=10.5,
+                                          text_color=(0, 0, 0, 1)
+                                          )
+            inner_grid.add_widget(smbutton)
+            smbutton.bind(on_release=self.top_pop.dismiss)
+            smbutton.bind(on_release=self.load_new_page)
+            grid.add_widget(inner_grid)
         scroll.add_widget(grid)
 
     def comicscreen_open_collection_popup(self):
