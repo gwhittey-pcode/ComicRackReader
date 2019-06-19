@@ -2,7 +2,7 @@ import json
 
 settings_json_server = json.dumps([
     {'type':    'title',
-     'title':   'ComicRack Server Settings'},
+     'title':   'ComicRack Reader General Settings'},
 
     {'type':    'string',
      'title':   'Server URL',
@@ -23,11 +23,12 @@ settings_json_server = json.dumps([
         'key':      'max_height',
         'options': ['2000', '1500', '1280', '1200', '1024']
     },
-    {'type':    'bool',
-     'title':   'Use Api key',
-     'desc':    'Use API key to access server',
-     'section': 'Server',
-     'key':     'use_api_key'},
+
+    # {'type':    'bool',
+    #  'title':   'Use Api key',
+    #  'desc':    'Use API key to access server',
+    #  'section': 'Server',
+    #  'key':     'use_api_key'},
 
     {'type':    'string',
      'title':   'API key',
@@ -47,11 +48,11 @@ settings_json_server = json.dumps([
      'section': 'Server',
      'key':     'password'},
 
-    {'type':    'bool',
-     'title':   'Use Pagination',
-     'desc':    'Use Pagination to limit number of books on each List/Series page',
-     'section': 'Server',
-     'key':     'use_pagination'},
+    # {'type':    'bool',
+    #  'title':   'Use Pagination',
+    #  'desc':    'Use Pagination to limit number of books on each List/Series page',
+    #  'section': 'Server',
+    #  'key':     'use_pagination'},
 
     {'type':     'numeric',
      'title':    'Max ComicBooks',

@@ -89,7 +89,7 @@ class ComicRackReader(App):
             'api_key':          '',
             'username':         '',
             'password':         '',
-            'use_pagination':   '1',
+            # 'use_pagination':   '1',
             'max_books_page':   50
         })
 
@@ -250,7 +250,7 @@ class ComicRackReader(App):
         self.translation.switch_lang(lang)
 
     def build_settings(self, settings):
-        settings.add_json_panel('Server Settings',
+        settings.add_json_panel('General Settings',
                                 self.config,
                                 data=settings_json_server)
         settings.add_json_panel('Display Settings',

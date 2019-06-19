@@ -12,7 +12,8 @@ from kivy.core.window import Window
 
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
+    BooleanProperty
 from kivy.uix.image import AsyncImage
 from libs.applibs.kivymd.imagelists import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
@@ -22,9 +23,14 @@ from libs.applibs.kivymd.button import MDFillRoundFlatIconButton
 from libs.utils.paginator import Paginator
 from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivymd.toast import toast
+from kivy.clock import Clock
+from functools import partial
 
 
 class CustomeST(SmartTileWithLabel):
+    my_clock = ObjectProperty()
+    do_action = StringProperty()
+
     def __init__(self, **kwargs):
         super(CustomeST, self).__init__(**kwargs)
         self.menu_items = [{'viewclass': 'MDMenuItem',
@@ -59,6 +65,33 @@ class CustomeST(SmartTileWithLabel):
                     name=new_screen_name)
                 self.app.manager.add_widget(new_screen)
                 self.app.manager.current = new_screen_name
+
+    def on_press(self):
+        callback = partial(self.menu)
+        self.do_action = 'read'
+        Clock.schedule_once(callback, 1.5)
+        self.my_clock = callback
+
+    def menu(self, *args):
+        print('do')
+        self.do_action = 'menu'
+
+    def on_release(self):
+        Clock.unschedule(self.my_clock)
+        self.do_action = 'read'
+        return super(CustomeST, self).on_press()
+
+    def open_comic(self):
+        new_screen_name = str(self.comic_obj.Id)
+        if new_screen_name not in self.app.manager.screen_names:
+            new_screen = ComicBookScreen(
+                readinglist_obj=self.readinglist_obj,
+                comic_obj=self.comic_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=self.pag_pagenum,
+                name=new_screen_name)
+            self.app.manager.add_widget(new_screen)
+            self.app.manager.current = new_screen_name
 
 
 class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
@@ -152,7 +185,9 @@ class ReadingListScreen(Screen):
             c.comic_obj = comic
             c.readinglist_obj = self.new_readinglist
             c.paginator_obj = self.paginator_obj
-            c_image_source = f"{self.api_url}/Comics/{comic.Id}/Pages/0?height=240&apiKey={self.api_key}"
+            part_url = f'/Comics/{comic.Id}/Pages/0?height=240'
+            part_api = f'&apiKey={self.api_key}'
+            c_image_source = f"{self.api_url}{part_url}{part_api}"
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
@@ -170,52 +205,29 @@ class ReadingListScreen(Screen):
         for item in self.new_readinglist.data["items"]:
             new_comic = ComicBook(item)
             self.new_readinglist.add_comic(new_comic)
-
-        if int(self.app.config.get('Server', 'use_pagination')) == 1:
-            max_books_page = int(self.app.config.get(
-                'Server', 'max_books_page'))
-            orphans = max_books_page - 1
-            new_readinglist_reversed = self.new_readinglist.comics[::-1]
-            self.paginator_obj = Paginator(
-                new_readinglist_reversed, max_books_page)
-            page = self.paginator_obj.page(1)
-            self.current_page = page
-            if page.has_next():
-                self.next_button.opacity = 1
-                self.next_button.disabled = False
-                self.next_button.page_num = page.next_page_number()
-            else:
-                self.next_button.opacity = 0
-                self.next_button.disabled = True
-                self.next_button.page_num = ''
-            if page.has_previous():
-                self.prev_button.opacity = 1
-                self.prev_button.disabled = False
-                self.prev_button.page_num = page.previous_page_number()
-            else:
-                self.prev_button.opacity = 0
-                self.prev_button.disabled = True
-                self.prev_button.page_num = ''
-            self.build_page(page.object_list)
+        max_books_page = int(self.app.config.get(
+            'Server', 'max_books_page'))
+        orphans = max_books_page - 1
+        new_readinglist_reversed = self.new_readinglist.comics[::-1]
+        self.paginator_obj = Paginator(
+            new_readinglist_reversed, max_books_page)
+        page = self.paginator_obj.page(1)
+        self.current_page = page
+        if page.has_next():
+            self.next_button.opacity = 1
+            self.next_button.disabled = False
+            self.next_button.page_num = page.next_page_number()
         else:
-            self.build_page(self.new_readinglist.comics)
+            self.next_button.opacity = 0
+            self.next_button.disabled = True
+            self.next_button.page_num = ''
+        if page.has_previous():
+            self.prev_button.opacity = 1
+            self.prev_button.disabled = False
+            self.prev_button.page_num = page.previous_page_number()
+        else:
+            self.prev_button.opacity = 0
+            self.prev_button.disabled = True
+            self.prev_button.page_num = ''
+        self.build_page(page.object_list)
         self.list_loaded = True
-        # building back and prev page buttons for pagination of reading list
-        # if self.new_readinglist.data["previous"] is not None:
-        #     self.prev_button.opacity = 1
-        #     self.prev_button.disabled = False
-        #     _url_prev = self.new_readinglist.data["previous"]
-        #     self.prev_button._url = _url_prev
-        # else:
-        #     self.prev_button.opacity = 0
-        #     self.prev_button.disabled = True
-        #     _url_prev = ''
-        # if self.new_readinglist.data["next"] is not None:
-        #     self.next_button.opacity = 1
-        #     self.next_button.disabled = False
-        #     _url_next = self.new_readinglist.data["next"]
-        #     self.next_button._url = _url_next
-        # else:
-        #     self.next_button.opacity = 0
-        #     self.next_button.disabled = True
-        #     _url_prev = ''

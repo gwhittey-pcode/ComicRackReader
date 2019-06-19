@@ -5,11 +5,16 @@ from kivy.app import App
 from kivy.core.window import Window
 from libs.applibs.kivymd.imagelists import SmartTileWithLabel
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
+from kivy.clock import Clock
+from functools import partial
 
 
-class CustomeST(SmartTileWithLabel):
+class MySmartTileWithLabel(SmartTileWithLabel):
+    my_clock = ObjectProperty()
+    do_action = StringProperty()
+
     def __init__(self, **kwargs):
-        super(CustomeST, self).__init__(**kwargs)
+        super(MySmartTileWithLabel, self).__init__(**kwargs)
         self.menu_items = [{'viewclass': 'MDMenuItem',
                             'text': '[color=#000000]Read[/color]',
                             'callback': self.callback_for_menu_items},
@@ -40,6 +45,25 @@ class CustomeST(SmartTileWithLabel):
             screen_to_close = self.app.manager.get_screen(self.comic_obj.Id)
             self.app.manager.remove_widget(screen_to_close)
             self.app.manager.get_screen('open_comicscreen').build_page()
+
+    def on_press(self):
+        callback = partial(self.menu)
+        self.do_action = 'read'
+        Clock.schedule_once(callback, 1.5)
+        self.my_clock = callback
+
+    def menu(self, *args):
+        print('do')
+        self.do_action = 'menu'
+
+    def on_release(self):
+        Clock.unschedule(self.my_clock)
+        self.do_action = 'read'
+        return super(MySmartTileWithLabel, self).on_press()
+
+    def open_comic(self):
+        new_screen_name = str(self.comic_obj.Id)
+        self.app.manager.current = new_screen_name
 
 
 class OpenComicScreen(Screen):
@@ -74,10 +98,12 @@ class OpenComicScreen(Screen):
                     pass
                 else:
                     c_screen = self.app.manager.get_screen(name)
-                    c = CustomeST()
+                    c = MySmartTileWithLabel()
                     c.comic_obj = c_screen.comic_obj
                     c.readinglist_obj = c_screen.readinglist_obj
-                    c_image_source = f"{self.api_url}/Comics/{c.comic_obj.Id}/Pages/0?height=240&apiKey={self.api_key}"
+                    c_img_s1 = f'/Comics/{c.comic_obj.Id}/Pages/0?height=240'
+                    c_api_url = f'&apiKey={self.api_key}'
+                    c_image_source = f'{self.api_url}{c_img_s1}{c_api_url}'
                     c.source = c_image_source
                     c.PageCount = c.comic_obj.PageCount
                     strtxt = f"{c.comic_obj.Series} #{c.comic_obj.Number}"

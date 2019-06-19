@@ -49,6 +49,81 @@ class ComicBookPageScatter(ScatterLayout):
             mat = Matrix().scale(2, 2, 2)
             self.apply_transform(mat, anchor=touch.pos)
 
+    def check_trans(self, matrix):
+        pos_matrix = Matrix().translate(self.pos[0], self.pos[1], 0)
+        pos = matrix.multiply(pos_matrix).get()[12:14]
+        if pos[0] > 0 or pos[1] > 0:
+            return False
+        elif pos[0] + self.width*self.scale < Window.size[0] or\
+                pos[1] + self.height*self.scale < Window.size[1]:
+            return False
+        return True
+
+    def transform_with_touch(self, touch):
+        # just do a simple one finger drag
+        changed = False
+        if len(self._touches) == self.translation_touches:
+            # _last_touch_pos has last pos in correct parent space,
+            # just like incoming touch
+            dx = (touch.x - self._last_touch_pos[touch][0]) \
+                * self.do_translation_x
+            dy = (touch.y - self._last_touch_pos[touch][1]) \
+                * self.do_translation_y
+            dx = dx / self.translation_touches
+            dy = dy / self.translation_touches
+            m = Matrix().translate(dx, dy, 0)
+            if self.check_trans(m):
+                self.apply_transform(Matrix().translate(dx, dy, 0))
+                changed = True
+            else:
+                pass
+
+        if len(self._touches) == 1:
+            return changed
+
+        # we have more than one touch... list of last known pos
+        points = [Vector(self._last_touch_pos[t]) for t in self._touches
+                  if t is not touch]
+        # add current touch last
+        points.append(Vector(touch.pos))
+
+        # we only want to transform if the touch is part of the two touches
+        # farthest apart! So first we find anchor, the point to transform
+        # around as another touch farthest away from current touch's pos
+        anchor = max(points[:-1], key=lambda p: p.distance(touch.pos))
+
+        # now we find the touch farthest away from anchor, if its not the
+        # same as touch. Touch is not one of the two touches used to transform
+        farthest = max(points, key=anchor.distance)
+        if farthest is not points[-1]:
+            return changed
+
+        # ok, so we have touch, and anchor, so we can actually compute the
+        # transformation
+        old_line = Vector(*touch.ppos) - anchor
+        new_line = Vector(*touch.pos) - anchor
+        if not old_line.length():   # div by zero
+            return changed
+
+        angle = radians(new_line.angle(old_line)) * self.do_rotation
+        self.apply_transform(Matrix().rotate(angle, 0, 0, 1), anchor=anchor)
+
+        if self.do_scale:
+            scale = new_line.length() / old_line.length()
+            new_scale = scale * self.scale
+            if new_scale < self.scale_min:
+                scale = self.scale_min / self.scale
+            elif new_scale > self.scale_max:
+                scale = self.scale_max / self.scale
+            m = Matrix().scale(scale, scale, scale)
+            if self.check_trans(m):
+                self.apply_transform(Matrix().scale(scale, scale, scale),
+                                     anchor=anchor)
+                changed = True
+            else:
+                pass
+        return changed
+
 
 class ComicBookPageImage(AsyncImage):
     '''Fired once the image is downloaded and ready to use'''
@@ -423,3 +498,4 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
         comic_screen.last_load = comic_screen.last_section
         comic_screen.load_comic_book(self.comic_obj, self.readinglist_obj)
         Clock.schedule_once(self.enable_me, .5)
+
