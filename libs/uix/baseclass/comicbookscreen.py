@@ -268,7 +268,7 @@ class ComicBookScreen(Screen):
             1, 1), do_scroll_x=True, do_scroll_y=False)
         self.top_pop = Popup(id='page_pop', title='Comics in List',
                              title_align='center', content=scroll,
-                             pos_hint={'y': .718}, size_hint=(1, .3),
+                             pos_hint={'y': .718}, size_hint=(1, .32),
 
                              )
         self.top_pop
@@ -409,7 +409,8 @@ class ComicBookScreen(Screen):
                 readinglist_obj=self.readinglist_obj,
                 paginator_obj=self.paginator_obj,
                 pag_pagenum=c_pag_pagenum,
-                comic_obj=self.next_comic, name=new_screen_name)
+                comic_obj=self.next_comic,
+                name=new_screen_name)
             self.app.manager.add_widget(new_screen)
         self.app.manager.current = new_screen_name
 
@@ -426,7 +427,8 @@ class ComicBookScreen(Screen):
                 readinglist_obj=self.readinglist_obj,
                 paginator_obj=self.paginator_obj,
                 pag_pagenum=c_pag_pagenum,
-                comic_obj=self.prev_comic, name=new_screen_name)
+                comic_obj=self.prev_comic,
+                name=new_screen_name)
             self.app.manager.add_widget(new_screen)
         self.app.manager.current = new_screen_name
 
@@ -493,24 +495,29 @@ class ComicBookScreen(Screen):
             n_page = n_paginator.page(page.next_page_number())
             comics_list = n_page.object_list
             next_page_number = page.next_page_number()
+            c_new_page_num = next_page_number
+        else:
+            c_new_page_num = page.number
         comic_name = str(comic.__str__)
         s_url_part = f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"
         s_url_api = f"&apiKey={self.api_key}"
         src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
+
         inner_grid = CommonComicsCoverInnerGrid(
-            id='inner_grid'+str(comic.Id), pos_hint={.5: .5})
+            id='inner_grid'+str(comic.Id),
+            pos_hint={'top': 0.99, 'right': .1}
+        )
         comic_thumb = CommonComicsCoverImage(source=src_thumb, id=str(
-            comic.Id), pos_hint={.5: .5}, comic_obj=comic)
+            comic.Id), comic_obj=comic)
         comic_thumb.readinglist_obj = self.readinglist_obj
         comic_thumb.comic = comic
         comic_thumb.paginator_obj = self.paginator_obj
-        if index+1 == len(comics_list) and page.has_next():
-            comic_thumb.new_page_num = next_page_number
-        else:
-            comic_thumb.new_page_num = page.number
+        comic_thumb.new_page_num = c_new_page_num
         inner_grid.add_widget(comic_thumb)
 
-        smbutton = CommonComicsCoverLabel(text=comic_name)
+        smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                      font_size=12,
+                                      text_color=(0, 0, 0, 1))
         inner_grid.add_widget(smbutton)
         content = inner_grid
         if index >= len(comics_list)-1:
@@ -523,10 +530,15 @@ class ComicBookScreen(Screen):
                 dialog_title = 'Load Next Page'
             else:
                 dialog_title = 'Load Next Comic'
-        self.next_dialog = Popup(id='next_pop', title=dialog_title,
-                                 content=content, pos_hint={.5: .724},
-                                 size_hint=(.25, .25)
+
+        self.next_dialog = Popup(id='next_pop',
+                                 title=dialog_title,
+                                 content=content,
+                                 pos_hint={.5: .724},
+                                 size_hint=(.4, .34)
                                  )
+        # c_padding = (self.next_dialog.width/4)
+        # CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
         comic_thumb.bind(on_release=self.next_dialog.dismiss)
 
         if index >= len(comics_list)-1:
@@ -557,7 +569,8 @@ class ComicBookScreen(Screen):
         s_url_api = f"&apiKey={self.api_key}"
         src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
         inner_grid = CommonComicsCoverInnerGrid(
-            id='inner_grid'+str(comic.Id), pos_hint={.5: .5})
+            id='inner_grid'+str(comic.Id), pos_hint={'top': 0.99, 'right': .1}
+        )
         comic_thumb = CommonComicsCoverImage(source=src_thumb, id=str(
             comic.Id), pos_hint={.5: .5}, comic_obj=comic)
         comic_thumb.readinglist_obj = self.readinglist_obj
@@ -569,24 +582,29 @@ class ComicBookScreen(Screen):
         comic_thumb.readinglist_obj = self.readinglist_obj
         inner_grid.add_widget(comic_thumb)
 
-        smbutton = CommonComicsCoverLabel(text=comic_name)
+        smbutton = ThumbPopPagebntlbl(text=comic_name,
+                                      font_size=12,
+                                      text_color=(0, 0, 0, 1))
         inner_grid.add_widget(smbutton)
         content = inner_grid
         if index >= len(comics_list)-1:
             if len(comics_list) >= 1:
                 dialog_title = 'Load Prev Page'
             else:
-                dialog_title = 'On Last Comic'
+                dialog_title = 'On First Comic'
         else:
-            if len(comics_list) >= 1:
+            if index != 0:
                 dialog_title = 'Load Prev Page'
             else:
-                dialog_title = 'Load Next Comic'
-
-        self.prev_dialog = Popup(id='prev_pop', title=dialog_title,
-                                 content=content, pos_hint={.5: .724},
-                                 size_hint=(.25, .25)
+                dialog_title = 'On First Comic'
+        self.prev_dialog = Popup(id='prev_pop',
+                                 title=dialog_title,
+                                 content=content,
+                                 pos_hint={.5: .724},
+                                 size_hint=(.4, .34)
                                  )
+        c_padding = (self.prev_dialog.width/4)
+        CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
         comic_thumb.bind(on_release=self.prev_dialog.dismiss)
 
         comic_thumb.bind(on_release=self.prev_dialog.dismiss)
