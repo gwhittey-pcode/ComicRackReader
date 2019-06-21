@@ -120,10 +120,7 @@ class ComicBookScreen(Screen):
     def open_mag_glass(self):
         comic_book_carousel = self.ids.comic_book_carousel
         current_slide = comic_book_carousel.current_slide
-        current_page = comic_book_carousel.current_slide.comic_page
-        for child in current_slide.walk():
-            print(child.id)
-        print(current_page)
+        current_slide.open_mag_glass()
 
     def on_pre_enter(self):
         self.app.hide_action_bar()
