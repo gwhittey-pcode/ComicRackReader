@@ -5,11 +5,9 @@ VKGroups
 
 Copyright © 2010-2018 HeaTTheatR
 
-Для предложений и вопросов:
+
 <kivydevelopment@gmail.com>
 
-Данный файл распространяется по условиям той же лицензии,
-что и фреймворк Kivy.
 
 '''
 
@@ -27,11 +25,9 @@ from . selection import Selection
 
 
 Builder.load_string(
-'''
+    '''
 #:import MDSpinner kivymd.spinner.MDSpinner
 #:import MDTextField kivymd.textfields.MDTextField
-
-# Окно для ввода текста.
 
 [InputText@ModalView]:
     size_hint: .8, .4
@@ -83,7 +79,6 @@ Builder.load_string(
                         theme_text_color: 'Custom'
                         text_color: app.theme_cls.primary_color
 
-# Окно прогресса.
 
 [Progress@ModalView]:
     size_hint: .8, .4
@@ -130,7 +125,6 @@ def dialog(font_style='Body1', theme_text_color='Secondary', title='Title',
            text='Text', valign='top', dismiss=True, buttons=None,
            use_check=False, text_check='', height=300, size_hint=(.85, None),
            ref_callback=None, check_callback=None):
-    '''Вывод диалоговых окон.'''
 
     if buttons is None:
         buttons = []
@@ -177,6 +171,7 @@ def dialog_progress(text_button_cancel='Cancel', text_wait='Wait',
 
     return spinner, spinner.ids.label
 
+
 def input_dialog(title='Title', hint_text='Write something',
                  text_button_ok='OK', text_button_cancel='CANCEL',
                  events_callback=None):
@@ -184,7 +179,7 @@ def input_dialog(title='Title', hint_text='Write something',
         'InputText', title=title, hint_text=hint_text,
         text_button_ok=text_button_ok, text_button_cancel=text_button_cancel,
         events_callback=events_callback
-     )
+    )
     input_dialog.open()
 
     return input_dialog
@@ -196,7 +191,8 @@ def card(content, title=None, background_color=None, size=(.7, .5)):
     if not background_color:
         background_color = [1.0, 1.0, 1.0, 1]
 
-    card = MDCard(size_hint=(1, 1), padding=5) #, background_color=background_color)
+    # , background_color=background_color)
+    card = MDCard(size_hint=(1, 1), padding=5)
 
     if title:
         box = BoxLayout(orientation='vertical', padding=dp(8))
@@ -214,6 +210,6 @@ def card(content, title=None, background_color=None, size=(.7, .5)):
 
     dialog = ModalView(size_hint=size, background_color=[0, 0, 0, .2])
     dialog.add_widget(card)
-    #dialog.open()
+    # dialog.open()
 
     return dialog
