@@ -77,17 +77,13 @@
                 spacing: dp(10)
 
                 LabelSection:
-                    text:  app.translation._('Меню:')
+                    text:  'Menu'
                     events_callback: lambda x: x
 
-                SingleIconItem:
-                    icon: 'web'
-                    text: app.translation._('Язык')
-                    events_callback: app.select_locale
 
                 SingleIconItem:
                     icon: 'language-python'
-                    text: app.translation._('Лицензия')
+                    text: 'License'
                     events_callback: app.show_license
 
                 SingleIconItem:

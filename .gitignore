@@ -123,3 +123,5 @@ comicrackreader.ini
 test_me.py
 .notes
 _.ini
+assets/Thumbs.db:encryptable
+assets/plus_items/Thumbs.db:encryptable
