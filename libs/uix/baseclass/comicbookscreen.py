@@ -134,7 +134,8 @@ class ComicBookScreen(Screen):
                 self.ids.comic_book_carousel.load_slide(slide)
 
     def slide_changed(self, index):
-
+        def updated_progress(results):
+            pass
         if index is not None:
             comic_book_carousel = self.ids.comic_book_carousel
             current_page = comic_book_carousel.current_slide.comic_page
@@ -143,7 +144,10 @@ class ComicBookScreen(Screen):
             prev_id = f'comic_scatter{current_page-1}'
             next_id = f'comic_scatter{current_page+1}'
             update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
-            self.fetch_data.update_progress(update_url, current_page, self)
+            # self.fetch_data.update_progress(update_url, current_page, self)
+            self.fetch_data.update_progress(update_url, current_page,
+                                            callback=lambda req, results:
+                                            updated_progress(results))
             p_slide = comic_book_carousel.previous_slide
             for slide in comic_book_carousel.slides:
                 for child in slide.walk():

@@ -26,9 +26,7 @@ class ComicServerConn():
         api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/json",
-                'Accept': "application/json",
-                'Cookie': str_cookie
-
+                'Accept': "application/json", 'Cookie': str_cookie
                 }
         req = UrlRequest(req_url, req_headers=head, on_success=callback,
                          on_error=self.got_error,
@@ -36,31 +34,21 @@ class ComicServerConn():
                          on_failure=self.got_error
                          )
 
-    def update_progress(self, req_url, index, instance):
+    def update_progress(self, req_url, index, callback):
         data = f'CurrentPage={index}'
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/x-www-form-urlencoded",
-                'Accept': "application/json",
-                'Cookie': str_cookie
-
+                'Accept': "application/json", 'Cookie': str_cookie
                 }
-
-        try:
-            req = requests.put(req_url, data=data, headers=head)
-
-            if req.status_code != 200:
-                Logger.critical(req.text)
-                raise Exception(
-                    'Recieved non 200 response while sending response to CFN.')
-            return
-
-        except requests.exceptions.RequestException as e:
-            if req is not None:
-                Logger.critical(req.text)
-            Logger.critical(e)
-            raise
+        req = UrlRequest(req_url, req_headers=head,
+                         req_body=data,
+                         on_success=callback,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error
+                         )
 
     def get_server_data(self, req_url, instance):
 
