@@ -100,7 +100,7 @@ class ComicBookScreen(Screen):
         self.page_nav_popup.add_widget(scroll)
         self.scroller = scroll
         outer_grid = GridLayout(rows=1, size_hint=(None, None), spacing=(5, 0),
-                                padding=(5, 0), id='outtergrd')
+                                padding=(5, 1), id='outtergrd')
         outer_grid.bind(minimum_width=outer_grid.setter('width'))
         i = 0
 
@@ -217,7 +217,7 @@ class ComicBookScreen(Screen):
         inner_grid.add_widget(page_thumb)
         page_thumb.bind(on_release=page_thumb.click)
         smbutton = ThumbPopPagebntlbl(text='P%s' % str(i+1),
-                                      elevation_normal=2, padding=(0, 0),
+                                      elevation_normal=2, padding=(1, 1),
                                       id=f'page_thumb_lbl{i}',
                                       comic_slug=comic_obj.slug,
                                       comic_page=i,
@@ -274,7 +274,7 @@ class ComicBookScreen(Screen):
                              )
         self.top_pop
         grid = CommonComicsOuterGrid(id='outtergrd', size_hint=(
-            None, None), spacing=5, padding=(5, 5))
+            None, None), spacing=5, padding=(5, 5, 5, 5))
         grid.bind(minimum_width=grid.setter('width'))
         if self.current_page is None:
             if self.pag_pagenum == 0:
@@ -303,7 +303,7 @@ class ComicBookScreen(Screen):
             comic_name = 'Prev Page'
             src_thumb = 'assets/prev_page.jpg'
             inner_grid = CommonComicsCoverInnerGrid(
-                id='inner_grid'+str('prev'), padding=(1, 1))
+                id='inner_grid'+str('prev'), padding=(1, 1, 1, 1))
             comic_thumb = CommonComicsCoverImage(
                 source=src_thumb, id=str('prev'))
             comic_thumb.readinglist_obj = self.readinglist_obj
@@ -315,7 +315,7 @@ class ComicBookScreen(Screen):
             # smbutton = CommonComicsCoverLabel(text=comic_name)
             smbutton = ThumbPopPagebntlbl(text=comic_name,
                                           elevation_normal=2,
-                                          padding=(0, 0),
+                                          padding=(1, 1),
                                           id=f'comic_lbl_prev',
                                           comic_slug="Prev Comic",
 
@@ -333,7 +333,9 @@ class ComicBookScreen(Screen):
             s_url_api = f"&apiKey={self.api_key}"
             src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
             inner_grid = CommonComicsCoverInnerGrid(
-                id='inner_grid'+str(comic.Id))
+                id='inner_grid'+str(comic.Id),
+                padding=(0, 0, 0, 0)
+            )
             comic_thumb = CommonComicsCoverImage(
                 source=src_thumb, id=str(comic.Id), comic_obj=comic)
             comic_thumb.readinglist_obj = self.readinglist_obj
@@ -346,7 +348,7 @@ class ComicBookScreen(Screen):
             # smbutton = CommonComicsCoverLabel(text=comic_name)
             smbutton = ThumbPopPagebntlbl(text=comic_name,
                                           elevation_normal=2,
-                                          padding=(0, 0),
+                                          padding=(1, 1),
                                           id=f'comic_lbl{comic.Id}',
                                           comic_slug=comic.slug,
 
@@ -374,7 +376,7 @@ class ComicBookScreen(Screen):
             # smbutton = CommonComicsCoverLabel(text=comic_name)
             smbutton = ThumbPopPagebntlbl(text=comic_name,
                                           elevation_normal=2,
-                                          padding=(0, 0),
+                                          padding=(1, 1),
                                           id=f'comic_lbl_next',
                                           comic_slug='Next Comic',
 
@@ -538,8 +540,8 @@ class ComicBookScreen(Screen):
                                  pos_hint={.5: .724},
                                  size_hint=(.4, .34)
                                  )
-        # c_padding = (self.next_dialog.width/4)
-        # CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
+        c_padding = (self.next_dialog.width/4)
+        CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
         comic_thumb.bind(on_release=self.next_dialog.dismiss)
 
         if index >= len(comics_list)-1:
@@ -685,6 +687,21 @@ class OptionToolBar(MDToolbar):
         screen_manager = app.manager
         comic_book_screen = screen_manager.get_screen(app.manager.current)
         self.title = comic_book_screen.comic_obj.__str__
+
+        root = self
+        self.left_action_items = [
+            ["menu", (lambda x: nav_drawer._toggle())],
+            ["home", lambda x: root.option_bar_action('base')]
+        ]
+        self.right_action_items = [
+            ['settings', lambda x: app.open_settings()],
+            ['book-open-variant',
+                lambda x: root.option_bar_action('open_comicscreen')],
+            ['view-list',
+                lambda x: root.option_bar_action('comicracklistscreen')],
+            ['library-books',
+                lambda x: root.option_bar_action('readinglistscreen')]
+        ]
 
     def option_bar_action(self, *args):
         app = App.get_running_app()

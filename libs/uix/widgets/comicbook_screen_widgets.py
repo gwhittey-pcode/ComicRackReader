@@ -17,6 +17,8 @@ from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.core.window import Window
 from kivy.uix.scatter import Scatter
+from kivy.vector import Vector
+from math import radians
 
 
 class MagnifyingGlassScatter(Scatter):
