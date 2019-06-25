@@ -38,7 +38,7 @@ from kivymd.toast import toast
 from libs.applibs.kivymd.dialog import MDDialog
 from kivy.loader import Loader
 import json
-from libs.applibs.kivymd.toolbar import MDToolbar
+from kivymd.toolbar import MDToolbar
 
 
 class ComicBookScreen(Screen):
