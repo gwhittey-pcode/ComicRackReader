@@ -351,12 +351,14 @@ class ComicCarousel(Carousel):
             if distance > self.scroll_distance:
                 if self.index is not None:
                     current_slide = self.current_slide
-
                     if current_slide == self.slides[-1]:
                         app = App.get_running_app()
                         comic_book_screen = app.manager.current_screen
                         comic_book_screen.open_next_dialog()
-
+                    elif current_slide == self.slides[0]:
+                        app = App.get_running_app()
+                        comic_book_screen = app.manager.current_screen
+                        comic_book_screen.open_prev_dialog()
                 ev = self._change_touch_mode_ev
                 if ev is not None:
                     ev.cancel()
@@ -555,6 +557,8 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     paginator_obj = ObjectProperty()
     new_page_num = NumericProperty()
     clock_set = StringProperty()
+    last_load = NumericProperty()
+    last_section = NumericProperty()
 
     def enable_me(self, instance):
         Logger.debug('enabling %s' % self.id)
@@ -588,15 +592,31 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     def open_next_section(self, *args):
         self.disabled = True
         app = App.get_running_app()
-        comic_screen = app.manager.current_screen
-        comic_screen.load_comic_book(self.comic_obj, self.readinglist_obj)
+        from libs.uix.baseclass.comicbookscreen import ComicBookScreen
+        new_screen_name = str(f'{self.comic_obj.Id}{self.last_load}')
+        if new_screen_name not in app.manager.screen_names:
+            new_screen = ComicBookScreen(
+                readinglist_obj=self.readinglist_obj, comic_obj=self.comic_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=self.new_page_num,
+                name=new_screen_name, last_load=self.last_load)
+            app.manager.add_widget(new_screen)
+        app.manager.current = new_screen_name
         Clock.schedule_once(self.enable_me, .5)
 
     def open_prev_section(self, *args):
-        self.disabled = True
         app = App.get_running_app()
-
-        comic_screen = app.manager.current_screen
-        comic_screen.last_load = comic_screen.last_section
-        comic_screen.load_comic_book(self.comic_obj, self.readinglist_obj)
+        from libs.uix.baseclass.comicbookscreen import ComicBookScreen
+        if self.last_section == 0:
+            new_screen_name = str(f'{self.comic_obj.Id}')
+        else:
+            new_screen_name = str(f'{self.comic_obj.Id}{self.last_section}')
+        if new_screen_name not in app.manager.screen_names:
+            new_screen = ComicBookScreen(
+                readinglist_obj=self.readinglist_obj, comic_obj=self.comic_obj,
+                paginator_obj=self.paginator_obj,
+                pag_pagenum=self.new_page_num,
+                name=new_screen_name, last_load=self.last_section)
+            app.manager.add_widget(new_screen)
+        app.manager.current = new_screen_name
         Clock.schedule_once(self.enable_me, .5)

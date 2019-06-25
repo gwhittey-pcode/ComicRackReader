@@ -1,6 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.image import Image
+from libs.applibs.kivymd.button import MDRaisedButton
 from kivy.app import App
 from kivy.core.window import Window
 from libs.applibs.kivymd.imagelists import SmartTileWithLabel
@@ -89,6 +90,9 @@ class OpenComicScreen(Screen):
         screen_names = self.app.manager.screen_names
         grid = self.m_grid
         grid.clear_widgets()
+        close_all_button = MDRaisedButton(text='Close All')
+        grid.add_widget(close_all_button)
+        grid.cols = (Window.width-20)//160
         if len(screen_names) == 0:
             pass
         else:
@@ -107,7 +111,7 @@ class OpenComicScreen(Screen):
                     c.source = c_image_source
                     c.PageCount = c.comic_obj.PageCount
                     strtxt = f"{c.comic_obj.Series} #{c.comic_obj.Number}"
+                    strtxt = f'{strtxt} {c_screen.str_page_count}'
                     c.text = strtxt
                     c.text_color = (0, 0, 0, 1)
                     grid.add_widget(c)
-                    grid.cols = (Window.width-20)//160

@@ -67,7 +67,8 @@ class ComicRackReader(App):
                              'locales.txt')).read()
         )
         # self.translation = Translation(
-        #     self.lang, 'Ttest', os.path.join(self.directory, 'data', 'locales')
+        #     self.lang, 'Ttest', os.path.join(self.directory,
+        # data', 'locales')
         # )
         self.base_url = ''
         self.settings_cls = SettingsWithSidebar
@@ -99,7 +100,8 @@ class ComicRackReader(App):
             'dblpagesplit':     '0',
             'stretch_image':    '0',
             'keep_ratio':       '0',
-            'reading_list_icon_size': 'Medium'
+            'reading_list_icon_size': 'Medium',
+            'max_comic_pages_limit':   50,
         })
 
         config.setdefaults('Screen Tap Control', {
@@ -143,9 +145,7 @@ class ComicRackReader(App):
                     Builder.load_string(kv.read())
 
     def events_program(self, instance, keyboard, keycode, text, modifiers):
-        '''Called when you press the Menu button or Back Key
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                on mobile device.'''
-
+        '''Called when you press the Menu button or Back Key'''
         if keyboard in (1001, 27):
             if self.nav_drawer.state == 'open':
                 self.nav_drawer.toggle_nav_drawer()
@@ -156,9 +156,7 @@ class ComicRackReader(App):
         return True
 
     def back_screen(self, event=None):
-        '''Screen manager Called when the Back Key is pressed.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                and chevron "Back" в ToolBar.'''
-
+        '''Screen manager Called when the Back Key is pressed.'''
         # BackKey pressed.
         if event in (1001, 27):
             if self.manager.current == 'base':
@@ -205,8 +203,7 @@ class ComicRackReader(App):
         self.screen.ids.action_bar.title = 'MIT LICENSE'
 
     def select_locale(self, *args):
-        '''Displays a window with a list of available language localizations for
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                application language settings.'''
+        '''Displays a window with a list of available language localizations'''
 
         def select_locale(name_locale):
             '''Sets the selected location..'''
