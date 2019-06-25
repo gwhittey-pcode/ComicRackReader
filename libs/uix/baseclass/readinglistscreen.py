@@ -89,7 +89,7 @@ class CustomeST(SmartTileWithLabel):
                 comic_obj=self.comic_obj,
                 paginator_obj=self.paginator_obj,
                 pag_pagenum=self.pag_pagenum,
-                name=new_screen_name)
+                name=new_screen_name, last_load=0)
             self.app.manager.add_widget(new_screen)
             self.app.manager.current = new_screen_name
 
