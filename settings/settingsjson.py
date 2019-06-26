@@ -18,7 +18,7 @@ settings_json_server = json.dumps([
     {
         'type':     'options',
         'title':    'Maximum Page Height',
-        'desc':     'This will set the max height that image will be be grabbed from server default is 1500 due to memory constainst',
+        'desc':     'Maximum Page Height to Download',
         'section':  'Server',
         'key':      'max_height',
         'options': ['2000', '1500', '1280', '1200', '1024']
