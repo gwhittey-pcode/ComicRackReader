@@ -26,7 +26,7 @@ from kivymd.toast import toast
 from kivy.clock import Clock
 from functools import partial
 
-
+#
 class CustomeST(SmartTileWithLabel):
     my_clock = ObjectProperty()
     do_action = StringProperty()

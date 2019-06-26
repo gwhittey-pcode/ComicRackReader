@@ -89,6 +89,7 @@ class OpenComicScreen(Screen):
         screen_names = self.app.manager.screen_names
         grid = self.m_grid
         grid.clear_widgets()
+        grid.cols = (Window.width-20)//160
         if len(screen_names) == 0:
             pass
         else:
@@ -110,4 +111,4 @@ class OpenComicScreen(Screen):
                     c.text = strtxt
                     c.text_color = (0, 0, 0, 1)
                     grid.add_widget(c)
-                    grid.cols = (Window.width-20)//160
+

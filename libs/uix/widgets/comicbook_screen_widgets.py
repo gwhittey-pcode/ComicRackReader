@@ -239,7 +239,7 @@ class ComicBookPageImage(AsyncImage):
 
     def _new_image_downloaded(self, scatter, outer_grid, comic_obj,
                               var_i, src_url, proxyImage):
-        '''Fired once the image is downloaded and ready to use'''
+        '''Fired once the image is downloaded and ready to use '''
         def _remove_widget():
             carousel.remove_widget(scatter)
 
