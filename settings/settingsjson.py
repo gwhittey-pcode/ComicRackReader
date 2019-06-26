@@ -100,12 +100,6 @@ settings_json_dispaly = json.dumps(
          'key':      'reading_list_icon_size',
          'options': ['X-Large', 'Large', 'Medium', 'Small']},
 
-        {'type':     'numeric',
-         'title':    'Max Pages to Load',
-         'desc':     'Number if max pages to load before pagination',
-         'section':  'Display',
-         'key':      'max_comic_pages_limit'},
-
 
     ])
 
