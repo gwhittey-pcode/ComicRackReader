@@ -115,3 +115,4 @@ class OpenComicScreen(Screen):
                     c.text = strtxt
                     c.text_color = (0, 0, 0, 1)
                     grid.add_widget(c)
+ 

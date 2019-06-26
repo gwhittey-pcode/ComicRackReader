@@ -28,7 +28,7 @@ settings_json_server = json.dumps([
     #  'title':   'Use Api key',
     #  'desc':    'Use API key to access server',
     #  'section': 'Server',
-    #  'key':     'use_api_key'},
+    #  'key':     'use_api_key' },
 
     {'type':    'string',
      'title':   'API key',
