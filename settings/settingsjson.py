@@ -28,7 +28,7 @@ settings_json_server = json.dumps([
     #  'title':   'Use Api key',
     #  'desc':    'Use API key to access server',
     #  'section': 'Server',
-    #  'key':     'use_api_key' },
+    #  'key':     'use_api_key'},
 
     {'type':    'string',
      'title':   'API key',
@@ -50,7 +50,8 @@ settings_json_server = json.dumps([
 
     # {'type':    'bool',
     #  'title':   'Use Pagination',
-    #  'desc':    'Use Pagination to limit number of books on each List/Series page',
+    #  'desc':    'Use Pagination to limit number of books on each List/Series
+    # page',
     #  'section': 'Server',
     #  'key':     'use_pagination'},
 
@@ -100,11 +101,18 @@ settings_json_dispaly = json.dumps(
          'key':      'reading_list_icon_size',
          'options': ['X-Large', 'Large', 'Medium', 'Small']},
 
+        {'type':     'numeric',
+         'title':    'Max Pages to Load',
+         'desc':     'Number if max pages to load before pagination',
+         'section':  'Display',
+         'key':      'max_comic_pages_limit'},
+
 
     ])
 
-tap_options = ['Next Page', 'Prev Page', 'Open Page Nav', 'Open Collection Browser',
-               'Return to Comic List Screen', 'Go to List of Reading Lists', 'Open Options' 'Disabled']
+tap_options = ['Next Page', 'Prev Page', 'Open Page Nav',
+               'Open Collection Browser', 'Return to Comic List Screen',
+               'Go to List of Reading Lists', 'Open Options' 'Disabled']
 settings_json_screen_tap_control = json.dumps(
     [
         {'type':   'title',

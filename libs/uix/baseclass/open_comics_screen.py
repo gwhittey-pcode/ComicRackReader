@@ -1,6 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.image import Image
+from libs.applibs.kivymd.button import MDRaisedButton
 from kivy.app import App
 from kivy.core.window import Window
 from libs.applibs.kivymd.imagelists import SmartTileWithLabel
@@ -18,12 +19,12 @@ class MySmartTileWithLabel(SmartTileWithLabel):
         self.menu_items = [{'viewclass': 'MDMenuItem',
                             'text': '[color=#000000]Read[/color]',
                             'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Mark as Read[/color]',
-                            'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Mark as UnRead[/color]',
-                            'callback': self.callback_for_menu_items},
+                           #    {'viewclass': 'MDMenuItem',
+                           #     'text': '[color=#000000]Mark as Read[/color]',
+                           #     'callback': self.callback_for_menu_items},
+                           #    {'viewclass': 'MDMenuItem',
+                           #    'text':'[color=#000000]Mark as UnRead[/color]',
+                           #     'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
                             'text': '[color=#000000]Close Comic[/color]',
                             'callback': self.callback_for_menu_items},
@@ -48,17 +49,16 @@ class MySmartTileWithLabel(SmartTileWithLabel):
 
     def on_press(self):
         callback = partial(self.menu)
-        self.do_action = 'read'
-        Clock.schedule_once(callback, 1.5)
+        self.do_action = 'menu'
+        Clock.schedule_once(callback, .001)
         self.my_clock = callback
 
     def menu(self, *args):
-        print('do')
         self.do_action = 'menu'
 
     def on_release(self):
         Clock.unschedule(self.my_clock)
-        self.do_action = 'read'
+        self.do_action = 'menu'
         return super(MySmartTileWithLabel, self).on_press()
 
     def open_comic(self):
@@ -89,6 +89,8 @@ class OpenComicScreen(Screen):
         screen_names = self.app.manager.screen_names
         grid = self.m_grid
         grid.clear_widgets()
+        close_all_button = MDRaisedButton(text='Close All')
+        grid.add_widget(close_all_button)
         grid.cols = (Window.width-20)//160
         if len(screen_names) == 0:
             pass
@@ -108,7 +110,7 @@ class OpenComicScreen(Screen):
                     c.source = c_image_source
                     c.PageCount = c.comic_obj.PageCount
                     strtxt = f"{c.comic_obj.Series} #{c.comic_obj.Number}"
+                    strtxt = f'{strtxt} {c_screen.str_page_count}'
                     c.text = strtxt
                     c.text_color = (0, 0, 0, 1)
                     grid.add_widget(c)
-
