@@ -351,7 +351,8 @@ class ComicCarousel(Carousel):
             if distance > self.scroll_distance:
                 if self.index is not None:
                     current_slide = self.current_slide
-                    if current_slide == self.slides[-1]:
+                    if current_slide == self.slides[-1] and\
+                            self.next_slide is None:
                         app = App.get_running_app()
                         comic_book_screen = app.manager.current_screen
                         comic_book_screen.open_next_dialog()

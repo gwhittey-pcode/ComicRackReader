@@ -195,14 +195,14 @@ class ComicBookScreen(Screen):
             self.fetch_data.update_progress(update_url, current_page,
                                             callback=lambda req, results:
                                             updated_progress(results))
-            if current_slide == comic_book_carousel.slides[-1]:
-                app = App.get_running_app()
-                comic_book_screen = app.manager.current_screen
-                comic_book_screen.open_next_dialog()
-            elif current_slide == comic_book_carousel.slides[0]:
-                app = App.get_running_app()
-                comic_book_screen = app.manager.current_screen
-                comic_book_screen.open_prev_dialog()
+            # if current_slide == comic_book_carousel.slides[-1]:
+            #     app = App.get_running_app()
+            #     comic_book_screen = app.manager.current_screen
+            #     comic_book_screen.open_next_dialog()
+            # elif current_slide == comic_book_carousel.slides[0]:
+            #     app = App.get_running_app()
+            #     comic_book_screen = app.manager.current_screen
+            #     comic_book_screen.open_prev_dialog()
             p_slide = comic_book_carousel.previous_slide
             for slide in comic_book_carousel.slides:
                 for child in slide.walk():
