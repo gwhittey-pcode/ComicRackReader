@@ -72,7 +72,6 @@ class ComicBookScreen(Screen):
 
         for setting in settings_data:
             if setting['type'] == 'options':
-
                 tap_config = config_app.config.get(setting[u'section'],
                                                    setting[u'key'])
                 if tap_config == 'Disabled':

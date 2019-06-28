@@ -68,6 +68,7 @@ class BaseScreen(Screen):
         # see if user has a api key stored from server
 
         if self.api_key == '':
+            self.popup.ids.info.text = '[color=#FF0000]No API key sotred login to get one[/color]'
             self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
 

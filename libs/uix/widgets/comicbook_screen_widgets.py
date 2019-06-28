@@ -356,10 +356,11 @@ class ComicCarousel(Carousel):
                         app = App.get_running_app()
                         comic_book_screen = app.manager.current_screen
                         comic_book_screen.open_next_dialog()
-                    elif current_slide == self.slides[0]:
-                        app = App.get_running_app()
-                        comic_book_screen = app.manager.current_screen
-                        comic_book_screen.open_prev_dialog()
+                    # elif current_slide == self.slides[0] and\
+                    #         self.previous_slide is None:
+                    #     app = App.get_running_app()
+                    #     comic_book_screen = app.manager.current_screen
+                    #     comic_book_screen.open_prev_dialog()
                 ev = self._change_touch_mode_ev
                 if ev is not None:
                     ev.cancel()
