@@ -10,7 +10,6 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.applibs.kivymd.button import MDRaisedButton
-from libs.utils.convert_base64 import convert_to_image
 from kivy.graphics.transformation import Matrix
 from kivy.app import App
 from kivy.clock import Clock
@@ -39,8 +38,6 @@ class MagnifyingGlassScatter(Scatter):
 
     def on_touch_move(self, touch):
         if touch.grab_current is self:
-            print('touch = %s' % str(touch.pos))
-            print('image = %s' % str(self.page_widget.size))
             # get the middle of mag glass
             my_x = self.x + self.mag_glass_x/2
             m_y = self.y + self.mag_glass_y/2
@@ -101,10 +98,8 @@ class ComicBookPageScatter(ScatterLayout):
                                              'mag_glass_size'))
 
         comic_image_id = self.id.replace('comic_scatter', 'pi_')
-        print(App.get_running_app().root.ids)
         try:
             for child in self.walk():
-                print(child.id)
                 if child.id == comic_image_id:
                     image_w = child
                     Logger.debug(
@@ -440,7 +435,6 @@ class ComicBookPageControlButton(Button):
             app.manager.current = 'base'
         elif tap_option == 'Open Options Popup':
             comic_book_screen.open_option()
-            print('Open Options')
         else:
             return
 

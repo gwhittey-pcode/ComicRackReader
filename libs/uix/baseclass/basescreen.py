@@ -18,6 +18,7 @@ import json
 
 from base64 import b64encode
 from kivy.uix.button import Button
+from kivy.properties import StringProperty
 import urllib.parse
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.applibs.kivymd.list import OneLineListItem
@@ -36,7 +37,7 @@ from kivy.uix.popup import Popup
 
 
 class LoginPopup(BoxLayout):
-    pass
+    info_text = StringProperty()
 
 
 class BaseScreen(Screen):
@@ -68,7 +69,7 @@ class BaseScreen(Screen):
         # see if user has a api key stored from server
 
         if self.api_key == '':
-            self.popup.ids.info.text = '[color=#FF0000]No API key sotred login to get one[/color]'
+            self.myLoginPop.ids.info.text = '[color=#FF0000]No API key sotred login to get one[/color]'
             self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
 

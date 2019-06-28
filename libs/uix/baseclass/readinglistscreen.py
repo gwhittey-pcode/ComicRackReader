@@ -73,7 +73,6 @@ class CustomeST(SmartTileWithLabel):
         self.my_clock = callback
 
     def menu(self, *args):
-        print('do')
         self.do_action = 'menu'
 
     def on_release(self):

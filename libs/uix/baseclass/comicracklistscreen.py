@@ -52,13 +52,9 @@ class ComicRackListScreen(Screen):
 
         readinglist_slug = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
-        print(readinglist_name)
         readinglistscreen.list_loaded = False
         readinglistscreen.collect_readinglist_data(
             readinglist_name, readinglist_slug)
-
-    def callback(instance):
-        print('The button <%s> is being pressed' % instance.text)
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()

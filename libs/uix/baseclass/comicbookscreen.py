@@ -15,7 +15,6 @@ from kivy.properties import ObjectProperty, StringProperty, ListProperty,\
     NumericProperty
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.app import App
-from libs.utils.convert_base64 import convert_to_image
 from kivy.core.image import Image as CoreImage
 from kivy.uix.image import Image
 from kivy.uix.button import Button
@@ -711,7 +710,6 @@ class ComicBookScreen(Screen):
 
     def load_random_comic(self):
         next_screen_name = self.app.manager.next()
-        print(next_screen_name)
         self.app.manager.current = next_screen_name
 
     def load_next_slide(self):

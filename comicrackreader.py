@@ -80,12 +80,12 @@ class ComicRackReader(App):
     def build_config(self, config):
         '''Creates an application settings file ComicRackReader.ini.'''
 
-        # config.adddefaultsection('General')
-        # config.setdefault('General', 'language', 'en')
+        config.adddefaultsection('General')
+        config.setdefault('General', 'language', 'en')
         config.setdefaults('Server', {
             'url':          'http://',
             'storagedir':       self.user_data_dir,
-            'max_height':       0,
+            'max_height':       1500,
             'use_api_key':      0,
             'api_key':          '',
             'username':         '',
@@ -100,8 +100,9 @@ class ComicRackReader(App):
             'dblpagesplit':     '0',
             'stretch_image':    '0',
             'keep_ratio':       '0',
-            'comic_thumb_width': 200,
-            'comic_thumb_height': 300,
+            # 'comic_thumb_width': 200,
+            # 'comic_thumb_height': 300,
+            'reading_list_icon_size':'Small',
             'max_comic_pages_limit':   50,
         })
 
@@ -154,7 +155,8 @@ class ComicRackReader(App):
         elif keyboard in (282, 319):
             pass
         else:
-            print(keycode)
+            pass
+            # print(keycode)
         return True
 
     def back_screen(self, event=None):

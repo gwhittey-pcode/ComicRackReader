@@ -3,7 +3,7 @@ chardet==3.0.4
 Cython==0.29.10
 docutils==0.14
 idna==2.8
-Kivy==2.0.0.dev0
+Kivy
 # Kivy-Garden==0.1.4
 Pillow==6.0.0
 Pygments==2.4.2
