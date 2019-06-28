@@ -1,5 +1,4 @@
 import json
-import requests
 from kivy.app import App
 from base64 import b64encode
 from kivy.logger import Logger
