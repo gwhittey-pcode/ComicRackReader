@@ -784,17 +784,17 @@ class OptionToolBar(MDToolbar):
 
         root = self
         self.left_action_items = [
-            ["menu", (lambda x: nav_drawer._toggle())],
-            ["home", lambda x: root.option_bar_action('base')]
+            # ["menu", (lambda x: nav_drawer._toggle())],
+            ["home", lambda x: root.option_bar_action('base')],
+            ['settings', lambda x: app.open_settings()]
         ]
         self.right_action_items = [
-            ['settings', lambda x: app.open_settings()],
-            ['book-open-variant',
-                lambda x: root.option_bar_action('open_comicscreen')],
             ['view-list',
                 lambda x: root.option_bar_action('comicracklistscreen')],
             ['library-books',
-                lambda x: root.option_bar_action('readinglistscreen')]
+                lambda x: root.option_bar_action('readinglistscreen')],
+            ['book-open-variant',
+                lambda x: root.option_bar_action('open_comicscreen')],
         ]
 
     def option_bar_action(self, *args):

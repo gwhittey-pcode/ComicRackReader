@@ -94,6 +94,17 @@ settings_json_dispaly = json.dumps(
          'section':  'Display',
          'key':      'mag_glass_size'},
 
+        # {'type':     'options',
+        #  'title':    'Comic Icon Width',
+        #  'desc':     'Comic Thumb Width',
+        #  'section':  'Display',
+        #  'key':      'comic_thumb_width'},
+
+        # {'type':     'options',
+        #  'title':    'Comic Icon Width',
+        #  'desc':     'Comic Thumb Width',
+        #  'section':  'Display',
+        #  'key':      'comic_thumb_height'},
         {'type':     'options',
          'title':    'Reading List Page Cover Icon Size',
          'desc':     'Size of Reading List Page Cover Icon',

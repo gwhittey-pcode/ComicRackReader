@@ -42,7 +42,7 @@ from kivy.uix.settings import SettingsWithSidebar
 
 
 class ComicRackReader(App):
-    title = 'ComicRackReader'
+    title = 'ComicRackReader Home Screen'
     icon = 'icon.png'
     nav_drawer = ObjectProperty()
     theme_cls = ThemeManager()
@@ -73,15 +73,15 @@ class ComicRackReader(App):
         self.base_url = ''
         self.settings_cls = SettingsWithSidebar
 
-    def get_application_config(self):
-        return super(ComicRackReader, self).get_application_config(
-            '{}/%(appname)s.ini'.format(self.directory))
+    # def get_application_config(self):
+    #     return super(ComicRackReader, self).get_application_config(
+    #         '{}/%(appname)s.ini'.format(self.directory))
 
     def build_config(self, config):
         '''Creates an application settings file ComicRackReader.ini.'''
 
-        config.adddefaultsection('General')
-        config.setdefault('General', 'language', 'en')
+        # config.adddefaultsection('General')
+        # config.setdefault('General', 'language', 'en')
         config.setdefaults('Server', {
             'url':          'http://',
             'storagedir':       self.user_data_dir,
@@ -100,7 +100,8 @@ class ComicRackReader(App):
             'dblpagesplit':     '0',
             'stretch_image':    '0',
             'keep_ratio':       '0',
-            'reading_list_icon_size': 'Medium',
+            'comic_thumb_width': 200,
+            'comic_thumb_height': 300,
             'max_comic_pages_limit':   50,
         })
 
@@ -152,7 +153,8 @@ class ComicRackReader(App):
             self.back_screen(event=keyboard)
         elif keyboard in (282, 319):
             pass
-
+        else:
+            print(keycode)
         return True
 
     def back_screen(self, event=None):
@@ -246,7 +248,7 @@ class ComicRackReader(App):
         self.translation.switch_lang(lang)
 
     def build_settings(self, settings):
-        settings.add_json_panel('General Settings',
+        settings.add_json_panel('Server Settings',
                                 self.config,
                                 data=settings_json_server)
         settings.add_json_panel('Display Settings',
@@ -276,7 +278,7 @@ class ComicRackReader(App):
         self.manager.current = 'readinglistscreen'
 
     def switch_base_screen_switch(self):
-        self.set_screen("Home Screen")
+        self.set_screen("ComicRackReader Home Screen")
         self.manager.current = 'base'
 
     def set_screen(self, title):

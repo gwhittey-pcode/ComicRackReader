@@ -89,8 +89,8 @@ class OpenComicScreen(Screen):
         screen_names = self.app.manager.screen_names
         grid = self.m_grid
         grid.clear_widgets()
-        close_all_button = MDRaisedButton(text='Close All')
-        grid.add_widget(close_all_button)
+        # close_all_button = MDRaisedButton(text='Close All')
+        # grid.add_widget(close_all_button)
         grid.cols = (Window.width-20)//160
         if len(screen_names) == 0:
             pass

@@ -123,6 +123,8 @@ class ReadingListScreen(Screen):
         self.current_page = ObjectProperty()
         self.list_loaded = BooleanProperty()
         self.list_loaded = False
+        self.comic_thumb_height = 300
+        self.comic_thumb_width = 200
 
     def on_pre_enter(self, *args):
         self.api_key = self.app.config.get('Server', 'api_key')
@@ -137,12 +139,12 @@ class ReadingListScreen(Screen):
         self.app.list_previous_screens.append(self.name)
 
     def my_width_callback(self, obj, value):
-        win_x = (Window.width-30)//160
-        win_div = (Window.width-30) % 160
+        win_x = (Window.width-30)//self.comic_thumb_width
+        win_div = (Window.width-30) % self.comic_thumb_width
         for key, val in self.ids.items():
             if key == 'main_grid':
                 c = val
-                c.cols = (Window.width-20)//160
+                c.cols = (Window.width-10)//self.comic_thumb_width
 
     def collect_readinglist_data(self, readinglist_name, readinglist_Id):
         self.readinglist_name = readinglist_name
@@ -185,7 +187,10 @@ class ReadingListScreen(Screen):
             c.comic_obj = comic
             c.readinglist_obj = self.new_readinglist
             c.paginator_obj = self.paginator_obj
-            part_url = f'/Comics/{comic.Id}/Pages/0?height=240'
+            x = self.comic_thumb_width
+            y = self.comic_thumb_height
+            thumb_size = f'height={y}&width={x}'
+            part_url = f'/Comics/{comic.Id}/Pages/0?'
             part_api = f'&apiKey={self.api_key}'
             c_image_source = f"{self.api_url}{part_url}{part_api}"
             c.source = source = c_image_source
@@ -195,7 +200,7 @@ class ReadingListScreen(Screen):
             c.text = strtxt
             c.text_color = (0, 0, 0, 1)
             grid.add_widget(c)
-            grid.cols = (Window.width-20)//160
+            grid.cols = (Window.width-10)//self.comic_thumb_width
 
     def got_json(self, req, result):
 
