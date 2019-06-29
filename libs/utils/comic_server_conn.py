@@ -1,6 +1,5 @@
 import json
 from kivy.app import App
-from base64 import b64encode
 from kivy.logger import Logger
 from kivy.network.urlrequest import UrlRequest
 import inspect
