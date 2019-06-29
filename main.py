@@ -16,7 +16,7 @@
 import os
 import sys
 import traceback
-
+from kivy.network.urlrequest import UrlRequest
 NICK_NAME_AND_NAME_REPOSITORY = \
     'git@github.com:gwhittey-pcode/ComicRackReader.git'
 

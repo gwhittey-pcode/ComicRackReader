@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+kivy_venv/
 build/
 develop-eggs/
 dist/
