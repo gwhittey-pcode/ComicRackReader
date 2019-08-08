@@ -12,7 +12,7 @@ import webbrowser
 from functools import partial
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ObjectProperty, StringProperty, ListProperty,\
-    NumericProperty
+    NumericProperty, BooleanProperty
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.app import App
 from kivy.core.image import Image as CoreImage
@@ -38,6 +38,7 @@ from libs.applibs.kivymd.dialog import MDDialog
 from kivy.loader import Loader
 import json
 from kivymd.toolbar import MDToolbar
+from kivy.core.window import Window
 
 
 class ComicBookScreen(Screen):
@@ -47,6 +48,7 @@ class ComicBookScreen(Screen):
     sort_by = StringProperty()
     last_load = NumericProperty()
     str_page_count = StringProperty()
+    full_screen = BooleanProperty()
 
     def __init__(self, readinglist_obj=None, comic_obj=None,
                  paginator_obj=None, pag_pagenum=1, last_load=0, ** kwargs):
@@ -66,9 +68,10 @@ class ComicBookScreen(Screen):
         self.popup_bkcolor = (.5, .5, .5, .87)
         self.pag_pagenum = NumericProperty()
         self.last_load = last_load
+        self.full_screen = False
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
-
+       # Window.bind(on_keyboard=self.events_program)
         for setting in settings_data:
             if setting['type'] == 'options':
                 tap_config = config_app.config.get(setting[u'section'],
@@ -161,6 +164,25 @@ class ComicBookScreen(Screen):
         self.prev_comic = self.get_prev_comic()
         self.build_next_comic_dialog()
         self.build_prev_comic_dialog()
+
+    # def events_program(self, instance, keyboard, keycode, text, modifiers):
+    #     '''Keyboard shortcuts'''
+    #     if keycode in (44, 79):
+    #         print('space')
+    #         comic_book_screen = App.get_running_app().manager.current_screen
+    #         comic_book_screen.load_next_slide()
+    #     elif keycode in (1, 10):
+    #         pass
+    #     elif keycode == 9:
+    #         self.toggle_full_screen()
+    #     print(keycode)
+
+    def toggle_full_screen(self):
+        if self.full_screen == False:
+            Window.fullscreen = True
+            self.full_screen == True
+        else:
+            Window.fullscreen = False
 
     def open_mag_glass(self):
         comic_book_carousel = self.ids.comic_book_carousel
@@ -322,7 +344,7 @@ class ComicBookScreen(Screen):
             1, 1), do_scroll_x=True, do_scroll_y=False)
         self.top_pop = Popup(id='page_pop', title='Comics in List',
                              title_align='center', content=scroll,
-                             pos_hint={'y': .718}, size_hint=(1, .32),
+                             pos_hint={'y': .718}, size_hint=(1, .35),
 
                              )
         self.top_pop
@@ -783,7 +805,8 @@ class OptionToolBar(MDToolbar):
         self.left_action_items = [
             # ["menu", (lambda x: nav_drawer._toggle())],
             ["home", lambda x: root.option_bar_action('base')],
-            ['settings', lambda x: app.open_settings()]
+            ['settings', lambda x: app.open_settings()],
+            ['fullscreen', lambda x: root.toggle_full_screen()],
         ]
         self.right_action_items = [
             ['view-list',
@@ -792,6 +815,7 @@ class OptionToolBar(MDToolbar):
                 lambda x: root.option_bar_action('readinglistscreen')],
             ['book-open-variant',
                 lambda x: root.option_bar_action('open_comicscreen')],
+
         ]
 
     def option_bar_action(self, *args):
@@ -801,3 +825,14 @@ class OptionToolBar(MDToolbar):
         s_name = comic_book_screen.comic_obj.Id
         comic_book_screen.option_pop.dismiss()
         app.manager.current = str(args[0])
+
+    def toggle_full_screen(self):
+        app = App.get_running_app()
+        screen_manager = app.manager
+        comic_book_screen = screen_manager.get_screen(self.comic_Id)
+        if comic_book_screen.full_screen == False:
+            Window.fullscreen = 'auto'
+            comic_book_screen.full_screen = True
+        else:
+            Window.fullscreen = False
+            comic_book_screen.full_screen = False

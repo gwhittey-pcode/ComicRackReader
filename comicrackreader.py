@@ -49,6 +49,7 @@ class ComicRackReader(App):
     theme_cls.primary_palette = 'Amber'
     lang = StringProperty('en')
     open_comics_list = ListProperty()
+    full_screen = False
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
@@ -102,7 +103,7 @@ class ComicRackReader(App):
             'keep_ratio':       '0',
             # 'comic_thumb_width': 200,
             # 'comic_thumb_height': 300,
-            'reading_list_icon_size':'Small',
+            'reading_list_icon_size': 'Small',
             'max_comic_pages_limit':   50,
         })
 
@@ -148,6 +149,7 @@ class ComicRackReader(App):
 
     def events_program(self, instance, keyboard, keycode, text, modifiers):
         '''Called when you press the Menu button or Back Key'''
+
         if keyboard in (1001, 27):
             if self.nav_drawer.state == 'open':
                 self.nav_drawer.toggle_nav_drawer()
@@ -155,8 +157,21 @@ class ComicRackReader(App):
         elif keyboard in (282, 319):
             pass
         else:
+            print(App.get_running_app().manager.current_screen.name)
+            current_screen = App.get_running_app().manager.current_screen
+            screens_list = ['base', 'license', 'about', 'readinglistscreen',
+                            'comicracklistscreen', 'open_comicscreen']
+
+            if current_screen.name in screens_list:
+                print('test')
+            else:
+                if keycode in (44, 79):
+                    current_screen.load_next_slide()
+                elif keycode == (80):
+                    current_screen.load_prev_slide()
             pass
-            # print(keycode)
+            print(keycode)
+
         return True
 
     def back_screen(self, event=None):
@@ -171,8 +186,6 @@ class ComicRackReader(App):
             except:
                 self.manager.current = 'base'
             # self.screen.ids.action_bar.title = self.title
-            self.screen.ids.action_bar.left_action_items = \
-                [['menu', lambda x: self.nav_drawer._toggle()]]
 
     def show_about(self, *args):
         self.nav_drawer.toggle_nav_drawer()
@@ -297,3 +310,14 @@ class ComicRackReader(App):
         self.screen.ids.action_bar.disabled = False
         self.screen.ids.action_bar.size = (
             Window.width, self.theme_cls.standard_increment)
+
+    def toggle_full_screen(self):
+        app = App.get_running_app()
+        screen_manager = app.manager
+        comic_book_screen = screen_manager.current_screen
+        if app.full_screen == False:
+            Window.fullscreen = 'auto'
+            app.full_screen = True
+        else:
+            Window.fullscreen = False
+            app.full_screen = False

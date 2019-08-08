@@ -1,12 +1,10 @@
 certifi==2019.6.16
 chardet==3.0.4
 Cython==0.29.10
-docutils
+docutils==0.15.1
 idna==2.8
-Kivy==git+git://github.com:kivy/kivy.git
+Kivy==2.0.0.dev0
 Kivy-Garden==0.1.4
 Pygments==2.4.2
 requests==2.22.0
 urllib3==1.25.3
-Pillow==6.0.0
-Pygments==2.4.2
