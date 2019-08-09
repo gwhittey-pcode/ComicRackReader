@@ -157,22 +157,30 @@ class ComicRackReader(App):
         elif keyboard in (282, 319):
             pass
         else:
-            print(App.get_running_app().manager.current_screen.name)
             current_screen = App.get_running_app().manager.current_screen
             screens_list = ['base', 'license', 'about', 'readinglistscreen',
                             'comicracklistscreen', 'open_comicscreen']
-
-            if current_screen.name in screens_list:
-                print('test')
-            else:
-                if keycode in (44, 79):
-                    current_screen.load_next_slide()
-                elif keycode == (80):
-                    current_screen.load_prev_slide()
-            pass
             print(keycode)
-
+            if keycode == 9:
+                self.toggle_full_screen()
+            else:
+                if current_screen.name in screens_list:
+                    return True
+                else:
+                    if keycode in (44, 79):
+                        current_screen.load_next_slide()
+                    elif keycode == (80):
+                        current_screen.load_prev_slide()
+                pass
         return True
+
+    def toggle_full_screen(self):
+        if App.get_running_app().full_screen == False:
+            Window.fullscreen = 'auto'
+            App.get_running_app().full_screen = True
+        else:
+            App.get_running_app().full_screen = False
+            Window.fullscreen = False
 
     def back_screen(self, event=None):
         '''Screen manager Called when the Back Key is pressed.'''
