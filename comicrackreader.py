@@ -149,29 +149,27 @@ class ComicRackReader(App):
 
     def events_program(self, instance, keyboard, keycode, text, modifiers):
         '''Called when you press the Menu button or Back Key'''
-
-        if keyboard in (1001, 27):
-            if self.nav_drawer.state == 'open':
-                self.nav_drawer.toggle_nav_drawer()
-            self.back_screen(event=keyboard)
-        elif keyboard in (282, 319):
-            pass
+        current_screen = App.get_running_app().manager.current_screen
+        screens_list = ['base', 'license', 'about', 'readinglistscreen',
+                        'comicracklistscreen', 'open_comicscreen']
+        print(f'keyboard:{keyboard}')
+        print(f'keycode:{keycode}')
+        print('************')
+        if not current_screen.name in screens_list:
+            if keycode in (44, 79, 32, 275):
+                current_screen.load_next_slide()
+            elif keycode == (80):
+                current_screen.load_prev_slide()
         else:
-            current_screen = App.get_running_app().manager.current_screen
-            screens_list = ['base', 'license', 'about', 'readinglistscreen',
-                            'comicracklistscreen', 'open_comicscreen']
-            print(keycode)
-            if keycode == 9:
-                self.toggle_full_screen()
-            else:
-                if current_screen.name in screens_list:
-                    return True
-                else:
-                    if keycode in (44, 79):
-                        current_screen.load_next_slide()
-                    elif keycode == (80):
-                        current_screen.load_prev_slide()
+            if keyboard in (1001, 27):
+                if self.nav_drawer.state == 'open':
+                    self.nav_drawer.toggle_nav_drawer()
+                self.back_screen(event=keyboard)
+            elif keyboard in (282, 319):
                 pass
+            elif keycode == 9:
+                self.toggle_full_screen()
+
         return True
 
     def toggle_full_screen(self):
