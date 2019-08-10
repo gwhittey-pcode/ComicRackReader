@@ -7,7 +7,7 @@
 #
 # For suggestions and questions:
 # <kivydevelopment@gmail.com>
-#
+###
 # LICENSE: MIT
 
 import os
