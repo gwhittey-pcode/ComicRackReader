@@ -126,3 +126,4 @@ test_me.py
 _.ini
 assets/Thumbs.db:encryptable
 assets/plus_items/Thumbs.db:encryptable
+.DS_Store
