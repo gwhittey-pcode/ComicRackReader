@@ -1,5 +1,8 @@
 import json
-
+from kivy.core.window import Keyboard
+hot_keys_options = []
+for item in Keyboard.keycodes:
+    hot_keys_options.append(item[0])
 settings_json_server = json.dumps([
     {'type':    'title',
      'title':   'ComicRack Reader General Settings'},
@@ -212,7 +215,29 @@ settings_json_screen_tap_control = json.dumps(
          'key':      'dbl_tap_time'},
 
     ])
+#hot_keys_options = ['right', 'left', 'space']
+settings_json_hotkeys = json.dumps(
+    [
+        {'type':   'title',
+         'title':   'Keyboard Hotkeys'},
 
+        {
+            'type':     'hotkeys',
+            'title':    'Next Page',
+            'desc':     'This will set the Hotkeys for Next Page',
+            'section':  'Hotkeys',
+            'key':      'next_page',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Prev Page',
+            'desc':     'This will set the Hotkeys for Prev Page',
+            'section':  'Hotkeys',
+            'key':      'prev_page',
+
+        },
+    ])
 #
 # {'type': 'bool',
 #  'title': 'A boolean setting',

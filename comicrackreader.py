@@ -18,6 +18,7 @@ from kivy.app import App
 from kivy.uix.modalview import ModalView
 from kivy.lang import Builder
 from kivy.core.window import Window
+from kivy.core.window import Keyboard
 from kivy.config import ConfigParser
 from kivy.clock import Clock
 from kivy.utils import get_color_from_hex, get_hex_from_color
@@ -36,9 +37,9 @@ from kivymd.toast import toast
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
-    settings_json_screen_tap_control
+    settings_json_screen_tap_control, settings_json_hotkeys
 from kivy.properties import ObjectProperty, StringProperty
-from kivy.uix.settings import SettingsWithSidebar
+from settings.custom_settings import MySettings
 
 
 class ComicRackReader(App):
@@ -53,7 +54,7 @@ class ComicRackReader(App):
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
-        Window.bind(on_keyboard=self.events_program)
+       # Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
 
         self.list_previous_screens = ['base']
@@ -72,7 +73,7 @@ class ComicRackReader(App):
         # data', 'locales')
         # )
         self.base_url = ''
-        self.settings_cls = SettingsWithSidebar
+        self.settings_cls = MySettings
 
     # def get_application_config(self):
     #     return super(ComicRackReader, self).get_application_config(
@@ -120,6 +121,12 @@ class ComicRackReader(App):
             'dbl_tap_time':      250,
         })
 
+        config.setdefaults('Hotkeys', {
+            'next_page':   'spacebar',
+            'prev_page':   'spacebar',
+
+        })
+
     def set_value_from_config(self):
         '''Sets the values of variables from the settings
         file ComicRackReader.ini.'''
@@ -148,17 +155,23 @@ class ComicRackReader(App):
                     Builder.load_string(kv.read())
 
     def events_program(self, instance, keyboard, keycode, text, modifiers):
-        '''Called when you press the Menu button or Back Key'''
+        c = Keyboard()
+
+        '''Called when you press a Key'''
         current_screen = App.get_running_app().manager.current_screen
         screens_list = ['base', 'license', 'about', 'readinglistscreen',
                         'comicracklistscreen', 'open_comicscreen']
+
+        next_page = App.get_running_app().config.get('hotkeys', 'next_page')
+        print(f'instance:{instance}')
+        print(f'next_page:{c.string_to_keycode(next_page)}')
         print(f'keyboard:{keyboard}')
         print(f'keycode:{keycode}')
         print('************')
         if not current_screen.name in screens_list:
-            if keycode in (44, 79, 32, 275):
+            if keyboard in (c.string_to_keycode(next_page), 275):
                 current_screen.load_next_slide()
-            elif keycode == (80):
+            elif keyboard == (80):
                 current_screen.load_prev_slide()
         else:
             if keyboard in (1001, 27):
@@ -278,6 +291,9 @@ class ComicRackReader(App):
         settings.add_json_panel('Screen Tap Control',
                                 self.config,
                                 data=settings_json_screen_tap_control)
+        settings.add_json_panel('Hotkeys',
+                                self.config,
+                                data=settings_json_hotkeys)
 
     def on_config_change(self, config, section,
                          key, value):
