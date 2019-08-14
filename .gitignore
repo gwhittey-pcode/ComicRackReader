@@ -109,6 +109,7 @@ ENV/
 # React files
 node_modules/
 .vscode/settings.json
+.vscode/
 fixtures/
 *.pyc
 *.swp
