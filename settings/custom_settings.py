@@ -12,6 +12,7 @@ from kivy.core.window import Window
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.metrics import dp
+from kivy.app import App
 
 
 class MySettings(SettingsWithSidebar):
@@ -30,36 +31,6 @@ class SettingHotkeys(SettingString):
     :class:`~kivy.uix.textinput.Textinput` so the user can enter a custom
     value.
     '''
-
-    popup = ObjectProperty(None, allownone=True)
-    '''(internal) Used to store the current popup when it's shown.
-        :attr:`popup` is an :class:`~kivy.properties.ObjectProperty` and defaults
-        to None.
-        '''
-
-    textinput = ObjectProperty(None)
-    '''(internal) Used to store the current textinput from the popup and
-        to listen for changes.
-        :attr:`textinput` is an :class:`~kivy.properties.ObjectProperty` and
-        defaults to None.
-        '''
-
-    def on_panel(self, instance, value):
-        if value is None:
-            return
-        self.fbind('on_release', self._create_popup)
-
-    def _dismiss(self, *largs):
-        if self.textinput:
-            self.textinput.focus = False
-        if self.popup:
-            self.popup.dismiss()
-        self.popup = None
-
-    def _validate(self, instance):
-        self._dismiss()
-        value = self.textinput.text.strip()
-        self.value = value
 
     def _create_popup(self, instance):
         # create popup layout
@@ -104,17 +75,24 @@ class KeyInputPopup(Popup):
 
     def on_open(self, *args):
         print('open')
+        Window.unbind(on_keyboard=App.get_running_app().events_program)
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
 
-    def _keyboard_closed(self):
+    def on_dismiss(self):
+        print('dismissed')
+        Window.bind(on_keyboard=App.get_running_app().events_program)
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None
 
+    def _keyboard_closed(self):
+        pass
+
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print('jeydown')
+        print('_on_keyboard_down')
 
         code, key = keycode
         self.setting_obj.textinput.text = key
+
         print(f'keycode:{code}')
         # self.dismiss()

@@ -54,7 +54,7 @@ class ComicRackReader(App):
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
-       # Window.bind(on_keyboard=self.events_program)
+        Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
 
         self.list_previous_screens = ['base']
@@ -115,15 +115,20 @@ class ComicRackReader(App):
             'top_right':        'Return to Home Screen',
             'top_left':         'Precodv Page',
             'top_center':       'Open Collection Browser',
-            'middle_right':     '',
-            'middle_left':      '',
-            'middle_center':    'Open Options Popup',
+            'middle_right':     'None',
+            'middle_left':      'None',
+            'middle_center':    'Open NavBar',
             'dbl_tap_time':      250,
         })
 
         config.setdefaults('Hotkeys', {
-            'next_page':   'spacebar',
-            'prev_page':   'spacebar',
+            'hk_next_page':           '.',
+            'hk_prev_page':           ',',
+            'hk_open_page_nav':       'p',
+            'hk_open_collection':     'j',
+            'hk_return_comic_list':   'c',
+            'hk_return_reading_list': 'r',
+            'hk_toggle_navbar':         'n',
 
         })
 
@@ -158,22 +163,45 @@ class ComicRackReader(App):
         c = Keyboard()
 
         '''Called when you press a Key'''
-        current_screen = App.get_running_app().manager.current_screen
+        app = App.get_running_app()
+        current_screen = app.manager.current_screen
         screens_list = ['base', 'license', 'about', 'readinglistscreen',
                         'comicracklistscreen', 'open_comicscreen']
 
-        next_page = App.get_running_app().config.get('hotkeys', 'next_page')
-        print(f'instance:{instance}')
-        print(f'next_page:{c.string_to_keycode(next_page)}')
+        hk_next_page = app.config.get('Hotkeys', 'hk_next_page')
+        hk_prev_page = app.config.get('Hotkeys', 'hk_prev_page')
+        hk_open_page_nav = app.config.get('Hotkeys', 'hk_open_page_nav')
+        hk_open_collection = app.config.get(
+            'Hotkeys', 'hk_open_collection')
+        hk_return_comic_list = app.config.get(
+            'Hotkeys', 'hk_return_comic_list')
+        hk_return_reading_list = app.config.get(
+            'Hotkeys', 'hk_return_reading_list')
+        hk_toggle_navbar = app.config.get('Hotkeys', 'hk_toggle_navbar')
+
         print(f'keyboard:{keyboard}')
         print(f'keycode:{keycode}')
         print('************')
         if not current_screen.name in screens_list:
-            if keyboard in (c.string_to_keycode(next_page), 275):
+            if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
-            elif keyboard == (80):
+            elif keyboard in (c.string_to_keycode(hk_prev_page), 276):
                 current_screen.load_prev_slide()
+            elif keyboard == c.string_to_keycode(hk_open_page_nav):
+                current_screen.page_nav_popup_open()
+            elif keyboard == c.string_to_keycode(hk_open_collection):
+                current_screen.open_collection_popupav_popup_open()
+            elif keyboard == c.string_to_keycode(hk_toggle_navbar):
+                current_screen.toggle_option_bar()
+
+            elif keyboard in (1001, 27):
+                if self.nav_drawer.state == 'open':
+                    self.nav_drawer.toggle_nav_drawer()
+                self.back_screen(event=keyboard)
+            elif keycode == 9:
+                self.toggle_full_screen()
         else:
+
             if keyboard in (1001, 27):
                 if self.nav_drawer.state == 'open':
                     self.nav_drawer.toggle_nav_drawer()
@@ -182,7 +210,11 @@ class ComicRackReader(App):
                 pass
             elif keycode == 9:
                 self.toggle_full_screen()
-
+            elif keyboard == c.string_to_keycode(hk_return_comic_list):
+                app.manager.current = 'readinglistscreen'
+            elif keyboard == c.string_to_keycode(hk_return_reading_list):
+                app.show_action_bar()
+                app.manager.current = 'base'
         return True
 
     def toggle_full_screen(self):

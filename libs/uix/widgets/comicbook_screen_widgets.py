@@ -433,8 +433,8 @@ class ComicBookPageControlButton(Button):
             app.manager.current = 'readinglistscreen'
         elif tap_option == 'Go to List of Reading Lists':
             app.manager.current = 'base'
-        elif tap_option == 'Open Options Popup':
-            comic_book_screen.open_option()
+        elif tap_option == 'Open NavBar':
+            comic_book_screen.toggle_option_bar()
         else:
             return
 
@@ -555,6 +555,7 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     clock_set = StringProperty()
     last_load = NumericProperty()
     last_section = NumericProperty()
+    action_do = StringProperty()
 
     def enable_me(self, instance):
         Logger.debug('enabling %s' % self.id)
@@ -569,6 +570,14 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     #     comic_screen = app.manager.get_screen('comic_book_screen')
     #     comic_screen.load_comic_book(self.comic,new_reading_list)
     #     Clock.schedule_once(self.enable_me, .5)
+    def do_action(self, *args):
+        print(f'do action:{self.action_do}')
+        if self.action_do == 'open_collection':
+            self.open_collection(*args)
+        elif self.action_do == 'open_next_section':
+            self.open_next_section(*args)
+        elif self.action_do == 'open_prev_section':
+            self.open_prev_section(*args)
 
     def open_collection(self, *args):
         self.disabled = True

@@ -126,7 +126,7 @@ settings_json_dispaly = json.dumps(
 
 tap_options = ['Next Page', 'Prev Page', 'Open Page Nav',
                'Open Collection Browser', 'Return to Comic List Screen',
-               'Go to List of Reading Lists', 'Open Options' 'Disabled']
+               'Go to Reading Lists Screen', 'Open NavBar', 'None']
 settings_json_screen_tap_control = json.dumps(
     [
         {'type':   'title',
@@ -226,7 +226,7 @@ settings_json_hotkeys = json.dumps(
             'title':    'Next Page',
             'desc':     'This will set the Hotkeys for Next Page',
             'section':  'Hotkeys',
-            'key':      'next_page',
+            'key':      'hk_next_page',
 
         },
         {
@@ -234,7 +234,47 @@ settings_json_hotkeys = json.dumps(
             'title':    'Prev Page',
             'desc':     'This will set the Hotkeys for Prev Page',
             'section':  'Hotkeys',
-            'key':      'prev_page',
+            'key':      'hk_prev_page',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Open Page Nav',
+            'desc':     'This will set the Hotkeys for Open Page Nav',
+            'section':  'Hotkeys',
+            'key':      'hk_open_page_nav',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Open Collection Browser',
+            'desc':     'This will set the Hotkeys for Open Collection Browser',
+            'section':  'Hotkeys',
+            'key':      'hk_open_collection',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Return to Comic List Screen',
+            'desc':     'This will set the Hotkeys for Return to Comic List Screen',
+            'section':  'Hotkeys',
+            'key':      'hk_return_comic_list',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Go to Reading Lists Screen',
+            'desc':     'This will set the Hotkeys for Return to Comic List Screen',
+            'section':  'Hotkeys',
+            'key':      'hk_return_reading_list',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Open NavBar',
+            'desc':     'This will set the Hotkeys to Open NavBar(on comicbook reader)',
+            'section':  'Hotkeys',
+            'key':      'hk_toggle_navbar',
 
         },
     ])

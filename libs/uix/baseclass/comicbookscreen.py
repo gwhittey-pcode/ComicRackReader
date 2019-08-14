@@ -49,7 +49,8 @@ class ComicBookScreen(Screen):
     last_load = NumericProperty()
     str_page_count = StringProperty()
     full_screen = BooleanProperty()
-
+    next_nav_comic_thumb = ObjectProperty()
+    prev_nav_comic_thumb = ObjectProperty()
     def __init__(self, readinglist_obj=None, comic_obj=None,
                  paginator_obj=None, pag_pagenum=1, last_load=0, ** kwargs):
         super(ComicBookScreen, self).__init__(**kwargs)
@@ -69,6 +70,9 @@ class ComicBookScreen(Screen):
         self.pag_pagenum = NumericProperty()
         self.last_load = last_load
         self.full_screen = False
+        self.option_isopen = False
+        self.next_dialog_open = False
+        self.prev_dialog_open = False
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
        # Window.bind(on_keyboard=self.events_program)
@@ -626,24 +630,46 @@ class ComicBookScreen(Screen):
                                  )
         c_padding = (self.next_dialog.width/4)
         CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
-        comic_thumb.bind(on_release=self.next_dialog.dismiss)
+        comic_thumb.bind(on_release=self.close_next_dialog)
+        self.next_nav_comic_thumb = comic_thumb
+        # if index >= len(comics_list)-1:
+        #     if self.use_sections:
+        #         comic_thumb.bind(on_release=comic_thumb.open_next_section)
+        #     else:
+        #         if len(comics_list) >= 1:
+        #             comic_thumb.bind(on_release=self.load_next_page_comic)
+        #         else:
+        #             return
+        # else:
+        #     if self.use_sections:
+        #         comic_thumb.bind(on_release=comic_thumb.open_next_section)
+        #     else:
+        #         if len(comics_list) >= 1:
+        #             comic_thumb.bind(on_release=self.load_next_page_comic)
+        #         else:
+        #             comic_thumb.bind(on_release=comic_thumb.open_collection)
 
         if index >= len(comics_list)-1:
             if self.use_sections:
-                comic_thumb.bind(on_release=comic_thumb.open_next_section)
+                comic_thumb.action_do = 'open_next_section'
+                comic_thumb.bind(on_release=comic_thumb.do_action)
             else:
                 if len(comics_list) >= 1:
+                    comic_thumb.action_do = 'load_next_page_comic'
                     comic_thumb.bind(on_release=self.load_next_page_comic)
                 else:
                     return
         else:
             if self.use_sections:
-                comic_thumb.bind(on_release=comic_thumb.open_next_section)
+                comic_thumb.action_do = 'open_next_section'
+                comic_thumb.bind(on_release=comic_thumb.do_action)
             else:
                 if len(comics_list) >= 1:
+                    comic_thumb.action_do = 'load_next_page_comic'
                     comic_thumb.bind(on_release=self.load_next_page_comic)
                 else:
-                    comic_thumb.bind(on_release=comic_thumb.open_collection)
+                    comic_thumb.action_do = 'open_collection'
+                    comic_thumb.bind(on_release=comic_thumb.do_action)
 
     def build_prev_comic_dialog(self):
         n_paginator = self.paginator_obj
@@ -701,45 +727,65 @@ class ComicBookScreen(Screen):
         c_padding = (self.prev_dialog.width/4)
         CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
         comic_thumb.bind(on_release=self.prev_dialog.dismiss)
-
-        comic_thumb.bind(on_release=self.prev_dialog.dismiss)
+        self.prev_nav_comic_thumb = comic_thumb
         if index < len(comics_list):
             if index == 0:
                 if self.use_sections and self.section != 'First':
-                    comic_thumb.bind(on_release=comic_thumb.open_prev_section)
+                    comic_thumb.action_do = 'open_prev_section'
+                    comic_thumb.bind(on_release=comic_thumb.do_action)
                 else:
                     if len(comics_list) > 1:
+                        comic_thumb.action_do = 'load_prev_page_comic'
                         comic_thumb.bind(on_release=self.load_prev_page_comic)
                     else:
                         return
             else:
                 if self.use_sections and self.section != 'First':
-                    comic_thumb.bind(on_release=comic_thumb.open_prev_section)
+                    comic_thumb.action_do = 'open_prev_section'
+                    comic_thumb.bind(on_release=comic_thumb.do_action)
                 else:
                     if len(comics_list) > 1:
+                        comic_thumb.action_do = 'load_prev_page_comic'
                         comic_thumb.bind(on_release=self.load_prev_page_comic)
                     else:
-                        comic_thumb.bind(
-                            on_release=comic_thumb.open_collection)
+                        comic_thumb.action_do = 'open_collection'
+                        comic_thumb.bind(on_release=comic_thumb.do_action)
 
     def open_next_dialog(self):
         toast('At last page open next comic')
         self.next_dialog.open()
 
+    def close_next_dialog(self, *args):
+        self.next_dialog.dismiss()
+        self.next_dialog_open = False
+
     def open_prev_dialog(self):
         toast('At first page open prev comic')
         self.prev_dialog.open()
+
+    def close_prev_dialog(self, *args):
+        self.prev_dialog.dismiss()
+        self.prev_dialog_open = False       
 
     def load_random_comic(self):
         next_screen_name = self.app.manager.next()
         self.app.manager.current = next_screen_name
 
     def load_next_slide(self):
+        print(self.next_nav_comic_thumb.action_do)
         comic_book_carousel = self.ids.comic_book_carousel
         comic_scatter = comic_book_carousel.current_slide
         if self.use_sections:
             if comic_book_carousel.next_slide is None:
-                self.open_next_dialog()
+                if self.next_dialog_open == False:
+                    self.open_next_dialog()
+                    self.next_dialog_open = True
+                else:
+                    if self.next_nav_comic_thumb.action_do == 'load_next_page_comic':
+                        self.load_next_page_comic(self.next_nav_comic_thumb)
+                    else:
+                        self.next_nav_comic_thumb.do_action()
+                    self.close_next_dialog()
                 return
             else:
                 comic_book_carousel.load_next()
@@ -747,7 +793,15 @@ class ComicBookScreen(Screen):
         else:
             if self.comic_obj.PageCount-1 == comic_scatter.comic_page and\
                     comic_book_carousel.next_slide is None:
-                self.open_next_dialog()
+                if self.next_dialog_open == False:
+                    self.open_next_dialog()
+                    self.next_dialog_open = True
+                else:
+                    if self.next_nav_comic_thumb.action_do == 'load_next_page_comic':
+                        self.load_next_page_comic(self.next_nav_comic_thumb)
+                    else:
+                        self.next_nav_comic_thumb.do_action()
+                    self.close_next_dialog()
                 return
             else:
                 comic_book_carousel.load_next()
@@ -757,17 +811,40 @@ class ComicBookScreen(Screen):
         comic_scatter = comic_book_carousel.current_slide
         if self.use_sections:
             if comic_book_carousel.previous_slide is None:
-                self.open_prev_dialog()
+                if self.prev_dialog_open == False:
+                    self.open_prev_dialog()
+                    self.prev_dialog_open = True
+                else:
+                    if self.prev_nav_comic_thumb.action_do == 'load_prev_page_comic':
+                        self.load_prev_page_comic(self.prev_nav_comic_thumb)
+                    else:
+                        self.prev_nav_comic_thumb.do_action()
+                    self.close_prev_dialog()
                 return
             else:
                 comic_book_carousel.load_previous()
+                return
         else:
             if comic_scatter.comic_page == 0 and\
                     comic_book_carousel.previous_slide is None:
-                self.open_prev_dialog()
-                return
+                    if self.prev_dialog_open == False:
+                        self.open_prev_dialog()
+                        self.prev_dialog_open = True
+                    else:
+                        if self.prev_nav_comic_thumb.action_do == 'load_prev_page_comic':
+                            self.load_prev_page_comic(self.prev_nav_comic_thumb)
+                        else:
+                            self.prev_nav_comic_thumb.do_action()
+                        self.close_prev_dialog()
+                    return
             else:
                 comic_book_carousel.load_previous()
+                return
+                ######
+        
+
+
+
 
     def build_option_pop(self):
         bg_color = self.app.theme_cls.primary_color
@@ -778,8 +855,13 @@ class ComicBookScreen(Screen):
                                     )
         self.option_pop.add_widget(option_bar)
 
-    def open_option(self):
-        self.option_pop.open()
+    def toggle_option_bar(self):
+        if self.option_isopen == True:
+            self.option_pop.dismiss()
+            self.option_isopen = False
+        else:
+            self.option_pop.open()
+            self.option_isopen = True
 
 
 class ComicBookPageControlButton(Button):
@@ -824,6 +906,8 @@ class OptionToolBar(MDToolbar):
         comic_book_screen = screen_manager.get_screen(self.comic_Id)
         s_name = comic_book_screen.comic_obj.Id
         comic_book_screen.option_pop.dismiss()
+        if args[0] == 'base':
+            app.show_action_bar()
         app.manager.current = str(args[0])
 
     def toggle_full_screen(self):
