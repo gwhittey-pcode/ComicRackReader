@@ -124,8 +124,8 @@ class ReadingListScreen(Screen):
         self.current_page = ObjectProperty()
         self.list_loaded = BooleanProperty()
         self.list_loaded = False
-        self.comic_thumb_height = 300
-        self.comic_thumb_width = 200
+        self.comic_thumb_height = 240
+        self.comic_thumb_width = 156
 
     def on_pre_enter(self, *args):
         self.api_key = self.app.config.get('Server', 'api_key')

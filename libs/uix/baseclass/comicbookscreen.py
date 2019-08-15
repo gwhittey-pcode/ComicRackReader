@@ -352,7 +352,7 @@ class ComicBookScreen(Screen):
             1, 1), do_scroll_x=True, do_scroll_y=False)
         self.top_pop = Popup(id='page_pop', title='Comics in List',
                              title_align='center', content=scroll,
-                             pos_hint={'y': .718}, size_hint=(1, .35),
+                             pos_hint={'y': .648}, size_hint=(1, .35),
 
                              )
         self.top_pop
@@ -630,7 +630,8 @@ class ComicBookScreen(Screen):
                                  title=dialog_title,
                                  content=content,
                                  pos_hint={.5: .724},
-                                 size_hint=(.4, .34)
+                                 size_hint=(None, None),
+                                 size = (dp(280), dp(340))
                                  )
         self.next_dialog.bind(on_dismiss=self.next_dialog_closed)
         c_padding = (self.next_dialog.width/4)
