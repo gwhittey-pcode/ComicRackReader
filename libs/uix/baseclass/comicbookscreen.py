@@ -632,6 +632,7 @@ class ComicBookScreen(Screen):
                                  pos_hint={.5: .724},
                                  size_hint=(.4, .34)
                                  )
+        self.next_dialog.bind(on_dismiss=self.next_dialog_closed)
         c_padding = (self.next_dialog.width/4)
         CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
         comic_thumb.bind(on_release=self.close_next_dialog)
@@ -728,6 +729,7 @@ class ComicBookScreen(Screen):
                                  pos_hint={.5: .724},
                                  size_hint=(.4, .34)
                                  )
+        self.prev_dialog.bind(on_dismiss=self.prev_dialog_closed)
         c_padding = (self.prev_dialog.width/4)
         CommonComicsCoverInnerGrid.padding = (c_padding, 0, 0, 0)
         comic_thumb.bind(on_release=self.prev_dialog.dismiss)
@@ -759,6 +761,9 @@ class ComicBookScreen(Screen):
         toast('At last page open next comic')
         self.next_dialog.open()
 
+    def next_dialog_closed(self, *args):
+        self.next_dialog_open = False
+
     def close_next_dialog(self, *args):
         self.next_dialog.dismiss()
         self.next_dialog_open = False
@@ -766,6 +771,9 @@ class ComicBookScreen(Screen):
     def open_prev_dialog(self):
         toast('At first page open prev comic')
         self.prev_dialog.open()
+
+    def prev_dialog_closed(self, *args):
+        self.next_dialog_open = False
 
     def close_prev_dialog(self, *args):
         self.prev_dialog.dismiss()
