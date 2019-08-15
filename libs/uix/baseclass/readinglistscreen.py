@@ -100,6 +100,8 @@ class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
 
 
 class ReadingListScreen(Screen):
+    reading_list_title = StringProperty()
+
     def __init__(self, **kwargs):
         super(ReadingListScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
@@ -148,6 +150,7 @@ class ReadingListScreen(Screen):
     def collect_readinglist_data(self, readinglist_name, readinglist_Id):
         self.readinglist_name = readinglist_name
         self.app.set_screen(self.readinglist_name + ' Page 1')
+        self.reading_list_title = self.readinglist_name + ' Page 1'
         self.readinglist_Id = readinglist_Id
         self.fetch_data = ComicServerConn()
         lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
@@ -157,6 +160,7 @@ class ReadingListScreen(Screen):
     def get_page(self, instance):
         page_num = instance.page_num
         self.app.set_screen(self.readinglist_name + f' Page {page_num}')
+        self.reading_list_title = self.readinglist_name + f' Page {page_num}'
         page = self.paginator_obj.page(page_num)
         self.current_page = page
         if page.has_next():
@@ -200,6 +204,7 @@ class ReadingListScreen(Screen):
             c.text_color = (0, 0, 0, 1)
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
+            self.ids.page_count.text = f'{self.current_page.number} of {self.paginator_obj.num_pages()}'
 
     def got_json(self, req, result):
 
@@ -211,12 +216,14 @@ class ReadingListScreen(Screen):
             self.new_readinglist.add_comic(new_comic)
         max_books_page = int(self.app.config.get(
             'Server', 'max_books_page'))
+
         orphans = max_books_page - 1
         new_readinglist_reversed = self.new_readinglist.comics[::-1]
         self.paginator_obj = Paginator(
             new_readinglist_reversed, max_books_page)
         page = self.paginator_obj.page(1)
         self.current_page = page
+
         if page.has_next():
             self.next_button.opacity = 1
             self.next_button.disabled = False

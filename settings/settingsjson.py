@@ -121,6 +121,17 @@ settings_json_dispaly = json.dumps(
          'section':  'Display',
          'key':      'max_comic_pages_limit'},
 
+        {'type':    'numeric',
+         'title':   'Window Height',
+         'desc':    'Windows Height *If changed App Retart Required',
+         'section': 'Display',
+         'key':     'window_height'},
+
+        {'type':    'numeric',
+         'title':   'Window Width',
+         'desc':    'Windows Width *If changed App Retart Required',
+         'section': 'Display',
+         'key':     'window_width'},
 
     ])
 
@@ -266,7 +277,7 @@ settings_json_hotkeys = json.dumps(
             'title':    'Go to Reading Lists Screen',
             'desc':     'This will set the Hotkeys for Return to Comic List Screen',
             'section':  'Hotkeys',
-            'key':      'hk_return_reading_list',
+            'key':      'hk_return_base_screen',
 
         },
         {
@@ -275,6 +286,14 @@ settings_json_hotkeys = json.dumps(
             'desc':     'This will set the Hotkeys to Open NavBar(on comicbook reader)',
             'section':  'Hotkeys',
             'key':      'hk_toggle_navbar',
+
+        },
+        {
+            'type':     'hotkeys',
+            'title':    'Goto Current Open Comics Screen',
+            'desc':     'This will set the Hotkeys to Current Open Comics Screen',
+            'section':  'Hotkeys',
+            'key':      'hk_open_comicscreen',
 
         },
     ])

@@ -32,10 +32,10 @@
                 background_color: app.theme_cls.primary_color
                 title: app.title
                 # ['menu', lambda x: nav_drawer._toggle(),]
-                left_action_items: [['home', lambda x: app.switch_base_screen_switch()], ['settings', lambda x: app.open_settings()],  ['fullscreen',lambda x: app.toggle_full_screen()]]
+                left_action_items: [['home', lambda x: app.switch_base_screen()], ['settings', lambda x: app.open_settings()],  ['fullscreen',lambda x: app.toggle_full_screen()]]
                 elevation: 10
                 md_bg_color: app.theme_cls.primary_color
-                right_action_items:[['view-list', lambda x: app.switch_lists_screen()], ['library-books', lambda x: app.switch_readinglists_screen_switch()], ['book-open-variant', lambda x: app.switch_open_comics_screen()]]
+                right_action_items:[['view-list', lambda x: app.switch_lists_screen()], ['library-books', lambda x: app.switch_readinglists_screen()], ['book-open-variant', lambda x: app.switch_open_comics_screen()]]
             ScreenManager:
                 id: manager
 

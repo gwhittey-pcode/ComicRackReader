@@ -96,8 +96,7 @@ class OpenComicScreen(Screen):
             pass
         else:
             for name in screen_names:
-                if name in ['base', 'license', 'about', 'readinglistscreen',
-                            'comicracklistscreen', 'open_comicscreen']:
+                if name in self.app.LIST_SCREENS:
                     pass
                 else:
                     c_screen = self.app.manager.get_screen(name)

@@ -195,9 +195,13 @@ class ComicBookScreen(Screen):
 
     def on_pre_enter(self):
         self.app.hide_action_bar()
-
-    def on_enter(self):
         self.build_option_pop()
+        
+
+    def on_pre_leave(self, *args):
+        print('on leave')
+        self.top_pop.dismiss()
+        self.page_nav_popup.dismiss()
 
     def load_UserCurrentPage(self):
         for slide in self.ids.comic_book_carousel.slides:
