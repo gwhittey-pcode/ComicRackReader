@@ -110,8 +110,8 @@ class ComicRackReader(App):
             # 'comic_thumb_height': 300,
             'reading_list_icon_size': 'Small',
             'max_comic_pages_limit':   50,
-            'window_height'          : 1980,
-            'window_width'          : 1080,
+            'window_height'          : 800,
+            'window_width'          : 600,
             
         })
 
@@ -149,15 +149,18 @@ class ComicRackReader(App):
 
     def set_window_size(self):
         app = App.get_running_app()
+
         window_height = app.config.get('Display', 'window_height')
         window_width = app.config.get('Display', 'window_width')
-        Window.size = (int(window_height),int(window_width))
-        #Window.top = 0
-        #Window.left = 0
-        Config.set('graphics', 'position', 'custom')
-        Config.set('graphics', 'height', window_height)
-        Config.set('graphics', 'width',  window_width)
-        Config.write()
+        Window.size = (int(window_width),int(window_height))
+        Window.top = dp(30)
+        Window.left = dp(30)
+        # Config.set('graphics', 'position', 'custom')
+        # Config.set('graphics', 'left', 25)
+        # Config.set('graphics', 'top',  25)
+        # Config.set('graphics', 'height', window_height)
+        # Config.set('graphics', 'width',  window_width)
+        # Config.write()
         
     def build(self):
         self.base_url = self.config.get('Server', 'url')
@@ -169,7 +172,7 @@ class ComicRackReader(App):
         self.screen = StartScreen()  # program main screen
         self.manager = self.screen.ids.manager
         self.nav_drawer = self.screen.ids.nav_drawer
-        self.set_window_size()
+        #self.set_window_size()
         return self.screen
 
     def load_all_kv_files(self, directory_kv_files):
