@@ -25,16 +25,11 @@ sys.path.insert(0, os.path.join(directory, 'libs/applibs'))
 
 try:
     import webbrowser
-    try:
-        import six.moves.urllib
-    except ImportError:
-        pass
-
     import kivy
-    kivy.require('1.9.2')
+    kivy.require('1.11.1')
 
     from kivy.config import Config
-    Config.set('kivy', 'keyboard_mode', 'system')
+    #Config.set('kivy', 'keyboard_mode', 'system')
     Config.set('kivy', 'log_enable', 0)
 
     from kivymd.theming import ThemeManager
