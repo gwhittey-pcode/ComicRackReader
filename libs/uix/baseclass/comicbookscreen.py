@@ -34,7 +34,7 @@ from libs.uix.widgets.comicbook_screen_widgets import ComicBookPageImage,\
     CommonComicsCoverInnerGrid, CommonComicsCoverImage, \
     CommonComicsCoverLabel
 from kivymd.toast import toast
-from libs.applibs.kivymd.dialog import MDDialog
+from kivymd.dialog import MDDialog
 from kivy.loader import Loader
 import json
 from kivymd.toolbar import MDToolbar

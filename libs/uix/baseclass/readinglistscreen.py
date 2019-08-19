@@ -15,11 +15,11 @@ from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
     BooleanProperty
 from kivy.uix.image import AsyncImage
-from libs.applibs.kivymd.imagelists import SmartTileWithLabel
+from kivymd.imagelists import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
-from libs.applibs.kivymd.button import MDRaisedButton
-from libs.applibs.kivymd.button import MDFillRoundFlatIconButton
+from kivymd.button import MDRaisedButton
+from kivymd.button import MDFillRoundFlatIconButton
 from libs.utils.paginator import Paginator
 from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivymd.toast import toast

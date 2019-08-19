@@ -1,10 +1,10 @@
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.image import Image
-from libs.applibs.kivymd.button import MDRaisedButton
+from kivymd.button import MDRaisedButton
 from kivy.app import App
 from kivy.core.window import Window
-from libs.applibs.kivymd.imagelists import SmartTileWithLabel
+from kivymd.imagelists import SmartTileWithLabel
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.clock import Clock
 from functools import partial

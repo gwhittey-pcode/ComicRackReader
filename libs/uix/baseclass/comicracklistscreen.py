@@ -2,9 +2,9 @@ from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, BooleanProperty
-from libs.applibs.kivymd.button import MDIconButton
-from libs.applibs.kivymd.list import ILeftBodyTouch
-from libs.applibs.kivymd.list import ILeftBody
+from kivymd.button import MDIconButton
+from kivymd.list import ILeftBodyTouch
+from kivymd.list import ILeftBody
 from kivy.uix.image import Image
 from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
