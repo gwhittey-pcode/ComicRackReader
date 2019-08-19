@@ -295,7 +295,18 @@ settings_json_hotkeys = json.dumps(
             'section':  'Hotkeys',
             'key':      'hk_open_comicscreen',
 
+        }, 
+        {
+            'type':     'hotkeys',
+            'title':    'Toggle Full Screen',
+            'desc':     'This will set the Hotkeys to Toggle Full Screen',
+            'section':  'Hotkeys',
+            'key':      'hk_toggle_fullscreen',
+
         },
+
+
+
     ])
 #
 # {'type': 'bool',

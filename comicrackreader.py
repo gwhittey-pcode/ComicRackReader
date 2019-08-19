@@ -42,7 +42,8 @@ from settings.settingsjson import settings_json_server, settings_json_dispaly,\
 from kivy.properties import ObjectProperty, StringProperty
 from settings.custom_settings import MySettings
 
-
+SCREEN_LIST = ['base', 'license', 'about', 'readinglistscreen',
+                        'comicracklistscreen', 'open_comicscreen']
 class ComicRackReader(App):
     title = 'ComicRackReader Home Screen'
     icon = 'icon.png'
@@ -136,7 +137,8 @@ class ComicRackReader(App):
             'hk_return_comic_list':   'c',
             'hk_return_base_screen': 'r',
             'hk_toggle_navbar':        'n',
-            'hk_open_comicscreen':     'o'
+            'hk_open_comicscreen':     'o',
+            'hk_toggle_fullscreen':    'f',
 
         })
 
@@ -188,9 +190,6 @@ class ComicRackReader(App):
         '''Called when you press a Key'''
         app = App.get_running_app()
         current_screen = app.manager.current_screen
-        screens_list = ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen', 'open_comicscreen']
-
         hk_next_page = app.config.get('Hotkeys', 'hk_next_page')
         hk_prev_page = app.config.get('Hotkeys', 'hk_prev_page')
         hk_open_page_nav = app.config.get('Hotkeys', 'hk_open_page_nav')
@@ -202,10 +201,11 @@ class ComicRackReader(App):
             'Hotkeys', 'hk_return_base_screen')
         hk_toggle_navbar = app.config.get('Hotkeys', 'hk_toggle_navbar')
         hk_open_comicscreen = app.config.get('Hotkeys', 'hk_open_comicscreen')
+        hk_toggle_fullscreen = app.config.get('Hotkeys', 'hk_toggle_fullscreen')
         print(f'keyboard:{keyboard}')
         print(f'keycode:{keycode}')
         print('************')
-        if not current_screen.name in screens_list:
+        if not current_screen.name in SCREEN_LIST:
             if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
             elif keyboard in (c.string_to_keycode(hk_prev_page), 276):
@@ -227,7 +227,7 @@ class ComicRackReader(App):
                 if self.nav_drawer.state == 'open':
                     self.nav_drawer.toggle_nav_drawer()
                 self.back_screen(event=keyboard)
-            elif keycode == 9:
+            elif keyboard == c.string_to_keycode(hk_toggle_fullscreen):
                 self.toggle_full_screen()
         else:
 
@@ -237,7 +237,7 @@ class ComicRackReader(App):
                 self.back_screen(event=keyboard)
             elif keyboard in (282, 319):
                 pass
-            elif keycode == 9:
+            elif keyboard == c.string_to_keycode(hk_toggle_fullscreen):
                 self.toggle_full_screen()
             elif keyboard == c.string_to_keycode(hk_open_comicscreen):
                 app.manager.current='open_comicscreen'
@@ -255,7 +255,7 @@ class ComicRackReader(App):
         else:
             App.get_running_app().full_screen=False
             Window.fullscreen=False
-
+        
     def back_screen(self, event=None):
         '''Screen manager Called when the Back Key is pressed.'''
         # BackKey pressed.
@@ -398,13 +398,3 @@ class ComicRackReader(App):
         self.screen.ids.action_bar.size=(
             Window.width, self.theme_cls.standard_increment)
 
-    def toggle_full_screen(self):
-        app=App.get_running_app()
-        screen_manager=app.manager
-        comic_book_screen=screen_manager.current_screen
-        if app.full_screen == False:
-            Window.fullscreen='auto'
-            app.full_screen=True
-        else:
-            Window.fullscreen=False
-            app.full_screen=False
