@@ -49,7 +49,7 @@ class ComicRackListScreen(Screen):
     def open_readinglist(self, instance, node):
         self.app.manager.current = 'readinglistscreen'
         readinglistscreen = self.app.manager.get_screen('readinglistscreen')
-
+        readinglistscreen.setup_screen()
         readinglist_slug = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
         readinglistscreen.list_loaded = False

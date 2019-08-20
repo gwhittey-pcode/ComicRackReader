@@ -77,7 +77,7 @@ class BaseScreen(Screen):
                 'Saved', 'last_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
                 'Saved', 'last_reading_list_id')
-            if tmp_readinglist_Id == 'None':
+            if tmp_readinglist_Id == '':
                 return
             else:
                 self.build_last_comic_section(
@@ -123,7 +123,7 @@ class BaseScreen(Screen):
                 'Saved', 'last_comic_id')
             tmp_last_pag_pagnum = self.app.config.get(
                 'Saved', 'last_pag_pagnum')
-            if tmp_last_comic_id == 'None':
+            if tmp_last_comic_id == '':
                 return
             else:
                 new_readinglist = ComicReadingList(

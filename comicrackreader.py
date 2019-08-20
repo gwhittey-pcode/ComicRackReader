@@ -92,10 +92,10 @@ class ComicRackReader(App):
         config.adddefaultsection('General')
         config.adddefaultsection('Saved')
         config.setdefault('General', 'language', 'en')
-        config.setdefault('Saved', 'last_comic_id', 'None')
-        config.setdefault('Saved', 'last_reading_list_id', 'None')
-        config.setdefault('Saved', 'last_reading_list_name', 'None')
-        config.setdefault('Saved', 'last_pag_pagnum', 'None')
+        config.setdefault('Saved', 'last_comic_id', '')
+        config.setdefault('Saved', 'last_reading_list_id', '')
+        config.setdefault('Saved', 'last_reading_list_name', '')
+        config.setdefault('Saved', 'last_pag_pagnum', '')
         config.setdefaults('Server', {
             'url':          'http://',
             'storagedir':       self.user_data_dir,
@@ -180,7 +180,7 @@ class ComicRackReader(App):
             self.directory, 'libs', 'uix', 'kv'))
         self.screen = StartScreen()  # program main screen
         self.manager = self.screen.ids.manager
-        self.nav_drawer = self.screen.ids.nav_drawer
+        #self.nav_drawer = self.screen.ids.nav_drawer
         #self.set_window_size()
         return self.screen
 
@@ -228,19 +228,14 @@ class ComicRackReader(App):
             elif keyboard == c.string_to_keycode(hk_return_base_screen):
                 app.show_action_bar()
                 app.manager.current='base'
-            elif keyboard in (1001, 27):
-                if self.nav_drawer.state == 'open':
-                    self.nav_drawer.toggle_nav_drawer()
-                self.back_screen(event=keyboard)
+            # elif keyboard in (1001, 27):
+            #     if self.nav_drawer.state == 'open':
+            #         self.nav_drawer.toggle_nav_drawer()
+            #     self.back_screen(event=keyboard)
             elif keyboard == c.string_to_keycode(hk_toggle_fullscreen):
                 self.toggle_full_screen()
         else:
-
-            if keyboard in (1001, 27):
-                if self.nav_drawer.state == 'open':
-                    self.nav_drawer.toggle_nav_drawer()
-                self.back_screen(event=keyboard)
-            elif keyboard in (282, 319):
+            if keyboard in (282, 319):
                 pass
             elif keyboard == c.string_to_keycode(hk_toggle_fullscreen):
                 self.toggle_full_screen()
@@ -251,6 +246,10 @@ class ComicRackReader(App):
             elif keyboard == c.string_to_keycode(hk_return_base_screen):
                 app.show_action_bar()
                 app.switch_base_screen()
+            # elif keyboard in (1001, 27):
+            #     if self.nav_drawer.state == 'open':
+            #         self.nav_drawer.toggle_nav_drawer()
+            #     self.back_screen(event=keyboard)
         return True
 
     def toggle_full_screen(self):
