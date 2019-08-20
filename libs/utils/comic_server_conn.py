@@ -47,6 +47,24 @@ class ComicServerConn():
                          on_failure=self.got_error
                          )
 
+    def get_server_data_callback(self, req_url, callback):
+
+        username = self.app.config.get('Server', 'username')
+        api_key = self.app.config.get('Server', 'api_key')
+        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        head = {'Content-Type': "application/json",
+                'Accept': "application/json",
+                'Cookie': str_cookie
+
+                }
+
+        req = UrlRequest(req_url, req_headers=head,
+                         on_success=callback,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error
+                         )
+
     def get_server_data(self, req_url, instance):
 
         username = self.app.config.get('Server', 'username')

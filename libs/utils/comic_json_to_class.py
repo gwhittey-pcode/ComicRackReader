@@ -7,12 +7,13 @@ class ComicReadingList(object):
 
     # ids = DictProperty({})
     # name = StringProperty()
-    def __init__(self, name='', data=None):
+    def __init__(self, name='', data=None, slug=''):
         self.size = 65
         self.comics = []
         self.mynumber = 32
         self.name = name
         self.data = data
+        self.slug = slug
         # self.next_page_url = data['next']
         # self.prev_page_url = data['previous']
     '''Group of Comics in bundlded together'''

@@ -36,13 +36,13 @@ class ComicRackListScreen(Screen):
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
         if self.lists_loaded is False:
-            self.get_reading_list()
+            self.get_comicrack_list()
         self.app.set_screen('ComicRack Lists')
 
     def on_leave(self):
         self.app.list_previous_screens.append(self.name)
 
-    def get_reading_list(self):
+    def get_comicrack_list(self):
         url_send = f'{self.api_url}/lists/'
         self.fetch_data.get_server_data(url_send, self)
 

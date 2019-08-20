@@ -51,6 +51,7 @@ class ComicBookScreen(Screen):
     full_screen = BooleanProperty()
     next_nav_comic_thumb = ObjectProperty()
     prev_nav_comic_thumb = ObjectProperty()
+    pag_pagenum = NumericProperty()
     def __init__(self, readinglist_obj=None, comic_obj=None,
                  paginator_obj=None, pag_pagenum=1, last_load=0, ** kwargs):
         super(ComicBookScreen, self).__init__(**kwargs)
@@ -67,7 +68,6 @@ class ComicBookScreen(Screen):
         self.fetch_data = ComicServerConn()
         self.api_key = self.app.config.get('Server', 'api_key')
         self.popup_bkcolor = (.5, .5, .5, .87)
-        self.pag_pagenum = NumericProperty()
         self.last_load = last_load
         self.full_screen = False
         self.option_isopen = False
@@ -86,7 +86,14 @@ class ComicBookScreen(Screen):
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
         self.paginator_obj = paginator_obj
+        
+        self.app.config.write()
         self.pag_pagenum = pag_pagenum
+        self.app.config.set('Saved', 'last_comic_id', self.comic_obj.Id)
+        self.app.config.set('Saved', 'last_reading_list_id', self.readinglist_obj.slug)
+        self.app.config.set('Saved', 'last_reading_list_name', self.readinglist_obj.name)
+        self.app.config.set('Saved', 'last_pag_pagnum', self.pag_pagenum)
+        self.app.config.write()
         comic_book_carousel = self.ids.comic_book_carousel
         comic_book_carousel.clear_widgets()
         if self.scroller:
@@ -199,7 +206,6 @@ class ComicBookScreen(Screen):
         
 
     def on_pre_leave(self, *args):
-        print('on leave')
         self.top_pop.dismiss()
         self.page_nav_popup.dismiss()
 
@@ -785,7 +791,6 @@ class ComicBookScreen(Screen):
         self.app.manager.current = next_screen_name
 
     def load_next_slide(self):
-        print(self.next_nav_comic_thumb.action_do)
         comic_book_carousel = self.ids.comic_book_carousel
         comic_scatter = comic_book_carousel.current_slide
         if self.use_sections:
@@ -910,7 +915,7 @@ class OptionToolBar(MDToolbar):
                 lambda x: root.option_bar_action('readinglistscreen')],
             ['book-open-variant',
                 lambda x: root.option_bar_action('open_comicscreen')],
-
+            ['close-box-outline', lambda x: app.stop()]
         ]
 
     def option_bar_action(self, *args):

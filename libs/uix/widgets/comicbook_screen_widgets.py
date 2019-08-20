@@ -571,7 +571,6 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     #     comic_screen.load_comic_book(self.comic,new_reading_list)
     #     Clock.schedule_once(self.enable_me, .5)
     def do_action(self, *args):
-        print(f'do action:{self.action_do}')
         if self.action_do == 'open_collection':
             self.open_collection(*args)
         elif self.action_do == 'open_next_section':

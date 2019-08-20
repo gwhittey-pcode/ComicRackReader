@@ -91,6 +91,8 @@ class CustomeST(SmartTileWithLabel):
                 name=new_screen_name, last_load=0)
             self.app.manager.add_widget(new_screen)
             self.app.manager.current = new_screen_name
+        else:
+            self.app.manager.current = new_screen_name
 
 
 class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
@@ -106,7 +108,7 @@ class ReadingListScreen(Screen):
         super(ReadingListScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.fetch_data = None
-        self.readinglist_Id = ObjectProperty()
+        self.readinglist_Id = StringProperty()
         self.readinglist_name = ''
         # self.bind_to_resize()
         self.bind(width=self.my_width_callback)
@@ -127,13 +129,16 @@ class ReadingListScreen(Screen):
         self.comic_thumb_height = 240
         self.comic_thumb_width = 156
 
-    def on_pre_enter(self, *args):
+    def setup_screen(self):
         self.api_key = self.app.config.get('Server', 'api_key')
         self.api_url = self.app.api_url
         self.main_stack = self.ids['main_stack']
         self.m_grid = self.ids["main_grid"]
         self.prev_button = self.ids["prev_button"]
         self.next_button = self.ids["next_button"]
+
+    def on_pre_enter(self, *args):
+
         self.app.show_action_bar()
 
     def on_leave(self):
@@ -207,10 +212,9 @@ class ReadingListScreen(Screen):
             self.ids.page_count.text = f'{self.current_page.number} of {self.paginator_obj.num_pages()}'
 
     def got_json(self, req, result):
-
         self.comic_collection = result
         self.new_readinglist = ComicReadingList(
-            name=self.readinglist_name, data=result)
+            name=self.readinglist_name, data=result, slug=self.readinglist_Id)
         for item in self.new_readinglist.data["items"]:
             new_comic = ComicBook(item)
             self.new_readinglist.add_comic(new_comic)

@@ -24,7 +24,7 @@
 #:import MDFillRoundFlatButton kivymd.button.MDFillRoundFlatButton
 #:import MDLabel kivymd.label.MDLabel
 #:import MDTextFieldRound kivymd.textfields.MDTextFieldRound
-
+#:import MDLabel kivymd.label.MDLabel
 <BaseScreen>:
     name: 'base'
 
@@ -65,6 +65,28 @@
                     md_bg_color: app.theme_cls.primary_color
                     #on_press:app.show_action_bar()
                     on_press: root.open_popup()
+
+            MDLabel:
+                id: last_comic_label
+                text: 'Last Comic Loaded' 
+                size_hint_y: None
+                height: self.texture_size[1]
+                font_style: 'Caption'
+                theme_text_color: 'Primary'
+                markup: True
+                halign: 'center'
+                text_size: self.width - 20, None
+            GridLayout:
+                id: main_grid
+                row_force_default: True
+                size_hint_y: None
+                size_hint_x: None
+                height: self.minimum_height
+                padding: dp(10), dp(10)
+                spacing: dp(4)
+                col_default_width:app.comic_thumb_width
+                row_default_height:app.comic_thumb_height
+                
 
             #     MDIconButton:
             #         icon: 'sd'

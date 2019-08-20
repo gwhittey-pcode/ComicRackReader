@@ -1,4 +1,3 @@
-
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.uix.settings import SettingItem, SettingSpacer, SettingString
 from kivy.properties import StringProperty
@@ -74,13 +73,11 @@ class KeyInputPopup(Popup):
         super(KeyInputPopup, self).__init__(**kwargs)
 
     def on_open(self, *args):
-        print('open')
         Window.unbind(on_keyboard=App.get_running_app().events_program)
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
 
     def on_dismiss(self):
-        print('dismissed')
         Window.bind(on_keyboard=App.get_running_app().events_program)
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None
@@ -89,10 +86,5 @@ class KeyInputPopup(Popup):
         pass
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print('_on_keyboard_down')
-
         code, key = keycode
         self.setting_obj.textinput.text = key
-
-        print(f'keycode:{code}')
-        # self.dismiss()

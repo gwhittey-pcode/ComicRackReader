@@ -30,7 +30,7 @@ from main import __version__
 from libs.translation import Translation
 from libs.uix.baseclass.startscreen import StartScreen
 from libs.uix.lists import Lists
-
+from kivy.logger import Logger
 from kivymd.theming import ThemeManager
 from kivymd.label import MDLabel
 from kivymd.toast import toast
@@ -67,6 +67,8 @@ class ComicRackReader(App):
         self.manager = None
         self.window_language = None
         self.exit_interval = False
+        self.comic_thumb_height = 240
+        self.comic_thumb_width = 156
         self.dict_language = literal_eval(
             open(
                 os.path.join(self.directory, 'data', 'locales',
@@ -88,7 +90,12 @@ class ComicRackReader(App):
         '''Creates an application settings file ComicRackReader.ini.'''
 
         config.adddefaultsection('General')
+        config.adddefaultsection('Saved')
         config.setdefault('General', 'language', 'en')
+        config.setdefault('Saved', 'last_comic_id', 'None')
+        config.setdefault('Saved', 'last_reading_list_id', 'None')
+        config.setdefault('Saved', 'last_reading_list_name', 'None')
+        config.setdefault('Saved', 'last_pag_pagnum', 'None')
         config.setdefaults('Server', {
             'url':          'http://',
             'storagedir':       self.user_data_dir,
@@ -202,9 +209,7 @@ class ComicRackReader(App):
         hk_toggle_navbar = app.config.get('Hotkeys', 'hk_toggle_navbar')
         hk_open_comicscreen = app.config.get('Hotkeys', 'hk_open_comicscreen')
         hk_toggle_fullscreen = app.config.get('Hotkeys', 'hk_toggle_fullscreen')
-        print(f'keyboard:{keyboard}')
-        print(f'keycode:{keycode}')
-        print('************')
+        Logger.debug(f'keyboard:{keyboard}')
         if not current_screen.name in SCREEN_LIST:
             if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
@@ -375,7 +380,6 @@ class ComicRackReader(App):
         self.manager.current='open_comicscreen'
 
     def switch_readinglists_screen(self):
-        print('switch_readinglists_screen')
         self.set_screen(self.manager.get_screen('readinglistscreen').reading_list_title)
         self.manager.current='readinglistscreen'
 
