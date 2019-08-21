@@ -69,8 +69,7 @@ class BaseScreen(Screen):
         # see if user has a api key stored from server
 
         if self.api_key == '':
-            self.myLoginPop.ids.info.text = '[color=#FF0000]No API key sotred \
-            login to get one[/color]'
+            self.myLoginPop.ids.info.text = '[color=#FF0000]No API key stored login to get one[/color]'
             self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
@@ -90,8 +89,7 @@ class BaseScreen(Screen):
         self.app.config.set('Server', 'api_key', api_key)
         self.app.config.write()
         self.api_key = api_key
-        self.myLoginPop.ids.info.text = "[color=#008000]\
-        Login Sucessful API key saved[/color]"
+        self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
         self.build_last_comic_section()
 
     def validate_user(self):
@@ -159,8 +157,7 @@ class BaseScreen(Screen):
                         thumb_size = f'height={y}&width={x}'
                         part_url = f'/Comics/{comic.Id}/Pages/0?'
                         part_api = f'&apiKey={self.api_key}'
-                        c_image_source = f"{self.app.api_url}{part_url}\
-                            {part_api}"
+                        c_image_source = f"{self.app.api_url}{part_url}{part_api}"
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
