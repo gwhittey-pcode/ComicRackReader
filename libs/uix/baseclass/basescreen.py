@@ -69,7 +69,8 @@ class BaseScreen(Screen):
         # see if user has a api key stored from server
 
         if self.api_key == '':
-            self.myLoginPop.ids.info.text = '[color=#FF0000]No API key sotred login to get one[/color]'
+            self.myLoginPop.ids.info.text = '[color=#FF0000]No API key sotred \
+            login to get one[/color]'
             self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
@@ -116,7 +117,8 @@ class BaseScreen(Screen):
         # self.fetch_data.get_list_count(lsit_count_url,self)
 
         self.fetch_data.get_server_data_callback(
-            lsit_count_url, callback=lambda req, results: got_readlist_data(results))
+            lsit_count_url, callback=lambda req, 
+            results: got_readlist_data(results))
 
         def got_readlist_data(results):
             tmp_last_comic_id = self.app.config.get(
@@ -157,7 +159,8 @@ class BaseScreen(Screen):
                         thumb_size = f'height={y}&width={x}'
                         part_url = f'/Comics/{comic.Id}/Pages/0?'
                         part_api = f'&apiKey={self.api_key}'
-                        c_image_source = f"{self.app.api_url}{part_url}{part_api}"
+                        c_image_source = f"{self.app.api_url}{part_url}\
+                            {part_api}"
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
@@ -165,7 +168,8 @@ class BaseScreen(Screen):
                         c.text = strtxt
                         c.text_color = (0, 0, 0, 1)
                         grid.add_widget(c)
-                        tmp_txt = f'Last Comic Load from {new_readinglist.name}'
+                        tmp_txt = f'Last Comic Load from \
+                            {new_readinglist.name}'
                         self.ids.last_comic_label.text = tmp_txt
 
     def update_leaf(self):
