@@ -84,15 +84,24 @@ class BaseScreen(Screen):
                     tmp_readinglist_name, tmp_readinglist_Id)
     # get api key from server and store it in settings.
 
-    def got_api(self, req, result):
-        api_key = result['ApiKey']
-        self.app.config.set('Server', 'api_key', api_key)
-        self.app.config.write()
-        self.api_key = api_key
-        self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
-        self.build_last_comic_section()
-
+    
     def validate_user(self):
+        def got_api(result):
+            api_key = result['ApiKey']
+            self.app.config.set('Server', 'api_key', api_key)
+            self.app.config.write()
+            self.api_key = api_key
+            self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
+            tmp_readinglist_name = self.app.config.get(
+                'Saved', 'last_reading_list_name')
+            tmp_readinglist_Id = self.app.config.get(
+                'Saved', 'last_reading_list_id')
+            if tmp_readinglist_Id == '':
+                return
+            else:
+                self.build_last_comic_section(
+                    tmp_readinglist_name, tmp_readinglist_Id)
+
         user = self.myLoginPop.ids.username_field.text
         pwd = self.myLoginPop.ids.pwd_field.text
         url = self.myLoginPop.ids.url_field.text
@@ -103,7 +112,8 @@ class BaseScreen(Screen):
         self.app.base_url = url.strip()
         self.app.api_url = self.app.base_url + "/BCR"
         req_url = f"{self.app.base_url}/auth"
-        self.fetch_data.get_api_key(req_url, user, pwd, self)
+        self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req, 
+            results: got_api(results))
 
     def build_last_comic_section(self, readinglist_name, readinglist_Id):
         self.readinglist_name = readinglist_name
