@@ -25,8 +25,8 @@ from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivymd.toast import toast
 from kivy.clock import Clock
 from functools import partial
-
-
+from kivy.utils import get_hex_from_color
+from kivy.metrics import dp
 class CustomeST(SmartTileWithLabel):
     my_clock = ObjectProperty()
     do_action = StringProperty()
@@ -199,14 +199,14 @@ class ReadingListScreen(Screen):
             y = self.comic_thumb_height
             thumb_size = f'height={y}&width={x}'
             part_url = f'/Comics/{comic.Id}/Pages/0?'
-            part_api = f'&apiKey={self.api_key}'
+            part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
             c_image_source = f"{self.api_url}{part_url}{part_api}"
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
             strtxt = f"{comic.Series} #{comic.Number}"
-            c.text = strtxt
-            c.text_color = (0, 0, 0, 1)
+            tmp_color =get_hex_from_color((1,1,1,1))
+            c.text = f'[color={tmp_color}]{strtxt}[/color]'
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
             self.ids.page_count.text = f'{self.current_page.number} of {self.paginator_obj.num_pages()}'

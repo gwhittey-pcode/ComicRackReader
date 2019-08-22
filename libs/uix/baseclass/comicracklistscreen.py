@@ -68,7 +68,7 @@ class ComicRackListScreen(Screen):
                 new_node = self.my_tree.add_node(TreeViewLabel(
                     text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']))
+                        0.21176470588235294, 1)))
                 new_node.bind(on_touch_down=self.open_readinglist)
             elif item['Type'] == "ComicListItemFolder":
                 parent = self.my_tree.add_node(

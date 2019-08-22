@@ -37,8 +37,8 @@ from kivy.uix.popup import Popup
 from libs.uix.baseclass.readinglistscreen import CustomeST
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.utils.paginator import Paginator
-
-
+from kivy.utils import get_hex_from_color
+from kivy.metrics import dp
 class LoginPopup(BoxLayout):
     info_text = StringProperty()
 
@@ -156,17 +156,17 @@ class BaseScreen(Screen):
                         y = self.app.comic_thumb_height
                         thumb_size = f'height={y}&width={x}'
                         part_url = f'/Comics/{comic.Id}/Pages/0?'
-                        part_api = f'&apiKey={self.api_key}'
+                        part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
                         c_image_source = f"{self.app.api_url}{part_url}{part_api}"
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
                         strtxt = f"{comic.Series} #{comic.Number}"
-                        c.text = strtxt
-                        c.text_color = (0, 0, 0, 1)
+                        tmp_color =get_hex_from_color((1,1,1,1))
+                        c.text = f'[color={tmp_color}]{strtxt}[/color]'
+#                        c.text_color = self.app.theme_cls.secondary_color
                         grid.add_widget(c)
-                        tmp_txt = f'Last Comic Load from \
-                            {new_readinglist.name}'
+                        tmp_txt = f'Last Comic Load from {new_readinglist.name}'
                         self.ids.last_comic_label.text = tmp_txt
 
     def update_leaf(self):
