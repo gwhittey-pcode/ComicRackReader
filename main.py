@@ -40,7 +40,7 @@ except Exception:
     sys.exit(1)
 
 
-__version__ = '.3'
+__version__ = '.87'
 
 
 def main():
