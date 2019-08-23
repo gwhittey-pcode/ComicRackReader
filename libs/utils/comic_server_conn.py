@@ -83,14 +83,14 @@ class ComicServerConn():
                          on_failure=self.got_error
                          )
 
-    def get_api_key(self, req_url, username, password, instance):
+    def get_api_key(self, req_url, username, password, callback):
 
         head = {'Content-type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'}
         strbody = f'username={username}&password={password}&rememberMe=True'
         req = UrlRequest(req_url, req_headers=head,
                          req_body=strbody, method="POST",
-                         on_success=instance.got_api,
+                         on_success=callback,
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
                          on_failure=self.got_error
