@@ -173,7 +173,7 @@ class ComicRackReader(App):
         
     def build(self):
         self.base_url = self.config.get('Server', 'url')
-        self.api_url = self.base_url + "/BCR"
+        self.api_url = self.base_url + "/API"
         self.api_key = self.config.get('Server', 'api_key')
         self.set_value_from_config()
         self.load_all_kv_files(os.path.join(

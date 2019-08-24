@@ -62,13 +62,12 @@ class ComicRackListScreen(Screen):
         self.my_tree.clear_widgets()
         self.my_tree.bind(minimum_height=self.my_tree.setter('height'))
         for item in result:
-
             if item['Type'] == "ComicLibraryListItem" or\
                     item['Type'] == "ComicSmartListItem":
                 new_node = self.my_tree.add_node(TreeViewLabel(
                     text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1)))
+                        0.21176470588235294, 1), id=item['Id']))
                 new_node.bind(on_touch_down=self.open_readinglist)
             elif item['Type'] == "ComicListItemFolder":
                 parent = self.my_tree.add_node(

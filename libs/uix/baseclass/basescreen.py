@@ -110,7 +110,7 @@ class BaseScreen(Screen):
         self.app.get_running_app().config.set('Server', 'url', url)
         self.app.get_running_app().config.write()
         self.app.base_url = url.strip()
-        self.app.api_url = self.app.base_url + "/BCR"
+        self.app.api_url = self.app.base_url + "/API"
         req_url = f"{self.app.base_url}/auth"
         self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req, 
             results: got_api(results))
