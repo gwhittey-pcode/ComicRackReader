@@ -39,6 +39,8 @@ from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.utils.paginator import Paginator
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
+
+
 class LoginPopup(BoxLayout):
     info_text = StringProperty()
 
@@ -84,7 +86,6 @@ class BaseScreen(Screen):
                     tmp_readinglist_name, tmp_readinglist_Id)
     # get api key from server and store it in settings.
 
-    
     def validate_user(self):
         def got_api(result):
             api_key = result['ApiKey']
@@ -110,10 +111,10 @@ class BaseScreen(Screen):
         self.app.get_running_app().config.set('Server', 'url', url)
         self.app.get_running_app().config.write()
         self.app.base_url = url.strip()
-        self.app.api_url = self.app.base_url + "/BCR"
+
         req_url = f"{self.app.base_url}/auth"
-        self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req, 
-            results: got_api(results))
+        self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req,
+                                    results: got_api(results))
 
     def build_last_comic_section(self, readinglist_name, readinglist_Id):
         self.readinglist_name = readinglist_name
@@ -125,7 +126,7 @@ class BaseScreen(Screen):
         # self.fetch_data.get_list_count(lsit_count_url,self)
 
         self.fetch_data.get_server_data_callback(
-            lsit_count_url, callback=lambda req, 
+            lsit_count_url, callback=lambda req,
             results: got_readlist_data(results))
 
         def got_readlist_data(results):
@@ -172,7 +173,7 @@ class BaseScreen(Screen):
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
                         strtxt = f"{comic.Series} #{comic.Number}"
-                        tmp_color =get_hex_from_color((1,1,1,1))
+                        tmp_color = get_hex_from_color((1, 1, 1, 1))
                         c.text = f'[color={tmp_color}]{strtxt}[/color]'
 #                        c.text_color = self.app.theme_cls.secondary_color
                         grid.add_widget(c)
