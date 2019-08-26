@@ -21,7 +21,7 @@ class ComicServerConn():
     def get_page_size_data(self, req_url, callback):
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
-        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/json",
                 'Accept': "application/json", 'Cookie': str_cookie
                 }
@@ -35,7 +35,7 @@ class ComicServerConn():
         data = f'CurrentPage={index}'
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
-        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/x-www-form-urlencoded",
                 'Accept': "application/json", 'Cookie': str_cookie
                 }
@@ -48,10 +48,10 @@ class ComicServerConn():
                          )
 
     def get_server_data_callback(self, req_url, callback):
-
+        print(req_url)
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
-        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/json",
                 'Accept': "application/json",
                 'Cookie': str_cookie
@@ -69,7 +69,7 @@ class ComicServerConn():
 
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
-        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/json",
                 'Accept': "application/json",
                 'Cookie': str_cookie
@@ -99,7 +99,7 @@ class ComicServerConn():
     def get_list_count(self, req_url, instance):
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
-        str_cookie = f'BCR_apiKey={api_key}; BCR_username={username}'
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
         head = {'Content-Type': "application/json",
                 'Accept': "application/json",
                 'Cookie': str_cookie
