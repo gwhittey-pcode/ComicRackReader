@@ -27,6 +27,8 @@ from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
+
+
 class CustomeST(SmartTileWithLabel):
     my_clock = ObjectProperty()
     do_action = StringProperty()
@@ -37,11 +39,15 @@ class CustomeST(SmartTileWithLabel):
                             'text': '[color=#000000]Read[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Mark as Read[/color]',
+                            'text': '[color=#000000]Download this Comic[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Mark as UnRead[/color]',
-                            'callback': self.callback_for_menu_items}]
+                            'text': '[color=#000000]Download this Page[/color]',
+                            'callback': self.callback_for_menu_items},
+                           {'viewclass': 'MDMenuItem',
+                            'text': '[color=#000000]Download Readlist[/color]',
+                            'callback': self.callback_for_menu_items}
+                           ]
         self.app = App.get_running_app()
         self.comic_slug = StringProperty()
         self.page_count = NumericProperty()
@@ -68,7 +74,7 @@ class CustomeST(SmartTileWithLabel):
 
     def on_press(self):
         callback = partial(self.menu)
-        self.do_action = 'read'
+        self.do_action = 'menu'
         Clock.schedule_once(callback, 1.5)
         self.my_clock = callback
 
@@ -77,7 +83,7 @@ class CustomeST(SmartTileWithLabel):
 
     def on_release(self):
         Clock.unschedule(self.my_clock)
-        self.do_action = 'read'
+        self.do_action = 'menu'
         return super(CustomeST, self).on_press()
 
     def open_comic(self):
@@ -205,7 +211,7 @@ class ReadingListScreen(Screen):
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
             strtxt = f"{comic.Series} #{comic.Number}"
-            tmp_color =get_hex_from_color((1,1,1,1))
+            tmp_color = get_hex_from_color((1, 1, 1, 1))
             c.text = f'[color={tmp_color}]{strtxt}[/color]'
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
