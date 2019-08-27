@@ -18,6 +18,7 @@ from kivy.uix.image import AsyncImage
 from kivymd.imagelists import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
+from libs.utils.server_sync import sync_server_reduced
 from kivymd.button import MDRaisedButton
 from kivymd.button import MDFillRoundFlatIconButton
 from libs.utils.paginator import Paginator
@@ -27,6 +28,7 @@ from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
+import ntpath
 
 
 class CustomeST(SmartTileWithLabel):
@@ -104,7 +106,46 @@ class CustomeST(SmartTileWithLabel):
 class CustomMDFillRoundFlatIconButton(MDFillRoundFlatIconButton):
     def __init__(self, **kwargs):
         _url = ObjectProperty()
+        page_num = NumericProperty()
         super(CustomMDFillRoundFlatIconButton, self).__init__(**kwargs)
+
+
+class SyncButton(MDFillRoundFlatIconButton):
+    my_clock = ObjectProperty()
+    do_action = StringProperty()
+
+    def __init__(self, **kwargs):
+        super(SyncButton, self).__init__(**kwargs)
+        self.app = App.get_running_app()
+        self.menu_items = [{'viewclass': 'MDMenuItem',
+                            'text': '[color=#000000]Reduce File Size[/color]',
+                            'callback': self.callback_for_menu_items},
+                           {'viewclass': 'MDMenuItem',
+                            'text': '[color=#000000]Orginal File[/color]',
+                            'callback': self.callback_for_menu_items},
+
+                           ]
+
+    def callback_for_menu_items(self, *args):
+        if args[0] == "[color=#000000]Reduce File Size[/color]":
+            self.app.manager.current_screen.sync_readinglist_button()
+            print('Sync - Reduce File Size')
+        elif args[0] == "[color=#000000]Orginal File[/color]":
+            print('Sync - Orginal File')
+
+    def on_press(self):
+        callback = partial(self.menu)
+        self.do_action = 'menu'
+        Clock.schedule_once(callback, 1.5)
+        self.my_clock = callback
+
+    def menu(self, *args):
+        self.do_action = 'menu'
+
+    def on_release(self):
+        Clock.unschedule(self.my_clock)
+        self.do_action = 'menu'
+        return super(SyncButton, self).on_press()
 
 
 class ReadingListScreen(Screen):
@@ -169,6 +210,7 @@ class ReadingListScreen(Screen):
         self.fetch_data.get_server_data(lsit_count_url, self)
 
     def get_page(self, instance):
+        print(instance.id)
         page_num = instance.page_num
         self.app.set_screen(self.readinglist_name + f' Page {page_num}')
         self.reading_list_title = self.readinglist_name + f' Page {page_num}'
@@ -252,3 +294,21 @@ class ReadingListScreen(Screen):
             self.prev_button.page_num = ''
         self.build_page(page.object_list)
         self.list_loaded = True
+
+    def sync_readinglist_button(self):
+        sync_server_reduced(reading_list_obj=self.new_readinglist)
+        # return
+        # for comic in self.new_readinglist.comics:
+        #     file_name = ntpath.basename(comic.file_path)
+        #     lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
+        #     self.fetch_data.get_server_file_download(
+        #         lsit_count_url, callback=lambda req,
+        #         results: got_readlist_data(results),
+        #         file_path=f'./sync/{file_name}'
+        #     )
+
+        # def give_on_progress(request, current_size, total_size):
+        #     print(f'current_size:{current_size}')
+
+        # def got_readlist_data(results):
+        #     print('ok')

@@ -51,14 +51,14 @@
             text: ''
             center_x:main_stack.center_x
             disabled:True
-        CustomMDFillRoundFlatIconButton:
-            id:next_button
+        SyncButton:
+            id:sync_button
             text: 'Sync'
             icon: "cloud-sync"
             width: dp(150)
             padding: dp(10), dp(10)
             center_x:main_stack.right - (self.width)
-            on_release:root.get_page(self)
+            #on_release:root.sync_readinglist_button()
 
         ScrollView:
             do_scroll_x: False
@@ -88,3 +88,7 @@
     on_release:
         if self.do_action is 'read': self.open_comic()
         else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
+
+<SyncButton>
+    on_release:
+        MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)

@@ -116,3 +116,4 @@ class ComicBook(object):
         self.UserCurrentPage = comic_data['UserCurrentPage']
         self.PageCount = comic_data['PageCount']
         self.Summary = comic_data['Summary']
+        self.file_path = comic_data['FilePath']
