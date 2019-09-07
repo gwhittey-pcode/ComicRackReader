@@ -21,18 +21,14 @@ from kivy.uix.button import Button
 from kivy.properties import StringProperty
 import urllib.parse
 from libs.utils.comic_server_conn import ComicServerConn
-from kivymd.list import OneLineListItem
-from kivymd.accordionlistitem import MDAccordionListItem
-from kivymd.list import OneLineIconListItem, OneLineAvatarListItem
+from kivymd.uix.accordionlistitem import MDAccordionListItem
+from kivymd.uix.list import OneLineIconListItem, OneLineAvatarListItem, ILeftBodyTouch, ILeftBody
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
-from kivymd.button import MDIconButton
-from kivymd.label import MDLabel
-from kivymd.list import ILeftBodyTouch
-from kivymd.list import ILeftBody
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
-from kivymd.toast import toast
 from kivy.uix.popup import Popup
 from libs.uix.baseclass.readinglistscreen import CustomeST
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook

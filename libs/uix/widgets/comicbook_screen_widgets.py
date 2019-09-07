@@ -9,7 +9,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from libs.utils.comic_server_conn import ComicServerConn
-from kivymd.button import MDRaisedButton
+from kivymd.uix.button import MDRaisedButton
 from kivy.graphics.transformation import Matrix
 from kivy.app import App
 from kivy.clock import Clock

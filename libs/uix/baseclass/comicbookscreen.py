@@ -33,11 +33,11 @@ from libs.uix.widgets.comicbook_screen_widgets import ComicBookPageImage,\
     ThumbPopPagebntlbl, CommonComicsScroll, CommonComicsOuterGrid,\
     CommonComicsCoverInnerGrid, CommonComicsCoverImage, \
     CommonComicsCoverLabel
-from kivymd.toast import toast
-from kivymd.dialog import MDDialog
+from kivymd.toast.kivytoast import toast
+from kivymd.uix.dialog import MDDialog
 from kivy.loader import Loader
 import json
-from kivymd.toolbar import MDToolbar
+from kivymd.uix.toolbar import MDToolbar
 from kivy.core.window import Window
 
 

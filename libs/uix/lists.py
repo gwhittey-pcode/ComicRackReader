@@ -25,10 +25,10 @@ from kivy.properties import (
     ObjectProperty, DictProperty, StringProperty, BooleanProperty, ListProperty
 )
 
-from kivymd.selectioncontrols import MDCheckbox
-from kivymd.ripplebehavior import CircularRippleBehavior
-from kivymd.button import MDIconButton
-from kivymd.list import (
+from kivymd.uix.selectioncontrol import MDCheckbox
+from kivymd.uix.ripplebehavior import CircularRippleBehavior
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.list import (
     ILeftBody, ILeftBodyTouch, IRightBodyTouch, TwoLineAvatarIconListItem,
     OneLineListItem, OneLineIconListItem, ThreeLineAvatarIconListItem,
     OneLineAvatarIconListItem
@@ -218,7 +218,7 @@ class Lists(BoxLayout):
             list_items.add_widget(icon_item)
 
     def two_list_custom_icon(self, dict_items, instance_icon):
-       for name_item in dict_items.keys():
+        for name_item in dict_items.keys():
             desc_item, icon_item = dict_items[name_item]
             icon_item = instance_icon(
                 text=name_item, secondary_text=desc_item, id=name_item,
@@ -232,8 +232,7 @@ class Lists(BoxLayout):
 
 
 Builder.load_string(
-'''
-#:import MDList kivymd.list.MDList
+    '''
 
 <RightButton>:
     # size_hint_x: None

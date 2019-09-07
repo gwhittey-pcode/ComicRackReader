@@ -15,15 +15,14 @@ from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
     BooleanProperty
 from kivy.uix.image import AsyncImage
-from kivymd.imagelists import SmartTileWithLabel
+from kivymd.uix.imagelist import SmartTileWithLabel
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
-from libs.utils.server_sync import sync_server_reduced
-from kivymd.button import MDRaisedButton
-from kivymd.button import MDFillRoundFlatIconButton
+from libs.utils.server_sync import SyncServer
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.button import MDFillRoundFlatIconButton
 from libs.utils.paginator import Paginator
 from libs.uix.baseclass.comicbookscreen import ComicBookScreen
-from kivymd.toast import toast
 from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
@@ -76,7 +75,7 @@ class CustomeST(SmartTileWithLabel):
 
     def on_press(self):
         callback = partial(self.menu)
-        self.do_action = 'menu'
+        self.do_action = 'read'
         Clock.schedule_once(callback, 1.5)
         self.my_clock = callback
 
@@ -120,9 +119,9 @@ class SyncButton(MDFillRoundFlatIconButton):
         self.menu_items = [{'viewclass': 'MDMenuItem',
                             'text': '[color=#000000]Reduce File Size[/color]',
                             'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Orginal File[/color]',
-                            'callback': self.callback_for_menu_items},
+                           #    {'viewclass': 'MDMenuItem',
+                           #     'text': '[color=#000000]Orginal File[/color]',
+                           #     'callback': self.callback_for_menu_items},
 
                            ]
 
@@ -134,10 +133,12 @@ class SyncButton(MDFillRoundFlatIconButton):
             print('Sync - Orginal File')
 
     def on_press(self):
-        callback = partial(self.menu)
-        self.do_action = 'menu'
-        Clock.schedule_once(callback, 1.5)
-        self.my_clock = callback
+        self.app.manager.current_screen.sync_readinglist_button()
+
+        # callback = partial(self.menu)
+        # self.do_action = 'menu'
+        # Clock.schedule_once(callback, 1.5)
+        # self.my_clock = callback
 
     def menu(self, *args):
         self.do_action = 'menu'
@@ -296,7 +297,9 @@ class ReadingListScreen(Screen):
         self.list_loaded = True
 
     def sync_readinglist_button(self):
-        sync_server_reduced(reading_list_obj=self.new_readinglist)
+        self.app.manager.current = 'syncscreen'
+        #sync_s = SyncServer()
+        # sync_s.sync_server_reduced(reading_list_obj=self.new_readinglist)
         # return
         # for comic in self.new_readinglist.comics:
         #     file_name = ntpath.basename(comic.file_path)

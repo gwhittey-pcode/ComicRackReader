@@ -9,7 +9,7 @@
 # 
 # LICENSE: MIT
 
-#:import MDToolbar kivymd.toolbar.MDToolbar
+
 #:import NavDrawer libs.uix.baseclass.navdrawer.NavDrawer
 #:import License libs.uix.baseclass.license.License
 #:import BaseScreen libs.uix.baseclass.basescreen.BaseScreen
@@ -17,6 +17,7 @@
 #:import ReadingListScreen libs.uix.baseclass.readinglistscreen.ReadingListScreen
 #:import ComicRackListScreen libs.uix.baseclass.comicracklistscreen.ComicRackListScreen
 #:import OpenComicScreen libs.uix.baseclass.open_comics_screen.OpenComicScreen
+#:import SyncScreen libs.uix.baseclass.sync_screen.SyncScreen
 <StartScreen>
     orientation: 'vertical'
 
@@ -54,3 +55,6 @@
             
             OpenComicScreen
                 id: open_comicscreen
+
+            SyncScreen
+                id:syncscreen

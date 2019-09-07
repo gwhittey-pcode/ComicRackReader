@@ -32,8 +32,8 @@ from libs.uix.baseclass.startscreen import StartScreen
 from libs.uix.lists import Lists
 from kivy.logger import Logger
 from kivymd.theming import ThemeManager
-from kivymd.label import MDLabel
-from kivymd.toast import toast
+from kivymd.uix.label import MDLabel
+from kivymd.toast.kivytoast import toast
 
 # from dialogs import card
 # End KivyMD imports
@@ -42,8 +42,6 @@ from settings.settingsjson import settings_json_server, settings_json_dispaly,\
 from kivy.properties import ObjectProperty, StringProperty
 from settings.custom_settings import MySettings
 
-SCREEN_LIST = ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen', 'open_comicscreen']
 class ComicRackReader(App):
     title = 'ComicRackReader Home Screen'
     icon = 'icon.png'
@@ -58,9 +56,9 @@ class ComicRackReader(App):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
-        
         self.LIST_SCREENS = ['base', 'license', 'about', 'readinglistscreen',
-        'comicracklistscreen', 'open_comicscreen']
+                        'comicracklistscreen', 'open_comicscreen', 'syncscreen']
+
         self.list_previous_screens = ['base']
         self.window = Window
         self.config = ConfigParser()
@@ -210,7 +208,7 @@ class ComicRackReader(App):
         hk_open_comicscreen = app.config.get('Hotkeys', 'hk_open_comicscreen')
         hk_toggle_fullscreen = app.config.get('Hotkeys', 'hk_toggle_fullscreen')
         Logger.debug(f'keyboard:{keyboard}')
-        if not current_screen.name in SCREEN_LIST:
+        if not current_screen.name in LIST_SCREENS:
             if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
             elif keyboard in (c.string_to_keycode(hk_prev_page), 276):
