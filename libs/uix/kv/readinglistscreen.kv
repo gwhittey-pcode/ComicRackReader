@@ -50,7 +50,7 @@
             disabled:True
         SyncButton:
             id:sync_button
-            text: 'Sync'
+            text: 'Sync this page'
             icon: "cloud-sync"
             width: dp(150)
             padding: dp(10), dp(10)
@@ -88,4 +88,5 @@
 
 <SyncButton>
     on_release:
-        MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
+        if self.do_action is 'read': self.do_sync_rf()
+        else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)

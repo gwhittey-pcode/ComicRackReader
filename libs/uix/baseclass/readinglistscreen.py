@@ -21,12 +21,15 @@ from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.utils.server_sync import SyncServer
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.button import MDFillRoundFlatIconButton
+from kivymd.toast.kivytoast.kivytoast import toast
 from libs.utils.paginator import Paginator
 from libs.uix.baseclass.comicbookscreen import ComicBookScreen
 from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
+
+
 import ntpath
 
 
@@ -133,12 +136,10 @@ class SyncButton(MDFillRoundFlatIconButton):
             print('Sync - Orginal File')
 
     def on_press(self):
-        self.app.manager.current_screen.sync_readinglist_button()
-
-        # callback = partial(self.menu)
-        # self.do_action = 'menu'
-        # Clock.schedule_once(callback, 1.5)
-        # self.my_clock = callback
+        callback = partial(self.menu)
+        self.do_action = 'read'
+        Clock.schedule_once(callback, 1.5)
+        self.my_clock = callback
 
     def menu(self, *args):
         self.do_action = 'menu'
@@ -147,6 +148,9 @@ class SyncButton(MDFillRoundFlatIconButton):
         Clock.unschedule(self.my_clock)
         self.do_action = 'menu'
         return super(SyncButton, self).on_press()
+
+    def do_sync_rf(self):
+        self.app.manager.current_screen.sync_readinglist_button()
 
 
 class ReadingListScreen(Screen):
@@ -167,7 +171,6 @@ class ReadingListScreen(Screen):
         self.new_readinglist = None
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
-        comic_reading_list = ObjectProperty()
         self.api_key = self.app.config.get('Server', 'api_key')
         self.list_count = ''
         self.paginator_obj = ObjectProperty()
@@ -176,6 +179,8 @@ class ReadingListScreen(Screen):
         self.list_loaded = False
         self.comic_thumb_height = 240
         self.comic_thumb_width = 156
+        self.file_download = True
+        self.num_file_done = 0
 
     def setup_screen(self):
         self.api_key = self.app.config.get('Server', 'api_key')
@@ -296,22 +301,61 @@ class ReadingListScreen(Screen):
         self.build_page(page.object_list)
         self.list_loaded = True
 
+    def sync_delayed_work(self, func, items, delay=0):
+        '''Apply the func() on each item contained in items
+        '''
+        if not items:
+            return
+
+        def _sync_delayed_work(*l):
+            item = items.pop()
+            if func(item) is False or not len(items):
+                return False
+            Clock.schedule_once(_sync_delayed_work, delay)
+        Clock.schedule_once(_sync_delayed_work, delay)
+
+    def download_file(self, comic):
+        def got_file(results):
+            self.num_file_done += 1
+            toast(f'{file_name} Synced')
+            self.file_download = True
+        self.file_download = False
+        file_name = ntpath.basename(comic.file_path)
+        self.app.store.put(comic.Id,
+                           file=file_name,
+                           Series=comic.Series,
+                           Number=comic.Number,
+                           Date=comic.date,
+                           UserCurrentPage=comic.UserCurrentPage,
+                           PageCount=comic.PageCount,
+                           Summary=comic.Summary
+                           )
+        lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
+        self.fetch_data.get_server_file_download(
+            lsit_count_url, callback=lambda req,
+            results: got_file(results),
+            file_path=f'./sync/{file_name}'
+        )
+
+    def _finish_sync(self, dt):
+        def _finish_toast(dt):
+            toast('Reading List has been Synceddd')
+        page = self.paginator_obj.page(self.current_page.number)
+        list_comics = page.object_list
+        num_comic = len(list_comics)
+        if self.num_file_done == num_comic:
+            Clock.schedule_once(_finish_toast, 3)
+
+            self.event.cancel()
+            print('done')
+
     def sync_readinglist_button(self):
-        self.app.manager.current = 'syncscreen'
-        #sync_s = SyncServer()
-        # sync_s.sync_server_reduced(reading_list_obj=self.new_readinglist)
-        # return
-        # for comic in self.new_readinglist.comics:
-        #     file_name = ntpath.basename(comic.file_path)
-        #     lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
-        #     self.fetch_data.get_server_file_download(
-        #         lsit_count_url, callback=lambda req,
-        #         results: got_readlist_data(results),
-        #         file_path=f'./sync/{file_name}'
-        #     )
+        page = self.paginator_obj.page(self.current_page.number)
+        list_comics = page.object_list
+        self.sync_delayed_work(self.download_file, list_comics, delay=.25)
 
-        # def give_on_progress(request, current_size, total_size):
-        #     print(f'current_size:{current_size}')
+        self.event = Clock.schedule_interval(self._finish_sync, 0.5)
 
-        # def got_readlist_data(results):
-        #     print('ok')
+        # sync_screen = self.app.manager.get_screen('syncscreen')
+        # sync_screen.obj_readinglist = page.object_list
+        # self.app.manager.current = 'syncscreen'

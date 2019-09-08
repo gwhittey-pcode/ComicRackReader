@@ -59,7 +59,6 @@ class ComicBookScreen(Screen):
         self.app = App.get_running_app()
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
-        self.api_key = self.app.config.get('Server', 'api_key')
         self.current_page = None
         self.comic_obj = ObjectProperty()
         self.comic_obj = None
@@ -73,6 +72,7 @@ class ComicBookScreen(Screen):
         self.option_isopen = False
         self.next_dialog_open = False
         self.prev_dialog_open = False
+        
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
        # Window.bind(on_keyboard=self.events_program)

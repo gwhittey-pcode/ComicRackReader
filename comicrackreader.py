@@ -34,7 +34,7 @@ from kivy.logger import Logger
 from kivymd.theming import ThemeManager
 from kivymd.uix.label import MDLabel
 from kivymd.toast.kivytoast import toast
-
+from kivy.storage.jsonstore import JsonStore
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
@@ -72,7 +72,7 @@ class ComicRackReader(App):
                 os.path.join(self.directory, 'data', 'locales',
                              'locales.txt')).read()
         )
-        
+        self.store  = JsonStore('sync/comics.json')
         # self.translation = Translation(
         #     self.lang, 'Ttest', os.path.join(self.directory,
         # data', 'locales')
@@ -208,7 +208,7 @@ class ComicRackReader(App):
         hk_open_comicscreen = app.config.get('Hotkeys', 'hk_open_comicscreen')
         hk_toggle_fullscreen = app.config.get('Hotkeys', 'hk_toggle_fullscreen')
         Logger.debug(f'keyboard:{keyboard}')
-        if not current_screen.name in LIST_SCREENS:
+        if not current_screen.name in self.LIST_SCREENS:
             if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
             elif keyboard in (c.string_to_keycode(hk_prev_page), 276):

@@ -127,7 +127,6 @@ class ComicServerConn():
 
         req = UrlRequest(req_url, req_headers=head,
                          on_success=callback,
-                         on_progress=update_progress,
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
                          on_failure=self.got_error,

@@ -1,22 +1,60 @@
+import os
+import ntpath
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, BooleanProperty
-from kivymd.uix.button import MDIconButton
-from kivymd.uix.list import ILeftBodyTouch, ILeftBody
+
 from kivy.uix.image import Image
 from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
 from kivy.logger import Logger
+from kivy.network.urlrequest import UrlRequest
+
+from kivymd.toast.kivytoast.kivytoast import toast
+from kivymd.uix.progressloader import MDProgressLoader
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.list import ILeftBodyTouch, ILeftBody
+from kivy.clock import Clock
 
 
-class MyTv(TreeView):
+class MyMDProgressLoader(MDProgressLoader):
+
     def __init__(self, **kwargs):
-        super(MyTv, self).__init__(**kwargs)
-    pass
+        super(MyMDProgressLoader, self).__init__(**kwargs)
+        pass
+        self.app = App.get_running_app()
+
+    def retrieve_progress_load(self, url, path):
+        """
+        :type url: str;
+        :param url: link to content;
+
+        :type path: str;
+        :param path: path to save content;
+        """
+        username = self.app.config.get('Server', 'username')
+        api_key = self.app.config.get('Server', 'api_key')
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
+        head = {'Content-Type': "application/json",
+                'Accept': "application/json",
+                'Cookie': str_cookie
+
+                }
+        print('ok')
+        req = UrlRequest(
+            url,
+            req_headers=head,
+            on_progress=self.update_progress,
+            chunk_size=1024,
+            on_success=self.on_success,
+            file_path=path,
+        )
 
 
 class SyncScreen(Screen):
+    obj_readinglist = ObjectProperty()
+
     def __init__(self, **kwargs):
         self.app = App.get_running_app()
         self.fetch_data = None
@@ -27,68 +65,88 @@ class SyncScreen(Screen):
         super(SyncScreen, self).__init__(**kwargs)
         self.lists_loaded = BooleanProperty()
         self.lists_loaded = False
+        self.api_key = self.app.config.get('Server', 'api_key')
+        self.file_download = True
 
-    def on_pre_enter(self):
-        self.app.show_action_bar()
+    def set_chevron_back_screen(self):
+        '''Sets the return chevron to the previous screen in ToolBar.'''
 
-    def on_enter(self, *args):
-        self.base_url = self.app.base_url
-        self.api_url = self.app.api_url
-        if self.lists_loaded is False:
-            self.get_comicrack_list()
-        self.app.set_screen('ComicRack Lists')
+        pass
 
-    def on_leave(self):
-        self.app.list_previous_screens.append(self.name)
+    def download_progress_hide(self, instance_progress, value):
+        '''Hides progress progress.'''
+        pass
 
-    def get_comicrack_list(self):
-        url_send = f'{self.api_url}/lists/'
-        self.fetch_data.get_server_data(url_send, self)
+    def download_progress_show(self, instance_progress):
+        self.set_chevron_back_screen()
+        instance_progress.open()
+        instance_progress.animation_progress_from_fade()
 
-    def open_readinglist(self, instance, node):
-        self.app.manager.current = 'readinglistscreen'
-        readinglistscreen = self.app.manager.get_screen('readinglistscreen')
-        readinglistscreen.setup_screen()
-        readinglist_slug = instance.id
-        readinglist_name = (instance.text).split(' : ')[0]
-        readinglistscreen.list_loaded = False
-        readinglistscreen.collect_readinglist_data(
-            readinglist_name, readinglist_slug)
+    def delayed_work(self, func, items, delay=0):
+        '''Apply the func() on each item contained in items
+        '''
+        if not items:
+            return
 
-    def got_json(self, req, result):
-        self.ids.mytv.clear_widgets()
-        self.my_tree = self.ids.mytv
-        self.my_tree.clear_widgets()
-        self.my_tree.bind(minimum_height=self.my_tree.setter('height'))
-        for item in result:
-            if item['Type'] == "ComicLibraryListItem" or\
-                    item['Type'] == "ComicSmartListItem":
-                new_node = self.my_tree.add_node(TreeViewLabel(
-                    text=item['Name'], color=(
-                        0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']))
-                new_node.bind(on_touch_down=self.open_readinglist)
-            elif item['Type'] == "ComicListItemFolder":
-                parent = self.my_tree.add_node(
-                    TreeViewLabel(text=item['Name'], color=(
-                        0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']))
-                self.set_files(parent, item['Lists'])
-        self.lists_loaded = True
+        def _finish_toast(self):
+            toast('Reading List has been Synced')
 
-    def set_files(self, parent, child):
-        for item in child:
-            if item['Type'] == "ComicLibraryListItem" or\
-                    item['Type'] == "ComicSmartListItem" or\
-                    item['Type'] == "ComicIdListItem":
-                new_node = self.my_tree.add_node(TreeViewLabel(
-                    text=item['Name'], color=(
-                        0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']), parent)
-                new_node.bind(on_touch_down=self.open_readinglist)
-            elif item['Type'] == "ComicListItemFolder":
-                sub_parent = self.my_tree.add_node(TreeViewLabel(
-                    text=item['Name'], color=(
-                        0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']), parent)
-                self.set_files(sub_parent, item['Lists'])
+        def _delayed_work(*l):
+            if self.file_download is not False:
+                item = items.pop()
+                if func(item) is False or not len(items):
+                    Clock.schedule_once(_finish_toast, 3)
+                    return False
+                Clock.schedule_once(_delayed_work, delay)
+            else:
+                Clock.schedule_once(_delayed_work, delay)
+        Clock.schedule_once(_delayed_work, delay)
+
+    def create_image(self, comic):
+
+        def got_file(results):
+            toast(f'{file_name} Synced')
+            self.file_download = True
+        self.file_download = False
+        file_name = ntpath.basename(comic.file_path)
+        lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
+        self.fetch_data.get_server_file_download(
+            lsit_count_url, callback=lambda req,
+            results: got_file(results),
+            file_path=f'./sync/{file_name}'
+        )
+
+    def show_example_download_file(self):
+        list_comics = self.obj_readinglist
+        self.delayed_work(self.create_image, list_comics, delay=.5)
+        # for comic in list_comics:
+        #     file_name = ntpath.basename(comic.file_path)
+        #     lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
+        #     self.fetch_data.get_server_file_download(
+        #         lsit_count_url, callback=lambda req,
+        #         results: got_readlist_data(results),
+        #         file_path=f'./sync/{file_name}'
+        #     )
+
+        def give_on_progress(request, current_size, total_size):
+            toast('Started')
+
+        def got_readlist_data(results):
+            print('ok')
+        # self.sync_file()
+
+    def sync_file(self):
+        def download_complete():
+            toast('Done')
+        for comic in self.obj_readinglist:
+            file_name = ntpath.basename(comic.file_path)
+            file_link = f'{self.api_url}/Comics/{comic.Id}/Sync/'
+
+            progress = MyMDProgressLoader(
+                url_on_image=file_link,
+                path_to_file=os.path.join('sync/', file_name),
+                download_complete=download_complete,
+                download_hide=self.download_progress_hide
+            )
+            progress.label_download = "File Is Downing"
+            progress.start(self.ids.box)
