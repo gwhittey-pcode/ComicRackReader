@@ -11,20 +11,7 @@
 # 
 # LICENSE: MIT
 
-#:import MDIconButton kivymd.button.MDIconButton
-#:import MDFloatingActionButton kivymd.button.MDFloatingActionButton
-#:import MDFlatButton kivymd.button.MDFlatButton
-#:import MDRaisedButton kivymd.button.MDRaisedButton
-#:import MDRectangleFlatButton kivymd.button.MDRectangleFlatButton
-#:import MDRoundFlatButton kivymd.button.MDRoundFlatButton
-#:import MDRectangleFlatIconButton kivymd.button.MDRectangleFlatIconButton
-#:import MDTextButton kivymd.button.MDTextButton
-#:import MDFillRoundFlatButton kivymd.button.MDFillRoundFlatButton
-#:import MDFillRoundFlatIconButton kivymd.button.MDFillRoundFlatIconButton
-#:import MDFillRoundFlatButton kivymd.button.MDFillRoundFlatButton
-#:import MDLabel kivymd.label.MDLabel
-#:import MDTextFieldRound kivymd.textfields.MDTextFieldRound
-#:import MDLabel kivymd.label.MDLabel
+
 <BaseScreen>:
     name: 'base'
 
@@ -52,19 +39,29 @@
 
                 MDFillRoundFlatIconButton:
                     icon: 'view-list'
-                    text: 'Go to Lists Page'
+                    text: 'Open ComicRackAPIServer \nReadingLists'
+                    height:dp(50)
                     opposite_colors: True
                     elevation_normal: 8
-                    on_press: app.switch_lists_screen()
+                    on_press: app.switch_server_lists_screen()
 
                 MDFillRoundFlatIconButton:
-                    icon: 'check'
+                    icon: 'login'
                     text: 'Open Login'
+                    height:dp(50)
                     opposite_colors: True
                     elevation_normal: 8
                     md_bg_color: app.theme_cls.primary_color
                     #on_press:app.show_action_bar()
                     on_press: root.open_popup()
+                
+                MDFillRoundFlatIconButton:
+                    icon: 'folder-sync'
+                    text: 'Open Sync Lists'
+                    height:dp(50)
+                    opposite_colors: True
+                    elevation_normal: 8
+                    on_press: app.switch_lists_screen()
 
             MDLabel:
                 id: last_comic_label

@@ -33,11 +33,11 @@ from libs.uix.widgets.comicbook_screen_widgets import ComicBookPageImage,\
     ThumbPopPagebntlbl, CommonComicsScroll, CommonComicsOuterGrid,\
     CommonComicsCoverInnerGrid, CommonComicsCoverImage, \
     CommonComicsCoverLabel
-from kivymd.toast import toast
-from kivymd.dialog import MDDialog
+from kivymd.toast.kivytoast import toast
+from kivymd.uix.dialog import MDDialog
 from kivy.loader import Loader
 import json
-from kivymd.toolbar import MDToolbar
+from kivymd.uix.toolbar import MDToolbar
 from kivy.core.window import Window
 
 
@@ -59,7 +59,6 @@ class ComicBookScreen(Screen):
         self.app = App.get_running_app()
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
-        self.api_key = self.app.config.get('Server', 'api_key')
         self.current_page = None
         self.comic_obj = ObjectProperty()
         self.comic_obj = None
@@ -73,6 +72,7 @@ class ComicBookScreen(Screen):
         self.option_isopen = False
         self.next_dialog_open = False
         self.prev_dialog_open = False
+        
         config_app = App.get_running_app()
         settings_data = json.loads(settings_json_screen_tap_control)
        # Window.bind(on_keyboard=self.events_program)
@@ -89,9 +89,9 @@ class ComicBookScreen(Screen):
         
         self.app.config.write()
         self.pag_pagenum = pag_pagenum
-        self.app.config.set('Saved', 'last_comic_id', self.comic_obj.Id)
-        self.app.config.set('Saved', 'last_reading_list_id', self.readinglist_obj.slug)
-        self.app.config.set('Saved', 'last_reading_list_name', self.readinglist_obj.name)
+        self.app.config.set('Saved', 'last_server_comic_id', self.comic_obj.Id)
+        self.app.config.set('Saved', 'last_server_reading_list_id', self.readinglist_obj.slug)
+        self.app.config.set('Saved', 'last_server_reading_list_name', self.readinglist_obj.name)
         self.app.config.set('Saved', 'last_pag_pagnum', self.pag_pagenum)
         self.app.config.write()
         comic_book_carousel = self.ids.comic_book_carousel

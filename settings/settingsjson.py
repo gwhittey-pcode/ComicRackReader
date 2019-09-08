@@ -3,9 +3,19 @@ from kivy.core.window import Keyboard
 hot_keys_options = []
 for item in Keyboard.keycodes:
     hot_keys_options.append(item[0])
-settings_json_server = json.dumps([
+
+settings_json_sync = json.dumps([
     {'type':    'title',
-     'title':   'ComicRack Reader General Settings'},
+     'title':   'Sync Settings'},
+
+    {'type': 'path',
+     'title': 'Sync Directory',
+     'desc': 'Path to store downloaded sync comics',
+     'section': 'Sync',
+     'key': 'sync_folder'}
+
+])
+settings_json_server = json.dumps([
 
     {'type':    'string',
      'title':   'Server URL',
@@ -295,7 +305,7 @@ settings_json_hotkeys = json.dumps(
             'section':  'Hotkeys',
             'key':      'hk_open_comicscreen',
 
-        }, 
+        },
         {
             'type':     'hotkeys',
             'title':    'Toggle Full Screen',

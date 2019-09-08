@@ -2,9 +2,8 @@ from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, BooleanProperty
-from kivymd.button import MDIconButton
-from kivymd.list import ILeftBodyTouch
-from kivymd.list import ILeftBody
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.list import ILeftBodyTouch, ILeftBody
 from kivy.uix.image import Image
 from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
@@ -50,11 +49,12 @@ class ComicRackListScreen(Screen):
         self.app.manager.current = 'readinglistscreen'
         readinglistscreen = self.app.manager.get_screen('readinglistscreen')
         readinglistscreen.setup_screen()
-        readinglist_slug = instance.id
+        readinglistscreen.page_number = 1
+        readinglist_Id = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
         readinglistscreen.list_loaded = False
         readinglistscreen.collect_readinglist_data(
-            readinglist_name, readinglist_slug)
+            readinglist_name, readinglist_Id)
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()

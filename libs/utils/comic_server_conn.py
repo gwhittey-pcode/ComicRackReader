@@ -112,6 +112,27 @@ class ComicServerConn():
                          on_failure=self.got_error
                          )
 
+    def get_server_file_download(self, req_url, callback, file_path):
+        def update_progress(request, current_size, total_size):
+            print(current_size/total_size)
+        print(req_url)
+        username = self.app.config.get('Server', 'username')
+        api_key = self.app.config.get('Server', 'api_key')
+        str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
+        head = {'Content-Type': "application/json",
+                'Accept': "application/json",
+                'Cookie': str_cookie
+
+                }
+
+        req = UrlRequest(req_url, req_headers=head,
+                         on_success=callback,
+                         on_error=self.got_error,
+                         on_redirect=self.got_redirect,
+                         on_failure=self.got_error,
+                         file_path=file_path
+                         )
+
     def got_json(self, req, result):
 
         return result['results']

@@ -21,18 +21,14 @@ from kivy.uix.button import Button
 from kivy.properties import StringProperty
 import urllib.parse
 from libs.utils.comic_server_conn import ComicServerConn
-from kivymd.list import OneLineListItem
-from kivymd.accordionlistitem import MDAccordionListItem
-from kivymd.list import OneLineIconListItem, OneLineAvatarListItem
+from kivymd.uix.accordionlistitem import MDAccordionListItem
+from kivymd.uix.list import OneLineIconListItem, OneLineAvatarListItem, ILeftBodyTouch, ILeftBody
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
-from kivymd.button import MDIconButton
-from kivymd.label import MDLabel
-from kivymd.list import ILeftBodyTouch
-from kivymd.list import ILeftBody
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
-from kivymd.toast import toast
 from kivy.uix.popup import Popup
 from libs.uix.baseclass.readinglistscreen import CustomeST
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
@@ -76,9 +72,9 @@ class BaseScreen(Screen):
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
             tmp_readinglist_name = self.app.config.get(
-                'Saved', 'last_reading_list_name')
+                'Saved', 'last_server_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
-                'Saved', 'last_reading_list_id')
+                'Saved', 'last_server_reading_list_id')
             if tmp_readinglist_Id == '':
                 return
             else:
@@ -94,9 +90,9 @@ class BaseScreen(Screen):
             self.api_key = api_key
             self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
             tmp_readinglist_name = self.app.config.get(
-                'Saved', 'last_reading_list_name')
+                'Saved', 'last_server_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
-                'Saved', 'last_reading_list_id')
+                'Saved', 'last_server_reading_list_id')
             if tmp_readinglist_Id == '':
                 return
             else:
@@ -129,11 +125,11 @@ class BaseScreen(Screen):
             results: got_readlist_data(results))
 
         def got_readlist_data(results):
-            tmp_last_comic_id = self.app.config.get(
-                'Saved', 'last_comic_id')
+            tmp_last_server_comic_id = self.app.config.get(
+                'Saved', 'last_server_comic_id')
             tmp_last_pag_pagnum = self.app.config.get(
                 'Saved', 'last_pag_pagnum')
-            if tmp_last_comic_id == '':
+            if tmp_last_server_comic_id == '':
                 return
             else:
                 new_readinglist = ComicReadingList(
@@ -147,17 +143,24 @@ class BaseScreen(Screen):
                 new_readinglist_reversed = new_readinglist.comics[::-1]
                 paginator_obj = Paginator(
                     new_readinglist_reversed, max_books_page)
+                for x in range(1, paginator_obj.num_pages()):
+                    this_page = paginator_obj.page(x)
+                    for comic in this_page.object_list:
+                        if tmp_last_server_comic_id == comic.Id:
+                            tmp_last_pag_pagnum = this_page.number
                 readinglistscreen = self.app.manager.get_screen(
                     'readinglistscreen')
                 readinglistscreen.list_loaded = False
                 readinglistscreen.setup_screen()
+                page = paginator_obj.page(tmp_last_pag_pagnum)
+                readinglistscreen.page_number = tmp_last_pag_pagnum
                 readinglistscreen.collect_readinglist_data(
                     readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]
                 grid.cols = 1
                 grid.clear_widgets()
                 for comic in new_readinglist.comics:
-                    if comic.slug == tmp_last_comic_id:
+                    if comic.slug == tmp_last_server_comic_id:
                         c = CustomeST()
                         c.comic_obj = comic
                         c.readinglist_obj = new_readinglist
@@ -171,7 +174,11 @@ class BaseScreen(Screen):
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
-                        strtxt = f"{comic.Series} #{comic.Number}"
+                        if comic.Id in self.app.store:
+                            is_sync = ' File Synced'
+                        else:
+                            is_sync = ''
+                        strtxt = f"{comic.Series} #{comic.Number}{is_sync}"
                         tmp_color = get_hex_from_color((1, 1, 1, 1))
                         c.text = f'[color={tmp_color}]{strtxt}[/color]'
 #                        c.text_color = self.app.theme_cls.secondary_color

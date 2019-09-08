@@ -12,6 +12,7 @@
 
 import os
 import sys
+from pathlib import Path
 from ast import literal_eval
 from kivy.config import Config
 
@@ -32,18 +33,16 @@ from libs.uix.baseclass.startscreen import StartScreen
 from libs.uix.lists import Lists
 from kivy.logger import Logger
 from kivymd.theming import ThemeManager
-from kivymd.label import MDLabel
-from kivymd.toast import toast
-
+from kivymd.uix.label import MDLabel
+from kivymd.toast.kivytoast import toast
+from kivy.storage.jsonstore import JsonStore
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
-    settings_json_screen_tap_control, settings_json_hotkeys
+    settings_json_screen_tap_control, settings_json_hotkeys,settings_json_sync
 from kivy.properties import ObjectProperty, StringProperty
 from settings.custom_settings import MySettings
 
-SCREEN_LIST = ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen', 'open_comicscreen']
 class ComicRackReader(App):
     title = 'ComicRackReader Home Screen'
     icon = 'icon.png'
@@ -52,15 +51,16 @@ class ComicRackReader(App):
     theme_cls.primary_palette = 'Amber'
     lang = StringProperty('en')
     open_comics_list = ListProperty()
+    sync_dir = StringProperty()
     full_screen = False
     LIST_SCREENS = ListProperty()
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
-        
         self.LIST_SCREENS = ['base', 'license', 'about', 'readinglistscreen',
-        'comicracklistscreen', 'open_comicscreen']
+                        'comicracklistscreen', 'open_comicscreen', 'syncscreen']
+
         self.list_previous_screens = ['base']
         self.window = Window
         self.config = ConfigParser()
@@ -81,6 +81,7 @@ class ComicRackReader(App):
         # )
         self.base_url = ''
         self.settings_cls = MySettings
+        
 
     # def get_application_config(self):
     #     return super(ComicRackReader, self).get_application_config(
@@ -92,9 +93,9 @@ class ComicRackReader(App):
         config.adddefaultsection('General')
         config.adddefaultsection('Saved')
         config.setdefault('General', 'language', 'en')
-        config.setdefault('Saved', 'last_comic_id', '')
-        config.setdefault('Saved', 'last_reading_list_id', '')
-        config.setdefault('Saved', 'last_reading_list_name', '')
+        config.setdefault('Saved', 'last_server_comic_id', '')
+        config.setdefault('Saved', 'last_server_reading_list_id', '')
+        config.setdefault('Saved', 'last_server_reading_list_name', '')
         config.setdefault('Saved', 'last_pag_pagnum', '')
         config.setdefaults('Server', {
             'url':          'http://',
@@ -107,7 +108,9 @@ class ComicRackReader(App):
             # 'use_pagination':   '1',
             'max_books_page':   25
         })
-
+        config.setdefaults('Sync', {
+            'sync_folder':'./sync'
+        })
         config.setdefaults('Display', {
             'mag_glass_size':   200,
             'right2left':       0,
@@ -155,7 +158,15 @@ class ComicRackReader(App):
 
         self.config.read(os.path.join(self.directory, 'comicrackreader.ini'))
         self.lang = self.config.get('General', 'language')
+        self.sync_dir = self.config.get('Sync','sync_folder')
+        my_data_dir = Path(f'{self.sync_dir}/data/')
+        my_comic_dir = Path(f'{self.sync_dir}/comics/')
+        if not my_data_dir.is_dir():os.makedirs(my_data_dir)
+        if not my_comic_dir.is_dir():os.makedirs(my_comic_dir)
+        self.store  = JsonStore(f'{self.sync_dir}/data/comics.json')
 
+           
+            
     def set_window_size(self):
         app = App.get_running_app()
 
@@ -210,7 +221,7 @@ class ComicRackReader(App):
         hk_open_comicscreen = app.config.get('Hotkeys', 'hk_open_comicscreen')
         hk_toggle_fullscreen = app.config.get('Hotkeys', 'hk_toggle_fullscreen')
         Logger.debug(f'keyboard:{keyboard}')
-        if not current_screen.name in SCREEN_LIST:
+        if not current_screen.name in self.LIST_SCREENS:
             if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
             elif keyboard in (c.string_to_keycode(hk_prev_page), 276):
@@ -347,9 +358,13 @@ class ComicRackReader(App):
         self.translation.switch_lang(lang)
 
     def build_settings(self, settings):
+        
         settings.add_json_panel('Server Settings',
                                 self.config,
                                 data=settings_json_server)
+        settings.add_json_panel('Sync Settings',
+                                self.config,
+                                data=settings_json_sync)
         settings.add_json_panel('Display Settings',
                                 self.config,
                                 data=settings_json_dispaly)
@@ -369,7 +384,7 @@ class ComicRackReader(App):
         if key == 'dbl_tap_time':
             self.Config.set('postproc', 'double_tap_time', value)
 
-    def switch_lists_screen(self):
+    def switch_server_lists_screen(self):
         self.set_screen("List of Reading Lists Screen")
         self.manager.current='comicracklistscreen'
         comicracklistscreen=self.manager.get_screen('comicracklistscreen')
