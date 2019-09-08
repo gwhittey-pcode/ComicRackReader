@@ -430,7 +430,7 @@ class ComicBookPageControlButton(Button):
         elif tap_option == 'Next Comic':
             comic_book_screen.load_next_comic()
         elif tap_option == 'Return to Comic List Screen':
-            app.manager.current = 'readinglistscreen'
+            app.manager.current = 'server_readinglists_screen'
         elif tap_option == 'Go to List of Reading Lists':
             app.manager.current = 'base'
         elif tap_option == 'Open NavBar':

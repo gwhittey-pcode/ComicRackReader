@@ -16,7 +16,7 @@ class MyTv(TreeView):
     pass
 
 
-class ComicRackListScreen(Screen):
+class ServerListsScreen(Screen):
     def __init__(self, **kwargs):
         self.app = App.get_running_app()
         self.fetch_data = None
@@ -24,7 +24,7 @@ class ComicRackListScreen(Screen):
         self.fetch_data = ComicServerConn()
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
-        super(ComicRackListScreen, self).__init__(**kwargs)
+        super(ServerListsScreen, self).__init__(**kwargs)
         self.lists_loaded = BooleanProperty()
         self.lists_loaded = False
 
@@ -46,14 +46,15 @@ class ComicRackListScreen(Screen):
         self.fetch_data.get_server_data(url_send, self)
 
     def open_readinglist(self, instance, node):
-        self.app.manager.current = 'readinglistscreen'
-        readinglistscreen = self.app.manager.get_screen('readinglistscreen')
-        readinglistscreen.setup_screen()
-        readinglistscreen.page_number = 1
+        self.app.manager.current = 'server_readinglists_screen'
+        server_readinglists_screen = self.app.manager.get_screen(
+            'server_readinglists_screen')
+        server_readinglists_screen.setup_screen()
+        server_readinglists_screen.page_number = 1
         readinglist_Id = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
-        readinglistscreen.list_loaded = False
-        readinglistscreen.collect_readinglist_data(
+        server_readinglists_screen.list_loaded = False
+        server_readinglists_screen.collect_readinglist_data(
             readinglist_name, readinglist_Id)
 
     def got_json(self, req, result):

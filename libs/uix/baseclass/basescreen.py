@@ -30,7 +30,7 @@ from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup
-from libs.uix.baseclass.readinglistscreen import CustomeST
+from libs.uix.baseclass.server_readinglists_screen import CustomeST
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.utils.paginator import Paginator
 from kivy.utils import get_hex_from_color
@@ -148,13 +148,13 @@ class BaseScreen(Screen):
                     for comic in this_page.object_list:
                         if tmp_last_server_comic_id == comic.Id:
                             tmp_last_pag_pagnum = this_page.number
-                readinglistscreen = self.app.manager.get_screen(
-                    'readinglistscreen')
-                readinglistscreen.list_loaded = False
-                readinglistscreen.setup_screen()
+                server_readinglists_screen = self.app.manager.get_screen(
+                    'server_readinglists_screen')
+                server_readinglists_screen.list_loaded = False
+                server_readinglists_screen.setup_screen()
                 page = paginator_obj.page(tmp_last_pag_pagnum)
-                readinglistscreen.page_number = tmp_last_pag_pagnum
-                readinglistscreen.collect_readinglist_data(
+                server_readinglists_screen.page_number = tmp_last_pag_pagnum
+                server_readinglists_screen.collect_readinglist_data(
                     readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]
                 grid.cols = 1

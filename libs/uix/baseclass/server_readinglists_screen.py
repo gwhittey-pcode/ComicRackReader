@@ -153,12 +153,12 @@ class SyncButton(MDFillRoundFlatIconButton):
         self.app.manager.current_screen.sync_readinglist_button()
 
 
-class ReadingListScreen(Screen):
+class ServerReadingListsScreen(Screen):
     reading_list_title = StringProperty()
     page_number = NumericProperty()
 
     def __init__(self, **kwargs):
-        super(ReadingListScreen, self).__init__(**kwargs)
+        super(ServerReadingListsScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.fetch_data = None
         self.readinglist_Id = StringProperty()

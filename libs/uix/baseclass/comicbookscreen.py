@@ -910,9 +910,9 @@ class OptionToolBar(MDToolbar):
         ]
         self.right_action_items = [
             ['view-list',
-                lambda x: root.option_bar_action('comicracklistscreen')],
+                lambda x: root.option_bar_action('server_lists_screen')],
             ['library-books',
-                lambda x: root.option_bar_action('readinglistscreen')],
+                lambda x: root.option_bar_action('server_readinglists_screen')],
             ['book-open-variant',
                 lambda x: root.option_bar_action('open_comicscreen')],
             ['close-box-outline', lambda x: app.stop()]

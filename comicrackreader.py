@@ -58,8 +58,8 @@ class ComicRackReader(App):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
-        self.LIST_SCREENS = ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen', 'open_comicscreen', 'syncscreen']
+        self.LIST_SCREENS = ['base', 'license', 'about', 'server_readinglists_screen',
+                        'server_lists_screen', 'open_comicscreen', 'syncscreen']
 
         self.list_previous_screens = ['base']
         self.window = Window
@@ -253,7 +253,7 @@ class ComicRackReader(App):
             elif keyboard == c.string_to_keycode(hk_open_comicscreen):
                 app.manager.current='open_comicscreen'
             elif keyboard == c.string_to_keycode(hk_return_comic_list):
-                app.manager.current='readinglistscreen'
+                app.manager.current='server_readinglists_screen'
             elif keyboard == c.string_to_keycode(hk_return_base_screen):
                 app.show_action_bar()
                 app.switch_base_screen()
@@ -386,16 +386,16 @@ class ComicRackReader(App):
 
     def switch_server_lists_screen(self):
         self.set_screen("List of Reading Lists Screen")
-        self.manager.current='comicracklistscreen'
-        comicracklistscreen=self.manager.get_screen('comicracklistscreen')
+        self.manager.current='server_lists_screen'
+        server_lists_screen=self.manager.get_screen('server_lists_screen')
 
     def switch_open_comics_screen(self):
         self.set_screen("Open Comics Screen")
         self.manager.current='open_comicscreen'
 
     def switch_readinglists_screen(self):
-        self.set_screen(self.manager.get_screen('readinglistscreen').reading_list_title)
-        self.manager.current='readinglistscreen'
+        self.set_screen(self.manager.get_screen('server_readinglists_screen').reading_list_title)
+        self.manager.current='server_readinglists_screen'
 
     def switch_base_screen(self):
         self.set_screen("ComicRackReader Home Screen")
