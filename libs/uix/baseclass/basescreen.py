@@ -143,10 +143,17 @@ class BaseScreen(Screen):
                 new_readinglist_reversed = new_readinglist.comics[::-1]
                 paginator_obj = Paginator(
                     new_readinglist_reversed, max_books_page)
+                for x in range(1, paginator_obj.num_pages()):
+                    this_page = paginator_obj.page(x)
+                    for comic in this_page.object_list:
+                        if tmp_last_comic_id == comic.Id:
+                            tmp_last_pag_pagnum = this_page.number
                 readinglistscreen = self.app.manager.get_screen(
                     'readinglistscreen')
                 readinglistscreen.list_loaded = False
                 readinglistscreen.setup_screen()
+                page = paginator_obj.page(tmp_last_pag_pagnum)
+                readinglistscreen.page_number = tmp_last_pag_pagnum
                 readinglistscreen.collect_readinglist_data(
                     readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]
@@ -167,7 +174,11 @@ class BaseScreen(Screen):
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
-                        strtxt = f"{comic.Series} #{comic.Number}"
+                        if comic.Id in self.app.store:
+                            is_sync = ' File Synced'
+                        else:
+                            is_sync = ''
+                        strtxt = f"{comic.Series} #{comic.Number}{is_sync}"
                         tmp_color = get_hex_from_color((1, 1, 1, 1))
                         c.text = f'[color={tmp_color}]{strtxt}[/color]'
 #                        c.text_color = self.app.theme_cls.secondary_color

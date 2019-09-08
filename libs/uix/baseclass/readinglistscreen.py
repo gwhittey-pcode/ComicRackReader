@@ -155,6 +155,7 @@ class SyncButton(MDFillRoundFlatIconButton):
 
 class ReadingListScreen(Screen):
     reading_list_title = StringProperty()
+    page_number = NumericProperty()
 
     def __init__(self, **kwargs):
         super(ReadingListScreen, self).__init__(**kwargs)
@@ -176,6 +177,7 @@ class ReadingListScreen(Screen):
         self.paginator_obj = ObjectProperty()
         self.current_page = ObjectProperty()
         self.list_loaded = BooleanProperty()
+        self.page_number = 1
         self.list_loaded = False
         self.comic_thumb_height = 240
         self.comic_thumb_width = 156
@@ -258,9 +260,16 @@ class ReadingListScreen(Screen):
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
-            strtxt = f"{comic.Series} #{comic.Number}"
-            tmp_color = get_hex_from_color((1, 1, 1, 1))
-            c.text = f'[color={tmp_color}]{strtxt}[/color]'
+            if comic.Id in self.app.store:
+                is_sync = ' [File Synced]'
+            else:
+                is_sync = ''
+            strtxt = f"{comic.Series} #{comic.Number}{is_sync}"
+            if comic.UserLastPageRead == comic.PageCount-1:
+                txt_color = get_hex_from_color((.89, .15, .21, 1))
+            else:
+                txt_color = get_hex_from_color((1, 1, 1, 1))
+            c.text = f'[color={txt_color}]{strtxt}[/color]'
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
             self.ids.page_count.text = f'{self.current_page.number} of {self.paginator_obj.num_pages()}'
@@ -279,7 +288,7 @@ class ReadingListScreen(Screen):
         new_readinglist_reversed = self.new_readinglist.comics[::-1]
         self.paginator_obj = Paginator(
             new_readinglist_reversed, max_books_page)
-        page = self.paginator_obj.page(1)
+        page = self.paginator_obj.page(self.page_number)
         self.current_page = page
 
         if page.has_next():
@@ -345,9 +354,7 @@ class ReadingListScreen(Screen):
         num_comic = len(list_comics)
         if self.num_file_done == num_comic:
             Clock.schedule_once(_finish_toast, 3)
-
             self.event.cancel()
-            print('done')
 
     def sync_readinglist_button(self):
         page = self.paginator_obj.page(self.current_page.number)
