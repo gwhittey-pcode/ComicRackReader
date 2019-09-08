@@ -104,7 +104,6 @@ class ComicBook(object):
     def __init__(self, data, * args, **kwargs):
 
         comic_data = data
-        self.comic_json = data
         self.Id = comic_data['Id']
         self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
         self.slug = str(comic_data['Id'])
@@ -112,6 +111,8 @@ class ComicBook(object):
         self.Number = comic_data['Number']
         self.Series = comic_data['Series']
         self.date = f"{comic_data['Month']}/{comic_data['Year']}"
+        self.year = comic_data['Year']
+        self.month = comic_data['Month']
         self.UserLastPageRead = comic_data['UserLastPageRead']
         self.UserCurrentPage = comic_data['UserCurrentPage']
         self.PageCount = comic_data['PageCount']

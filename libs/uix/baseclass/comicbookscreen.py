@@ -89,9 +89,9 @@ class ComicBookScreen(Screen):
         
         self.app.config.write()
         self.pag_pagenum = pag_pagenum
-        self.app.config.set('Saved', 'last_comic_id', self.comic_obj.Id)
-        self.app.config.set('Saved', 'last_reading_list_id', self.readinglist_obj.slug)
-        self.app.config.set('Saved', 'last_reading_list_name', self.readinglist_obj.name)
+        self.app.config.set('Saved', 'last_server_comic_id', self.comic_obj.Id)
+        self.app.config.set('Saved', 'last_server_reading_list_id', self.readinglist_obj.slug)
+        self.app.config.set('Saved', 'last_server_reading_list_name', self.readinglist_obj.name)
         self.app.config.set('Saved', 'last_pag_pagnum', self.pag_pagenum)
         self.app.config.write()
         comic_book_carousel = self.ids.comic_book_carousel

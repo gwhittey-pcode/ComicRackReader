@@ -12,6 +12,7 @@
 
 import os
 import sys
+from pathlib import Path
 from ast import literal_eval
 from kivy.config import Config
 
@@ -38,7 +39,7 @@ from kivy.storage.jsonstore import JsonStore
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
-    settings_json_screen_tap_control, settings_json_hotkeys
+    settings_json_screen_tap_control, settings_json_hotkeys,settings_json_sync
 from kivy.properties import ObjectProperty, StringProperty
 from settings.custom_settings import MySettings
 
@@ -50,6 +51,7 @@ class ComicRackReader(App):
     theme_cls.primary_palette = 'Amber'
     lang = StringProperty('en')
     open_comics_list = ListProperty()
+    sync_dir = StringProperty()
     full_screen = False
     LIST_SCREENS = ListProperty()
     def __init__(self, **kvargs):
@@ -72,13 +74,14 @@ class ComicRackReader(App):
                 os.path.join(self.directory, 'data', 'locales',
                              'locales.txt')).read()
         )
-        self.store  = JsonStore('sync/comics.json')
+        
         # self.translation = Translation(
         #     self.lang, 'Ttest', os.path.join(self.directory,
         # data', 'locales')
         # )
         self.base_url = ''
         self.settings_cls = MySettings
+        
 
     # def get_application_config(self):
     #     return super(ComicRackReader, self).get_application_config(
@@ -90,9 +93,9 @@ class ComicRackReader(App):
         config.adddefaultsection('General')
         config.adddefaultsection('Saved')
         config.setdefault('General', 'language', 'en')
-        config.setdefault('Saved', 'last_comic_id', '')
-        config.setdefault('Saved', 'last_reading_list_id', '')
-        config.setdefault('Saved', 'last_reading_list_name', '')
+        config.setdefault('Saved', 'last_server_comic_id', '')
+        config.setdefault('Saved', 'last_server_reading_list_id', '')
+        config.setdefault('Saved', 'last_server_reading_list_name', '')
         config.setdefault('Saved', 'last_pag_pagnum', '')
         config.setdefaults('Server', {
             'url':          'http://',
@@ -105,7 +108,9 @@ class ComicRackReader(App):
             # 'use_pagination':   '1',
             'max_books_page':   25
         })
-
+        config.setdefaults('Sync', {
+            'sync_folder':'./sync'
+        })
         config.setdefaults('Display', {
             'mag_glass_size':   200,
             'right2left':       0,
@@ -153,7 +158,15 @@ class ComicRackReader(App):
 
         self.config.read(os.path.join(self.directory, 'comicrackreader.ini'))
         self.lang = self.config.get('General', 'language')
+        self.sync_dir = self.config.get('Sync','sync_folder')
+        my_data_dir = Path(f'{self.sync_dir}/data/')
+        my_comic_dir = Path(f'{self.sync_dir}/comics/')
+        if not my_data_dir.is_dir():os.makedirs(my_data_dir)
+        if not my_comic_dir.is_dir():os.makedirs(my_comic_dir)
+        self.store  = JsonStore(f'{self.sync_dir}/data/comics.json')
 
+           
+            
     def set_window_size(self):
         app = App.get_running_app()
 
@@ -345,9 +358,13 @@ class ComicRackReader(App):
         self.translation.switch_lang(lang)
 
     def build_settings(self, settings):
+        
         settings.add_json_panel('Server Settings',
                                 self.config,
                                 data=settings_json_server)
+        settings.add_json_panel('Sync Settings',
+                                self.config,
+                                data=settings_json_sync)
         settings.add_json_panel('Display Settings',
                                 self.config,
                                 data=settings_json_dispaly)
@@ -367,7 +384,7 @@ class ComicRackReader(App):
         if key == 'dbl_tap_time':
             self.Config.set('postproc', 'double_tap_time', value)
 
-    def switch_lists_screen(self):
+    def switch_server_lists_screen(self):
         self.set_screen("List of Reading Lists Screen")
         self.manager.current='comicracklistscreen'
         comicracklistscreen=self.manager.get_screen('comicracklistscreen')

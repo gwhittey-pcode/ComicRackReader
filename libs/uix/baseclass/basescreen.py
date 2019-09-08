@@ -72,9 +72,9 @@ class BaseScreen(Screen):
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
             tmp_readinglist_name = self.app.config.get(
-                'Saved', 'last_reading_list_name')
+                'Saved', 'last_server_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
-                'Saved', 'last_reading_list_id')
+                'Saved', 'last_server_reading_list_id')
             if tmp_readinglist_Id == '':
                 return
             else:
@@ -90,9 +90,9 @@ class BaseScreen(Screen):
             self.api_key = api_key
             self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
             tmp_readinglist_name = self.app.config.get(
-                'Saved', 'last_reading_list_name')
+                'Saved', 'last_server_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
-                'Saved', 'last_reading_list_id')
+                'Saved', 'last_server_reading_list_id')
             if tmp_readinglist_Id == '':
                 return
             else:
@@ -125,11 +125,11 @@ class BaseScreen(Screen):
             results: got_readlist_data(results))
 
         def got_readlist_data(results):
-            tmp_last_comic_id = self.app.config.get(
-                'Saved', 'last_comic_id')
+            tmp_last_server_comic_id = self.app.config.get(
+                'Saved', 'last_server_comic_id')
             tmp_last_pag_pagnum = self.app.config.get(
                 'Saved', 'last_pag_pagnum')
-            if tmp_last_comic_id == '':
+            if tmp_last_server_comic_id == '':
                 return
             else:
                 new_readinglist = ComicReadingList(
@@ -146,7 +146,7 @@ class BaseScreen(Screen):
                 for x in range(1, paginator_obj.num_pages()):
                     this_page = paginator_obj.page(x)
                     for comic in this_page.object_list:
-                        if tmp_last_comic_id == comic.Id:
+                        if tmp_last_server_comic_id == comic.Id:
                             tmp_last_pag_pagnum = this_page.number
                 readinglistscreen = self.app.manager.get_screen(
                     'readinglistscreen')
@@ -160,7 +160,7 @@ class BaseScreen(Screen):
                 grid.cols = 1
                 grid.clear_widgets()
                 for comic in new_readinglist.comics:
-                    if comic.slug == tmp_last_comic_id:
+                    if comic.slug == tmp_last_server_comic_id:
                         c = CustomeST()
                         c.comic_obj = comic
                         c.readinglist_obj = new_readinglist

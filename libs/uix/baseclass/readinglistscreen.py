@@ -247,6 +247,7 @@ class ReadingListScreen(Screen):
         main_stack = self.main_stack
         grid.clear_widgets()
         for comic in object_lsit:
+            print(f'comic.Id:{comic.Id}')
             c = CustomeST()
             c.comic_obj = comic
             c.readinglist_obj = self.new_readinglist
@@ -317,7 +318,7 @@ class ReadingListScreen(Screen):
             return
 
         def _sync_delayed_work(*l):
-            item = items.pop()
+            item = items.pop(0)
             if func(item) is False or not len(items):
                 return False
             Clock.schedule_once(_sync_delayed_work, delay)
@@ -330,20 +331,30 @@ class ReadingListScreen(Screen):
             self.file_download = True
         self.file_download = False
         file_name = ntpath.basename(comic.file_path)
+        new_readinglist_reversed = self.new_readinglist.comics[::-1]
+        comic_index = new_readinglist_reversed.index(comic)
         self.app.store.put(comic.Id,
                            file=file_name,
+                           Id=comic.Id,
+                           slug=comic.slug,
+                           data_type='ComicBook',
                            Series=comic.Series,
                            Number=comic.Number,
-                           Date=comic.date,
+                           Month=comic.month,
+                           Year=comic.year,
                            UserCurrentPage=comic.UserCurrentPage,
+                           UserLastPageRead=comic.UserLastPageRead,
                            PageCount=comic.PageCount,
-                           Summary=comic.Summary
+                           Summary=comic.Summary,
+                           Index=comic_index,
+                           FilePath=comic.file_path,
+                           ReadlistID=self.new_readinglist.slug
                            )
         lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
         self.fetch_data.get_server_file_download(
             lsit_count_url, callback=lambda req,
             results: got_file(results),
-            file_path=f'./sync/{file_name}'
+            file_path=f'{self.app.sync_dir}/comics/{file_name}'
         )
 
     def _finish_sync(self, dt):
@@ -360,9 +371,17 @@ class ReadingListScreen(Screen):
         page = self.paginator_obj.page(self.current_page.number)
         list_comics = page.object_list
         self.sync_delayed_work(self.download_file, list_comics, delay=.25)
-
         self.event = Clock.schedule_interval(self._finish_sync, 0.5)
 
         # sync_screen = self.app.manager.get_screen('syncscreen')
         # sync_screen.obj_readinglist = page.object_list
         # self.app.manager.current = 'syncscreen'
+    def test_it(self):
+        print('start')
+        res = self.app.store.find(data_type='ComicBook')
+        rl = ComicReadingList('Test', 'test')
+        for item in res:
+            new_comic = ComicBook(item[1])
+            rl.add_comic(new_comic)
+        for comic in rl.comics:
+            print(comic.name)

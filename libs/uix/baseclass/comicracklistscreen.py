@@ -50,11 +50,11 @@ class ComicRackListScreen(Screen):
         readinglistscreen = self.app.manager.get_screen('readinglistscreen')
         readinglistscreen.setup_screen()
         readinglistscreen.page_number = 1
-        readinglist_slug = instance.id
+        readinglist_Id = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
         readinglistscreen.list_loaded = False
         readinglistscreen.collect_readinglist_data(
-            readinglist_name, readinglist_slug)
+            readinglist_name, readinglist_Id)
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()
