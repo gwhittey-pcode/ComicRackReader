@@ -77,8 +77,9 @@ class BaseScreen(Screen):
         # see if user has a api key stored from server
 
         if self.api_key == '':
+
             self.myLoginPop.ids.info.text = '[color=#FF0000]No API key stored login to get one[/color]'
-            self.open_popup()
+            # self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
             tmp_readinglist_name = self.app.config.get(
