@@ -284,7 +284,7 @@ class ServerReadingListsScreen(Screen):
             else:
                 is_sync = ''
             strtxt = f"{comic.Series} #{comic.Number}{is_sync}"
-            if comic.UserLastPageRead == comic.PageCount-1:
+            if comic.UserCurrentPage == comic.PageCount-1:
                 strtxt = f'{strtxt} \n[Read]'
                 c.img_color = (.89, .15, .21, 5)
                 #txt_color = get_hex_from_color((.89, .15, .21, 1))
