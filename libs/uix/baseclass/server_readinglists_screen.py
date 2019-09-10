@@ -40,13 +40,13 @@ class CustomeST(SmartTileWithLabel):
     def __init__(self, **kwargs):
         super(CustomeST, self).__init__(**kwargs)
         self.menu_items = [{'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Read[/color]',
+                            'text': '[color=#000000]Open This Comic[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Download this Comic[/color]',
+                            'text': '[color=#000000]Mark as Read[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Download this Page[/color]',
+                            'text': '[color=#000000]Mark as UnRead[/color]',
                             'callback': self.callback_for_menu_items},
                            {'viewclass': 'MDMenuItem',
                             'text': '[color=#000000]Download Readlist[/color]',
@@ -64,7 +64,17 @@ class CustomeST(SmartTileWithLabel):
         self.pag_pagenum = NumericProperty()
 
     def callback_for_menu_items(self, *args):
-        if args[0] == "[color=#000000]Read[/color]":
+        def updated_progress(results):
+            print('update')
+            tmp_txt = self.text
+            new_txt = tmp_txt.replace('Read', 'Unread')
+            print(new_txt)
+            self.text = new_txt
+            self.img_color = (1, 1, 1, 1)
+        action = args[0].replace('[color=#000000]', '')
+        action = action.replace('[/color]', '')
+        print(f'action:{action}')
+        if action == "Open This Comic":
             new_screen_name = str(self.comic_obj.Id)
             if new_screen_name not in self.app.manager.screen_names:
                 new_screen = ServerComicBookScreen(
@@ -75,6 +85,14 @@ class CustomeST(SmartTileWithLabel):
                     name=new_screen_name)
                 self.app.manager.add_widget(new_screen)
                 self.app.manager.current = new_screen_name
+        elif action == 'Mark as Read':
+            print(f'self.color:{self.img_color}')
+        elif action == 'Mark as UnRead':
+            server_con = ComicServerConn()
+            update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Progress'
+            server_con.update_progress(update_url, 0,
+                                       callback=lambda req, results:
+                                       updated_progress(results))
 
     def on_press(self):
         callback = partial(self.menu)
@@ -249,6 +267,7 @@ class ServerReadingListsScreen(Screen):
         for comic in object_lsit:
             c = CustomeST()
             c.comic_obj = comic
+            c.lines = 2
             c.readinglist_obj = self.new_readinglist
             c.paginator_obj = self.paginator_obj
             x = self.comic_thumb_width
@@ -260,14 +279,18 @@ class ServerReadingListsScreen(Screen):
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
-            if comic.Id in self.app.store:
-                is_sync = ' [File Synced]'
+            if comic.Id in self.app.current_files:
+                is_sync = ' \n[File Synced]'
             else:
                 is_sync = ''
             strtxt = f"{comic.Series} #{comic.Number}{is_sync}"
             if comic.UserLastPageRead == comic.PageCount-1:
-                txt_color = get_hex_from_color((.89, .15, .21, 1))
+                strtxt = f'{strtxt} \n[Read]'
+                c.img_color = (.89, .15, .21, 5)
+                #txt_color = get_hex_from_color((.89, .15, .21, 1))
+                txt_color = get_hex_from_color((1, 1, 1, 1))
             else:
+                strtxt = f'{strtxt} [UnRead]'
                 txt_color = get_hex_from_color((1, 1, 1, 1))
             c.text = f'[color={txt_color}]{strtxt}[/color]'
             grid.add_widget(c)
@@ -332,23 +355,23 @@ class ServerReadingListsScreen(Screen):
         file_name = ntpath.basename(comic.file_path)
         new_readinglist_reversed = self.new_readinglist.comics[::-1]
         comic_index = new_readinglist_reversed.index(comic)
-        self.app.store.put(comic.Id,
-                           file=file_name,
-                           Id=comic.Id,
-                           slug=comic.slug,
-                           data_type='ComicBook',
-                           Series=comic.Series,
-                           Number=comic.Number,
-                           Month=comic.month,
-                           Year=comic.year,
-                           UserCurrentPage=comic.UserCurrentPage,
-                           UserLastPageRead=comic.UserLastPageRead,
-                           PageCount=comic.PageCount,
-                           Summary=comic.Summary,
-                           Index=comic_index,
-                           FilePath=comic.file_path,
-                           ReadlistID=self.new_readinglist.slug
-                           )
+        self.app.current_files.put(comic.Id,
+                                   file=file_name,
+                                   Id=comic.Id,
+                                   slug=comic.slug,
+                                   data_type='ComicBook',
+                                   Series=comic.Series,
+                                   Number=comic.Number,
+                                   Month=comic.month,
+                                   Year=comic.year,
+                                   UserCurrentPage=comic.UserCurrentPage,
+                                   UserLastPageRead=comic.UserLastPageRead,
+                                   PageCount=comic.PageCount,
+                                   Summary=comic.Summary,
+                                   Index=comic_index,
+                                   FilePath=comic.file_path,
+                                   ReadlistID=self.new_readinglist.slug
+                                   )
         lsit_count_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
         self.fetch_data.get_server_file_download(
             lsit_count_url, callback=lambda req,
@@ -369,7 +392,7 @@ class ServerReadingListsScreen(Screen):
     def sync_readinglist_button(self):
         page = self.paginator_obj.page(self.current_page.number)
         list_comics = page.object_list
-        self.sync_delayed_work(self.download_file, list_comics, delay=.25)
+        self.sync_delayed_work(self.download_file, list_comics, delay=.15)
         self.event = Clock.schedule_interval(self._finish_sync, 0.5)
 
         # sync_screen = self.app.manager.get_screen('syncscreen')
@@ -377,7 +400,7 @@ class ServerReadingListsScreen(Screen):
         # self.app.manager.current = 'syncscreen'
     def test_it(self):
         print('start')
-        res = self.app.store.find(data_type='ComicBook')
+        res = self.app.current_files.find(data_type='ComicBook')
         rl = ComicReadingList('Test', 'test')
         for item in res:
             new_comic = ComicBook(item[1])

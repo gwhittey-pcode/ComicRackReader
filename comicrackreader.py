@@ -175,7 +175,7 @@ class ComicRackReader(App):
         my_comic_dir = Path(os.path.join(self.sync_dir, 'comics'))
         if not my_data_dir.is_dir():os.makedirs(my_data_dir)
         if not my_comic_dir.is_dir():os.makedirs(my_comic_dir)
-        self.store  = JsonStore(f'{self.sync_dir}/data/comics.json')
+        self.current_files  = JsonStore(f'{self.sync_dir}/data/current_files.json')
         self.cache_dir = os.path.join(
             self.config.get('Server','storagedir'),'cache')
             

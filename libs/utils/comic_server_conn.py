@@ -39,6 +39,7 @@ class ComicServerConn():
         head = {'Content-Type': "application/x-www-form-urlencoded",
                 'Accept': "application/json", 'Cookie': str_cookie
                 }
+        print(req_url)
         req = UrlRequest(req_url, req_headers=head,
                          req_body=data,
                          on_success=callback,

@@ -185,7 +185,7 @@ class BaseScreen(Screen):
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
-                        if comic.Id in self.app.store:
+                        if comic.Id in self.app.current_files:
                             is_sync = ' File Synced'
                         else:
                             is_sync = ''
