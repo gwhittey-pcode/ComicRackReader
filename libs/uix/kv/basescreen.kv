@@ -36,9 +36,8 @@
                 height: dp(56)
                 spacing: '10dp'
 
-
                 MDFillRoundFlatIconButton:
-                    icon: 'view-list'
+                    icon: 'server'
                     text: 'Open ComicRackAPIServer \nReadingLists'
                     height:dp(50)
                     opposite_colors: True
@@ -54,7 +53,7 @@
                     md_bg_color: app.theme_cls.primary_color
                     #on_press:app.show_action_bar()
                     on_press: root.open_popup()
-                
+
                 MDFillRoundFlatIconButton:
                     icon: 'folder-sync'
                     text: 'Open Sync Lists'
@@ -62,7 +61,19 @@
                     opposite_colors: True
                     elevation_normal: 8
                     on_press: app.switch_lists_screen()
+            BoxLayout:
+                size_hint: None, None
+                width: self.minimum_width
+                height: dp(56)
+                spacing: '10dp'
 
+                MDFillRoundFlatIconButton:
+                    icon: 'file-image'
+                    text: 'Open File'
+                    height:dp(50)
+                    opposite_colors: True
+                    elevation_normal: 8
+                    on_press: app.file_manager_open()
             MDLabel:
                 id: last_comic_label
                 text: 'Last Comic Loaded' 

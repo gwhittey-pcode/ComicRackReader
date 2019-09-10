@@ -23,12 +23,12 @@ from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.button import MDFillRoundFlatIconButton
 from kivymd.toast.kivytoast.kivytoast import toast
 from libs.utils.paginator import Paginator
-from libs.uix.baseclass.comicbookscreen import ComicBookScreen
+from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
-
+from libs.utils.comicapi.comicarchive import ComicArchive
 
 import ntpath
 
@@ -67,7 +67,7 @@ class CustomeST(SmartTileWithLabel):
         if args[0] == "[color=#000000]Read[/color]":
             new_screen_name = str(self.comic_obj.Id)
             if new_screen_name not in self.app.manager.screen_names:
-                new_screen = ComicBookScreen(
+                new_screen = ServerComicBookScreen(
                     readinglist_obj=self.readinglist_obj,
                     comic_obj=self.comic_obj,
                     paginator_obj=self.paginator_obj,
@@ -93,7 +93,7 @@ class CustomeST(SmartTileWithLabel):
     def open_comic(self):
         new_screen_name = str(self.comic_obj.Id)
         if new_screen_name not in self.app.manager.screen_names:
-            new_screen = ComicBookScreen(
+            new_screen = ServerComicBookScreen(
                 readinglist_obj=self.readinglist_obj,
                 comic_obj=self.comic_obj,
                 paginator_obj=self.paginator_obj,
@@ -247,7 +247,6 @@ class ServerReadingListsScreen(Screen):
         main_stack = self.main_stack
         grid.clear_widgets()
         for comic in object_lsit:
-            print(f'comic.Id:{comic.Id}')
             c = CustomeST()
             c.comic_obj = comic
             c.readinglist_obj = self.new_readinglist

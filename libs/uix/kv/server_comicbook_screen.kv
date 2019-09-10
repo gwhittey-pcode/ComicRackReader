@@ -1,0 +1,174 @@
+ #:kivy 1.11.0
+# -*- coding: utf-8 -*-
+#
+# This file created with KivyCreatorProject
+# <https://github.com/HeaTTheatR/KivyCreatorProgect
+#
+# Copyright © 2017 Easy
+#
+# For suggestions and questions:
+# <kivydevelopment@gmail.com>
+# #
+# LICENSE: MIT
+
+#:import ComicBookPageControlButton libs.uix.widgets.comicbook_screen_widgets.ComicBookPageControlButton
+<ServerComicBookScreen>:
+    id:comic_book_screen
+    carousel_id: None
+    max_height:self.max_height
+    size: root.size
+    name: 'comic_book_screen'
+    FloatLayout:
+        size: root.size
+        id: comic_screen_float
+        ComicCarousel:
+            id: comic_book_carousel
+            on_index: root.slide_changed(args[1])
+            
+    #top control taps
+        myComicBookPageControlButton:
+            id: top_left
+            location: 'top_left'
+            #pos_hint: {'x': .0000000001, 'y': .85}
+            center_y:root.top - (self.height/2)
+            center_x:root.x + (self.width/2)
+            text: "Top Left"
+            size_hint: .2, .15
+           
+            
+        myComicBookPageControlButton:
+            id: top_center
+            location: 'top_center'
+            center_x:root.center_x
+            center_y:root.top - (self.height/2)
+            text: 'Top Center'
+            size_hint: .2, .15
+           
+            
+        myComicBookPageControlButton:
+            id: top_right
+            location: 'top_right'
+            center_y:root.top - (self.height/2)
+            center_x:root.right - (self.width/2)
+            text: "Top Right"
+            size_hint: .2, .15
+           
+            
+    #middle control taps
+        myComicBookPageControlButton:
+            id: middle_left
+            location: 'middle_left'
+            center_y: root.center_y
+            center_x:root.x + (self.width/2)
+            text: "Middle Left"
+            size_hint: .2, .15
+           
+            
+        myComicBookPageControlButton:
+            id: middle_center
+            location: 'middle_center'
+            center: (root.center_x,root.center_y)
+            text: 'Middle Center'
+            size_hint: .2, .15
+            
+        myComicBookPageControlButton:
+            id: middle_right
+            location: 'middle_right'
+            center_y: root.center_y
+            center_x:root.right - (self.width/2)
+            text: "Middle Right"
+            size_hint: .2, .15
+            
+
+    #bottom control taps
+        myComicBookPageControlButton:
+            id: bottom_left
+            location: 'bottom_left'
+            center_x:root.x + (self.width/2)
+            center_y: root.y + (self.height/2)
+#            pos_hint: {'x': .0000000001, 'y': .0001}
+            text: "Bottom Left"
+            size_hint: .2, .15
+           
+            
+
+        myComicBookPageControlButton:
+            id: bottom_center
+            location:'bottom_center'
+            center_x: root.center_x
+            center_y: root.y + (self.height/2)
+            text: 'Botttom Center'
+            size_hint: .2, .15
+           
+            
+
+        myComicBookPageControlButton:
+            id: bottom_right
+            location: 'bottom_right'
+            center_x:root.right - (self.width/2)
+            center_y: root.y + (self.height/2)
+            text: "Bottom Right"
+            size_hint: .2, .15
+
+<myComicBookPageControlButton@ComicBookPageControlButton>
+    opacity: 0
+    on_release: self.click()
+
+<ThumbPopPageInnerGrid>:
+    cols: 1
+    rows: 2
+    size_hint: (None,None)
+    size: (dp(156),dp(240))
+    spacing: 5
+<ThumbPopPageImage>:
+    allow_stretch: True
+    size: (dp(120),dp(180))
+    size_hint: (None, None)
+<ThumbPopPagebntlbl>:
+    size_hint: (1,None)
+    height : 15
+    text_color: (0,0,0)
+    background_color: (1,1,1,.5)
+    
+<ComicThumbScroll>:
+    size_hint: (1,1)
+    do_scroll_x: True
+    do_scroll_y: False
+    id: page_thumb_scroll
+
+<CommonComicsScroll>:
+    size_hint: (1,.7)
+    do_scroll_x: True
+    do_scroll_y: False
+<CommonComicsOuterGrid>:
+    rows: 1
+    size_hint: (None,None)
+    spacing: 5
+    padding_horizontal: 5
+<CommonComicsCoverInnerGrid>:
+    cols: 1
+    rows: 2
+    size_hint: (None,None)
+    size: (dp(156),dp(240))
+    spacing: 5
+<CommonComicsCoverImage>:
+    allow_stretch: True
+
+    size: (dp(156),dp(240))
+    size_hint: (None, None)
+<CommonComicsCoverLabel>:
+    font_style:			'Body1'
+    size_hint:			None, None
+    font_size:          '10sp'
+    height:				self.texture_size[1]
+    text_size:			self.width, None
+    halign:				'center'
+    text_color: (0,0,0)
+    background_color: (1,1,1,.5)
+
+<OptionToolBar@MDToolbar>
+    id: option_bar
+    background_color: app.theme_cls.primary_color
+    title: self.title
+    elevation: 10
+    md_bg_color: app.theme_cls.primary_color

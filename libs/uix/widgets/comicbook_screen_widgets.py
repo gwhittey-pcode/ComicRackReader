@@ -556,6 +556,7 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     last_load = NumericProperty()
     last_section = NumericProperty()
     action_do = StringProperty()
+    mode = StringProperty()
 
     def enable_me(self, instance):
         Logger.debug('enabling %s' % self.id)
@@ -581,46 +582,67 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     def open_collection(self, *args):
         self.disabled = True
         app = App.get_running_app()
-        from libs.uix.baseclass.comicbookscreen import ComicBookScreen
         new_screen_name = str(self.comic_obj.Id)
+
+        from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
         if new_screen_name not in app.manager.screen_names:
-            new_screen = ComicBookScreen(
+            if self.mode == 'FileOpen':
+                view_mode = 'FileOpen'
+            else:
+                view_mode = "Server"
+            new_screen = ServerComicBookScreen(
                 readinglist_obj=self.readinglist_obj, comic_obj=self.comic_obj,
                 paginator_obj=self.paginator_obj,
                 pag_pagenum=self.new_page_num,
-                name=new_screen_name)
+                name=new_screen_name, view_mode=view_mode)
+
             app.manager.add_widget(new_screen)
         app.manager.current = new_screen_name
+
         Clock.schedule_once(self.enable_me, .5)
 
     def open_next_section(self, *args):
         self.disabled = True
         app = App.get_running_app()
-        from libs.uix.baseclass.comicbookscreen import ComicBookScreen
+
+        from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
         new_screen_name = str(f'{self.comic_obj.Id}{self.last_load}')
         if new_screen_name not in app.manager.screen_names:
-            new_screen = ComicBookScreen(
+            if self.mode == 'FileOpen':
+                view_mode = 'FileOpen'
+            else:
+                view_mode = "Server"
+            new_screen = ServerComicBookScreen(
                 readinglist_obj=self.readinglist_obj, comic_obj=self.comic_obj,
-                paginator_obj=self.paginator_obj,
+                paginator_obj=self.paginator_obj, view_mode=view_mode,
                 pag_pagenum=self.new_page_num,
                 name=new_screen_name, last_load=self.last_load)
             app.manager.add_widget(new_screen)
+            if self.mode == 'FileOpen':
+                new_screen.view_mode = 'FileOpen'
         app.manager.current = new_screen_name
         Clock.schedule_once(self.enable_me, .5)
 
     def open_prev_section(self, *args):
         app = App.get_running_app()
-        from libs.uix.baseclass.comicbookscreen import ComicBookScreen
+        from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
         if self.last_section == 0:
             new_screen_name = str(f'{self.comic_obj.Id}')
         else:
             new_screen_name = str(f'{self.comic_obj.Id}{self.last_section}')
+
         if new_screen_name not in app.manager.screen_names:
-            new_screen = ComicBookScreen(
+            if self.mode == 'FileOpen':
+                view_mode = 'FileOpen'
+            else:
+                view_mode = "Server"
+            new_screen = ServerComicBookScreen(
                 readinglist_obj=self.readinglist_obj, comic_obj=self.comic_obj,
                 paginator_obj=self.paginator_obj,
                 pag_pagenum=self.new_page_num,
                 name=new_screen_name, last_load=self.last_section)
             app.manager.add_widget(new_screen)
+            if self.mode == 'FileOpen':
+                new_screen.view_mode = 'FileOpen'
         app.manager.current = new_screen_name
         Clock.schedule_once(self.enable_me, .5)
