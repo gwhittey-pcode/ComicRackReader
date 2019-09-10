@@ -36,13 +36,17 @@ from kivymd.theming import ThemeManager
 from kivymd.uix.label import MDLabel
 from kivymd.toast.kivytoast import toast
 from kivy.storage.jsonstore import JsonStore
+from kivymd.uix.filemanager import MDFileManager
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
     settings_json_screen_tap_control, settings_json_hotkeys,settings_json_sync
 from kivy.properties import ObjectProperty, StringProperty
 from settings.custom_settings import MySettings
-
+from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from libs.utils.comic_functions import convert_comicapi_to_json
+from libs.utils.paginator import Paginator
+from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 class ComicRackReader(App):
     title = 'ComicRackReader Home Screen'
     icon = 'icon.png'
@@ -54,12 +58,13 @@ class ComicRackReader(App):
     sync_dir = StringProperty()
     full_screen = False
     LIST_SCREENS = ListProperty()
+    cache_dir = StringProperty()
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
-        self.LIST_SCREENS = ['base', 'license', 'about', 'readinglistscreen',
-                        'comicracklistscreen', 'open_comicscreen', 'syncscreen']
+        self.LIST_SCREENS = ['base', 'license', 'about', 'server_readinglists_screen',
+                        'server_lists_screen', 'open_comicscreen', 'syncscreen','single_file_screen','open_file_screen']
 
         self.list_previous_screens = ['base']
         self.window = Window
@@ -81,7 +86,7 @@ class ComicRackReader(App):
         # )
         self.base_url = ''
         self.settings_cls = MySettings
-        
+        self.md_manager = None
 
     # def get_application_config(self):
     #     return super(ComicRackReader, self).get_application_config(
@@ -93,10 +98,17 @@ class ComicRackReader(App):
         config.adddefaultsection('General')
         config.adddefaultsection('Saved')
         config.setdefault('General', 'language', 'en')
+
         config.setdefault('Saved', 'last_server_comic_id', '')
         config.setdefault('Saved', 'last_server_reading_list_id', '')
         config.setdefault('Saved', 'last_server_reading_list_name', '')
-        config.setdefault('Saved', 'last_pag_pagnum', '')
+        config.setdefault('Saved', 'last_server_pag_pagnum', '')
+
+        config.setdefault('Saved', 'last_file_comic_id', '')
+        config.setdefault('Saved', 'last_file_reading_list_id', '')
+        config.setdefault('Saved', 'last_file_reading_list_name', '')
+        config.setdefault('Saved', 'last_file_pag_pagnum', '')
+
         config.setdefaults('Server', {
             'url':          'http://',
             'storagedir':       self.user_data_dir,
@@ -109,7 +121,7 @@ class ComicRackReader(App):
             'max_books_page':   25
         })
         config.setdefaults('Sync', {
-            'sync_folder':'./sync'
+            'sync_folder':'.'
         })
         config.setdefaults('Display', {
             'mag_glass_size':   200,
@@ -159,13 +171,15 @@ class ComicRackReader(App):
         self.config.read(os.path.join(self.directory, 'comicrackreader.ini'))
         self.lang = self.config.get('General', 'language')
         self.sync_dir = self.config.get('Sync','sync_folder')
-        my_data_dir = Path(f'{self.sync_dir}/data/')
-        my_comic_dir = Path(f'{self.sync_dir}/comics/')
+        my_data_dir = Path(os.path.join(self.sync_dir, 'data'))
+        my_comic_dir = Path(os.path.join(self.sync_dir, 'comics'))
         if not my_data_dir.is_dir():os.makedirs(my_data_dir)
         if not my_comic_dir.is_dir():os.makedirs(my_comic_dir)
         self.store  = JsonStore(f'{self.sync_dir}/data/comics.json')
-
-           
+        self.cache_dir = os.path.join(
+            self.config.get('Server','storagedir'),'cache')
+            
+        if not Path(self.cache_dir).is_dir():os.makedirs(self.cache_dir)
             
     def set_window_size(self):
         app = App.get_running_app()
@@ -193,6 +207,19 @@ class ComicRackReader(App):
         self.manager = self.screen.ids.manager
         #self.nav_drawer = self.screen.ids.nav_drawer
         #self.set_window_size()
+        action_bar = self.screen.ids.action_bar
+        action_bar.right_action_items = [
+                ['file-cabinet', lambda x: self.file_manager_open()],
+                ['view-list', lambda x: self.switch_server_lists_screen()],
+                ['library-books', lambda x: self.switch_readinglists_screen()],
+              
+                ['close-box-outline', lambda x: self.stop()]
+            ]
+        action_bar.left_action_items = [
+                ['home', lambda x: self.switch_base_screen()],
+                ['settings', lambda x: self.open_settings()],
+                ['fullscreen',lambda x: self.toggle_full_screen()]
+            ]
         return self.screen
 
     def load_all_kv_files(self, directory_kv_files):
@@ -253,7 +280,7 @@ class ComicRackReader(App):
             elif keyboard == c.string_to_keycode(hk_open_comicscreen):
                 app.manager.current='open_comicscreen'
             elif keyboard == c.string_to_keycode(hk_return_comic_list):
-                app.manager.current='readinglistscreen'
+                app.manager.current='server_readinglists_screen'
             elif keyboard == c.string_to_keycode(hk_return_base_screen):
                 app.show_action_bar()
                 app.switch_base_screen()
@@ -286,7 +313,7 @@ class ComicRackReader(App):
 
     def show_about(self, *args):
         self.nav_drawer.toggle_nav_drawer()
-        self.screen.ids.about.ids.label.text=_(
+        self.screen.ids.about.ids.label.text=(
                 u'[size=20][b]ComicRackReader[/b][/size]\n\n'
                 u'[b]Version:[/b] {version}\n'
                 u'[b]License:[/b] MIT\n\n'
@@ -386,20 +413,24 @@ class ComicRackReader(App):
 
     def switch_server_lists_screen(self):
         self.set_screen("List of Reading Lists Screen")
-        self.manager.current='comicracklistscreen'
-        comicracklistscreen=self.manager.get_screen('comicracklistscreen')
+        self.manager.current='server_lists_screen'
+        server_lists_screen=self.manager.get_screen('server_lists_screen')
 
     def switch_open_comics_screen(self):
         self.set_screen("Open Comics Screen")
         self.manager.current='open_comicscreen'
 
     def switch_readinglists_screen(self):
-        self.set_screen(self.manager.get_screen('readinglistscreen').reading_list_title)
-        self.manager.current='readinglistscreen'
+        self.set_screen(self.manager.get_screen('server_readinglists_screen').reading_list_title)
+        self.manager.current='server_readinglists_screen'
 
     def switch_base_screen(self):
         self.set_screen("ComicRackReader Home Screen")
         self.manager.current='base'
+    
+    def switch_open_file_screen(self):
+        self.set_screen("Open File")
+        self.manager.current='open_file_screen'
 
     def set_screen(self, title):
         self.screen.ids.action_bar.title=title
@@ -416,3 +447,75 @@ class ComicRackReader(App):
         self.screen.ids.action_bar.size=(
             Window.width, self.theme_cls.standard_increment)
 
+# FileManger
+    def file_manager_open(self):
+        previous = False
+        if not self.md_manager:
+            self.md_manager = ModalView(size_hint=(1, 1), auto_dismiss=False)
+            self.file_manager = MDFileManager(
+                exit_manager=self.exit_manager,
+                select_path=self.select_path,
+                previous=previous,
+            )
+            self.md_manager.add_widget(self.file_manager)
+            comics_folder = f'{self.user_data_dir}/comics'
+            self.file_manager.show('/')
+        self.manager_open = True
+        self.md_manager.open()
+
+    def select_path(self, path):
+        """It will be called when you click on the file name
+        or the catalog selection button.
+        :type path: str;
+        :param path: path to the selected directory or file;
+        """
+        self.exit_manager()
+        if os.path.isfile(path):
+            comic_data = convert_comicapi_to_json(path)
+            new_rl = ComicReadingList(
+                name='FileLoad', data=comic_data, slug='SingFileOpen')
+            new_comic = ComicBook(comic_data)
+            new_rl.add_comic(new_comic)
+
+        elif os.path.isdir(path):
+            from os import listdir
+            from os.path import isfile, join
+            if os.path.isdir(path):
+                onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+            data = {"items": []}
+            for file in onlyfiles:
+                
+                ext = os.path.splitext(file)[-1].lower()
+                print(ext)
+                if ext in (".cbz", ".cbr", ".cb7",".cbp"):
+                    file_path = os.path.join(path, file)
+                    comic_data = convert_comicapi_to_json(file_path)
+                    data["items"].append(comic_data)
+                else:
+                    pass
+            new_rl = ComicReadingList(name=path, data=data, slug='path')
+            for item in new_rl.data["items"]:
+                new_comic = ComicBook(item)
+                new_rl.add_comic(new_comic)
+
+        max_books_page = int(self.config.get(
+            'Server', 'max_books_page'))
+        paginator_obj = Paginator(
+            new_rl.comics, max_books_page)
+        new_screen_name = str(new_rl.comics[0].Id)
+        if new_screen_name not in self.manager.screen_names:
+            new_screen = ServerComicBookScreen(
+                readinglist_obj=new_rl,
+                comic_obj=new_rl.comics[0],
+                paginator_obj=paginator_obj,
+                pag_pagenum=1, view_mode='FileOpen',
+                name=new_screen_name)
+            self.manager.add_widget(new_screen)
+            self.manager.current = new_screen_name
+        toast(f'Opening {new_rl.comics[0].__str__}')
+
+    def exit_manager(self, *args):
+        """Called when the user reaches the root of the directory tree."""
+
+        self.md_manager.dismiss()
+        self.manager_open = False

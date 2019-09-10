@@ -24,7 +24,7 @@ settings_json_server = json.dumps([
      'key':     'url'},
 
     {'type':    'path',
-     'title':   'Storage Directory',
+     'title':   'Cache Directory',
      'desc':    'Where to store Comic Pages Cache',
      'section': 'Server',
      'key':     'storagedir'},

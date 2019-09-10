@@ -1,0 +1,94 @@
+#:kivy 1.10.1
+# -*- coding: utf-8 -*-
+#
+# This file created with KivyCreatorProject
+# <https://github.com/HeaTTheatR/KivyCreatorProgect
+#
+# Copyright © 2017 Easy
+#
+# For suggestions and questions:
+# <kivydevelopment@gmail.com>
+# 
+# LICENSE: MIT
+#:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
+
+<ServerReadingListsScreen>:
+    name: 'server_readinglists_screen'
+
+    StackLayout:
+        id:main_stack
+        orientation: 'lr-tb'
+        padding: dp(10), dp(10)
+        spacing: dp(4)
+        CustomMDFillRoundFlatIconButton:
+            id:prev_button
+            text: "Prev Page"
+            icon: "arrow-left"
+            width: dp(150)
+            padding: dp(10), dp(10)
+            center_x:main_stack.x + (self.width)
+            on_release:root.get_page(self)
+        MDFlatButton:
+            id:page_count
+            width: dp(10)
+            text: ''
+            center_x:main_stack.center_x
+            disabled:True
+        CustomMDFillRoundFlatIconButton:
+            id:next_button
+            text: 'Next Page'
+            icon: "arrow-right"
+            width: dp(150)
+            padding: dp(10), dp(10)
+            center_x:main_stack.right - (self.width)
+            on_release:root.get_page(self)
+        MDFlatButton:
+            id:'spacer2'
+            width: dp(50)
+            text: ''
+            center_x:main_stack.center_x
+            disabled:True
+        SyncButton:
+            id:sync_button
+            text: 'Sync this page'
+            icon: "cloud-sync"
+            width: dp(150)
+            padding: dp(10), dp(10)
+            center_x:main_stack.right - (self.width)
+            #on_release:root.sync_readinglist_button()
+        
+
+        ScrollView:
+            do_scroll_x: False
+            id: main_scroll
+            padding: dp(10), dp(10)
+            GridLayout:
+                id: main_grid
+                row_force_default: True
+                size_hint_y: None
+                size_hint_x: None
+                height: self.minimum_height
+                padding: dp(10), dp(10),dp(30),dp(50)
+                spacing: dp(4)
+                col_default_width:root.comic_thumb_width
+                row_default_height:root.comic_thumb_height
+                
+        
+        MDFlatButton:
+            id:spacer
+            width: dp(10)
+            disabled:False
+            icon: "arrow-right"
+
+<CustomeST>
+    size: (dp(160),dp(240))
+    mipmap: True
+    font_style: 'Subtitle1'
+    on_release:
+        if self.do_action is 'read': self.open_comic()
+        else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
+
+<SyncButton>
+    on_release:
+        if self.do_action is 'read': self.do_sync_rf()
+        else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)

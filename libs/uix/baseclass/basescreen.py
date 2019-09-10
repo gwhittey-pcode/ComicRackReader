@@ -9,19 +9,22 @@
 # <kivydevelopment@gmail.com>
 #
 # LICENSE: MIT
-
+import os
+from datetime import datetime, timedelta, date
 from kivy.uix.screenmanager import Screen
 from kivy.network.urlrequest import UrlRequest
 from kivy.app import App
 from kivy.logger import Logger
 import json
 
+from kivymd.uix.filemanager import MDFileManager
 from base64 import b64encode
 from kivy.uix.button import Button
 from kivy.properties import StringProperty
 import urllib.parse
 from libs.utils.comic_server_conn import ComicServerConn
 from kivymd.uix.accordionlistitem import MDAccordionListItem
+from kivy.uix.modalview import ModalView
 from kivymd.uix.list import OneLineIconListItem, OneLineAvatarListItem, ILeftBodyTouch, ILeftBody
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
@@ -30,11 +33,18 @@ from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup
-from libs.uix.baseclass.readinglistscreen import CustomeST
+from libs.uix.baseclass.server_readinglists_screen import CustomeST
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
+from libs.utils.comic_functions import convert_comicapi_to_json
 from libs.utils.paginator import Paginator
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
+from kivymd.toast.kivytoast import toast
+from kivy.logger import Logger
+from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from kivymd.uix.filemanager import MDFileManager
+from PIL import Image
+import inspect
 
 
 class LoginPopup(BoxLayout):
@@ -128,7 +138,7 @@ class BaseScreen(Screen):
             tmp_last_server_comic_id = self.app.config.get(
                 'Saved', 'last_server_comic_id')
             tmp_last_pag_pagnum = self.app.config.get(
-                'Saved', 'last_pag_pagnum')
+                'Saved', 'last_server_pag_pagnum')
             if tmp_last_server_comic_id == '':
                 return
             else:
@@ -148,13 +158,13 @@ class BaseScreen(Screen):
                     for comic in this_page.object_list:
                         if tmp_last_server_comic_id == comic.Id:
                             tmp_last_pag_pagnum = this_page.number
-                readinglistscreen = self.app.manager.get_screen(
-                    'readinglistscreen')
-                readinglistscreen.list_loaded = False
-                readinglistscreen.setup_screen()
+                server_readinglists_screen = self.app.manager.get_screen(
+                    'server_readinglists_screen')
+                server_readinglists_screen.list_loaded = False
+                server_readinglists_screen.setup_screen()
                 page = paginator_obj.page(tmp_last_pag_pagnum)
-                readinglistscreen.page_number = tmp_last_pag_pagnum
-                readinglistscreen.collect_readinglist_data(
+                server_readinglists_screen.page_number = tmp_last_pag_pagnum
+                server_readinglists_screen.collect_readinglist_data(
                     readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]
                 grid.cols = 1
