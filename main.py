@@ -33,7 +33,7 @@ try:
     Config.set('kivy', 'log_enable', 0)
 
     from kivymd.theming import ThemeManager
-    from bugreporter import BugReporter
+    from libs.applibs.bugreporter import BugReporter
 except Exception:
     traceback.print_exc(file=open(os.path.join(directory, 'error.log'), 'w'))
     print(traceback.print_exc())
@@ -80,6 +80,7 @@ def main():
             '''The function to send a bug report.'''
 
             try:
+                import six
                 txt = six.moves.urllib.parse.quote(
                     report.txt_traceback.text.encode('utf-8')
                 )

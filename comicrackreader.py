@@ -10,8 +10,8 @@
 ###
 # LICENSE: MIT
 
-import os
 import sys
+import os
 from pathlib import Path
 from ast import literal_eval
 from kivy.config import Config
@@ -189,15 +189,10 @@ class ComicRackReader(App):
         Window.size = (int(window_width),int(window_height))
         Window.top = dp(30)
         Window.left = dp(30)
-        # Config.set('graphics', 'position', 'custom')
-        # Config.set('graphics', 'left', 25)
-        # Config.set('graphics', 'top',  25)
-        # Config.set('graphics', 'height', window_height)
-        # Config.set('graphics', 'width',  window_width)
-        # Config.write()
+ 
         
     def build(self):
-        self.base_url = self.config.get('Server', 'url')
+        self.base_url = self.config.get('Server', 'url').rstrip('\\')
         self.api_url = self.base_url + "/API"
         self.api_key = self.config.get('Server', 'api_key')
         self.set_value_from_config()
@@ -266,10 +261,10 @@ class ComicRackReader(App):
             elif keyboard == c.string_to_keycode(hk_return_base_screen):
                 app.show_action_bar()
                 app.manager.current='base'
-            # elif keyboard in (1001, 27):
-            #     if self.nav_drawer.state == 'open':
-            #         self.nav_drawer.toggle_nav_drawer()
-            #     self.back_screen(event=keyboard)
+            elif keyboard in (1001, 27):
+                if self.nav_drawer.state == 'open':
+                    self.nav_drawer.toggle_nav_drawer()
+                self.back_screen(event=keyboard)
             elif keyboard == c.string_to_keycode(hk_toggle_fullscreen):
                 self.toggle_full_screen()
         else:
@@ -284,10 +279,10 @@ class ComicRackReader(App):
             elif keyboard == c.string_to_keycode(hk_return_base_screen):
                 app.show_action_bar()
                 app.switch_base_screen()
-            # elif keyboard in (1001, 27):
-            #     if self.nav_drawer.state == 'open':
-            #         self.nav_drawer.toggle_nav_drawer()
-            #     self.back_screen(event=keyboard)
+            elif keyboard in (1001, 27):
+                if self.nav_drawer.state == 'open':
+                    self.nav_drawer.toggle_nav_drawer()
+                self.back_screen(event=keyboard)
         return True
 
     def toggle_full_screen(self):
