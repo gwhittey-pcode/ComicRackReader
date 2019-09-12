@@ -11,7 +11,9 @@
 # 
 # LICENSE: MIT
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
-
+#:import md_icons kivymd.icon_definitions.md_icons
+#:set color_shadow [0, 0, 0, .2980392156862745]
+#:set color_lilac [.07058823529411765, .07058823529411765, .14901960784313725, .8]
 <ServerReadingListsScreen>:
     name: 'server_readinglists_screen'
 
@@ -20,44 +22,65 @@
         orientation: 'lr-tb'
         padding: dp(10), dp(10)
         spacing: dp(4)
+        height: self.minimum_height
         CustomMDFillRoundFlatIconButton:
             id:prev_button
             text: "Prev Page"
             icon: "arrow-left"
-            width: dp(150)
+            width: dp(50)
             padding: dp(10), dp(10)
             center_x:main_stack.x + (self.width)
             on_release:root.get_page(self)
-        MDFlatButton:
+        MDTextButton:
             id:page_count
-            width: dp(10)
+            width: dp(1)
             text: ''
             center_x:main_stack.center_x
-            disabled:True
+            disabled:False
+            #on_release:MDDropdownMenu(items=root.menu_items,hor_growth='right',starting_coords ='bottom', width_mult=.5,background_color=(1,1,1,1)).open(self)
         CustomMDFillRoundFlatIconButton:
             id:next_button
             text: 'Next Page'
             icon: "arrow-right"
-            width: dp(150)
+            width: dp(50)
             padding: dp(10), dp(10)
             center_x:main_stack.right - (self.width)
             on_release:root.get_page(self)
-        MDFlatButton:
-            id:'spacer2'
-            width: dp(50)
+        MDTextButton:
+            id:comics_per
+            width: dp(1)
             text: ''
-            center_x:main_stack.center_x
-            disabled:True
-        SyncButton:
-            id:sync_button
-            text: 'Sync this page'
-            icon: "cloud-sync"
-            width: dp(150)
+            disabled:False
+        SyncButtonIcon:
+            #font_style: 'Icon'
+            icon_name: 'sync'
+            size_hint: None,None
+            size:dp(50),dp(50)
             padding: dp(10), dp(10)
             center_x:main_stack.right - (self.width)
+            center_y:root.top - (self.height/2)
+            text: md_icons.get(self.icon_name) 
+            theme_text_color: 'Custom'
+            text_color: app.theme_cls.primary_color
+            font_size: dp(35)
+        # SyncButton:
+        #     id:sync_button
+        #     text: ''
+        #     icon: "cloud-sync"
+        #     width: dp(50)
+        #     padding: dp(10), dp(10)
+        #     center_x:main_stack.right - (self.width)
+        #     theme_text_color: 'Custom'
+        #     text_color: app.theme_cls.primary_color
             #on_release:root.sync_readinglist_button()
         
-
+        MDFlatButton:
+            id:spacer
+            width: dp(10)
+            height:dp(60)
+            padding: dp(10), dp(10)
+            disabled:False
+            icon: "arrow-right"
         ScrollView:
             do_scroll_x: False
             id: main_scroll
@@ -83,12 +106,121 @@
 <CustomeST>
     size: (dp(160),dp(240))
     mipmap: True
-    font_style: 'Subtitle1'
+    font_style: 'Subtitle2'
     on_release:
         if self.do_action is 'read': self.open_comic()
         else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
-
-<SyncButton>
+    
+<SyncButtonIcon>
     on_release:
         if self.do_action is 'read': self.do_sync_rf()
         else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
+
+<SyncOptionsPopup>
+    center: (root.center_x,root.center_y)
+	BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10), dp(10)
+        spacing: dp(10)
+        disabled:False
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:3
+            rows:1
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDCheckbox:
+                    size_hint: None, None
+                    size: dp(48), dp(48)
+                MDLabel:
+                    font_style: 'Body2'
+                    theme_text_color: 'Primary'
+                    text: "Limit to"
+                    halign: 'left'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.4
+                MDTextField:
+                    id:max_num_sync
+                    hint_text: "50"
+                    helper_text: "Maximum Number of Comics to Sync"
+                    helper_text_mode: "persistent"
+                    post_hint_x:root.center_x
+            BoxLayout:
+                orientation: 'horizontal'
+                padding: dp(10), dp(10)
+                spacing: dp(10)
+                size_hint_x:.1
+                SynLimitButton:
+                    id:limit_to_btn
+                    size_hint: None,None
+                    on_release:self.open_menu()
+                    text:"Books"
+                    elevation_normal: 2
+                    md_bg_color: app.theme_cls.primary_color
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:3
+            rows:1
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDCheckbox:
+                    size_hint: None, None
+                    size: dp(48), dp(48)
+                MDLabel:
+                    font_style: 'Body2'
+                    theme_text_color: 'Primary'
+                    text: "Only Read"
+                    halign: 'left'
+                    valign:'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDCheckbox:
+                    size_hint: None, None
+                    size: dp(48), dp(48)
+                MDLabel:
+                    font_style: 'Body2'
+                    theme_text_color: 'Primary'
+                    text: "But keep last read"
+                    halign: 'left'
+                    valign:'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+        BoxLayout:
+            orientation: 'horizontal'
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+            AnchorLayout:
+                anchor_x:'left'
+                anchor_y:'bottom'
+                MDFillRoundFlatButton:
+                    id: ok_btn
+                    text: "MDFillRoundFlatButton"
+                    halign: 'center'
+                    size_hint: None, None
+                    color: app.theme_cls.primary_color
+                    font_size: '18sp'
+                    text: 'Save'
+            AnchorLayout:
+                anchor_x:'right'
+                anchor_y:'bottom'
+                MDFillRoundFlatButton:
+                    text: "MDFillRoundFlatButton"
+                    halign: 'center'
+                    size_hint: None, None
+                    color: app.theme_cls.primary_color
+                    font_size: '18sp'
+                    text: 'Cancel'
+

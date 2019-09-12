@@ -144,7 +144,6 @@ class ComicArchive:
 
         if filename is not None:
             try:
-                print(filename)
                 image_data = self.archiver.readArchiveFile(filename)
             except IOError:
                 print >> sys.stderr, u"Error reading in page.  Substituting logo page."

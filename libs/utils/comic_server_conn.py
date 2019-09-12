@@ -39,7 +39,6 @@ class ComicServerConn():
         head = {'Content-Type': "application/x-www-form-urlencoded",
                 'Accept': "application/json", 'Cookie': str_cookie
                 }
-        print(req_url)
         req = UrlRequest(req_url, req_headers=head,
                          req_body=data,
                          on_success=callback,
@@ -49,7 +48,6 @@ class ComicServerConn():
                          )
 
     def get_server_data_callback(self, req_url, callback):
-        print(req_url)
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'API_apiKey={api_key}; BCR_username={username}'
@@ -116,7 +114,6 @@ class ComicServerConn():
     def get_server_file_download(self, req_url, callback, file_path):
         def update_progress(request, current_size, total_size):
             print(current_size/total_size)
-        print(req_url)
         username = self.app.config.get('Server', 'username')
         api_key = self.app.config.get('Server', 'api_key')
         str_cookie = f'API_apiKey={api_key}; BCR_username={username}'

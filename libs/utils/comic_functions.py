@@ -15,7 +15,6 @@ from PIL import Image
 
 
 def convert_comicapi_to_json(comic_path):
-    print(comic_path)
     """ returns comic format to pass to json_obj"""
     if os.path.exists(comic_path):
         md = getComicMetadata(comic_path)

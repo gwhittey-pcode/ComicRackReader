@@ -202,10 +202,13 @@ class ServerComicBookScreen(Screen):
     def on_pre_leave(self, *args):
         self.top_pop.dismiss()
         self.page_nav_popup.dismiss()
+        self.option_pop.dismiss()
         
     def on_leave(self, *args):
+        
         self.app.manager.remove_widget(self)
         self = None
+
     def load_UserCurrentPage(self):
         for slide in self.ids.comic_book_carousel.slides:
             if slide.comic_page == self.comic_obj.UserCurrentPage:
@@ -259,8 +262,6 @@ class ServerComicBookScreen(Screen):
                                 if child.zoom_state == 'zoomed':
                                     child.do_zoom(False)
 
-    def progress_updated(self, req, results):
-        pass
 
     def add_pages(self, comic_book_carousel, outer_grid, comic_obj, i):
         # fire off dblpage split if server replies size of image is
@@ -908,8 +909,11 @@ class ServerComicBookScreen(Screen):
 
 
 
-
+    
     def build_option_pop(self):
+        def call_back_dismiss(instance):
+            self.option_isopen = False
+
         bg_color = self.app.theme_cls.primary_color
         option_bar = OptionToolBar(comic_Id=self.comic_obj.Id)
         self.option_pop = ModalView(pos_hint={'y': .917},
@@ -917,6 +921,7 @@ class ServerComicBookScreen(Screen):
 
                                     )
         self.option_pop.add_widget(option_bar)
+        self.option_pop.bind(on_dismiss=call_back_dismiss)
 
     def toggle_option_bar(self):
         if self.option_isopen == True:

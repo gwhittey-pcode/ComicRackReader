@@ -40,7 +40,8 @@ from kivymd.uix.filemanager import MDFileManager
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
-    settings_json_screen_tap_control, settings_json_hotkeys,settings_json_sync
+    settings_json_screen_tap_control, settings_json_hotkeys,settings_json_sync,\
+        gen_reading_rl_sync_options
 from kivy.properties import ObjectProperty, StringProperty
 from settings.custom_settings import MySettings
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
@@ -64,7 +65,9 @@ class ComicRackReader(App):
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
         self.LIST_SCREENS = ['base', 'license', 'about', 'server_readinglists_screen',
-                        'server_lists_screen', 'open_comicscreen', 'syncscreen','single_file_screen','open_file_screen']
+                        'server_lists_screen', 'open_comicscreen', 'syncscreen',
+                        'single_file_screen','open_file_screen',
+                        ]
 
         self.list_previous_screens = ['base']
         self.window = Window
@@ -93,6 +96,9 @@ class ComicRackReader(App):
     #         '{}/%(appname)s.ini'.format(self.directory))
 
     def build_config(self, config):
+        test_rl = ['RL1','RK2','RL2']
+        for item in test_rl:
+            print(gen_reading_rl_sync_options(item))
         '''Creates an application settings file ComicRackReader.ini.'''
 
         config.adddefaultsection('General')
@@ -121,7 +127,8 @@ class ComicRackReader(App):
             'max_books_page':   25
         })
         config.setdefaults('Sync', {
-            'sync_folder':'.'
+            'sync_folder':'.',
+            'max_num_sync':50
         })
         config.setdefaults('Display', {
             'mag_glass_size':   200,
@@ -380,13 +387,13 @@ class ComicRackReader(App):
         self.translation.switch_lang(lang)
 
     def build_settings(self, settings):
-        
-        settings.add_json_panel('Server Settings',
-                                self.config,
-                                data=settings_json_server)
         settings.add_json_panel('Sync Settings',
                                 self.config,
                                 data=settings_json_sync)
+        settings.add_json_panel('Server Settings',
+                                self.config,
+                                data=settings_json_server)
+        
         settings.add_json_panel('Display Settings',
                                 self.config,
                                 data=settings_json_dispaly)
@@ -421,7 +428,11 @@ class ComicRackReader(App):
 
     def switch_base_screen(self):
         self.set_screen("ComicRackReader Home Screen")
+
         self.manager.current='base'
+    def switch_sync_control(self):
+        self.set_screen("Sync Options")
+        self.manager.current='sync_options_screen'
     
     def switch_open_file_screen(self):
         self.set_screen("Open File")
@@ -481,7 +492,6 @@ class ComicRackReader(App):
             for file in onlyfiles:
                 
                 ext = os.path.splitext(file)[-1].lower()
-                print(ext)
                 if ext in (".cbz", ".cbr", ".cb7",".cbp"):
                     file_path = os.path.join(path, file)
                     comic_data = convert_comicapi_to_json(file_path)

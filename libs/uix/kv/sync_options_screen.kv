@@ -1,0 +1,126 @@
+#:kivy 1.10.1
+# -*- coding: utf-8 -*-
+#
+# This file created with KivyCreatorProject
+# <https://github.com/HeaTTheatR/KivyCreatorProgect
+#
+# Copyright © 2017 Easy
+#
+# For suggestions and questions:
+# <kivydevelopment@gmail.com>
+# 
+# LICENSE: MIT
+
+#:import SyncOptions libs.uix.baseclass.sync_options_screen.SyncOptions
+#:set color_shadow [0, 0, 0, .2980392156862745]
+
+<SyncOptions>:
+    name: 'sync_options_screen'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10), dp(10)
+        spacing: dp(10)
+
+        Label:
+            size_hint: None, None
+            height: dp(20)
+            width: self.texture_size[0]
+            halign: 'left'
+            color: app.theme_cls.primary_color
+            font_size: '18sp'
+            text: 'Sync Options'
+
+        MDSeparator:
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            bar_color:app.theme_cls.primary_color
+            bar_inactive_color:[.7, .7, .7, 1]
+            bar_width:10
+            scroll_type:['bars', 'content']
+            MyTv:
+                id:mytv
+                size_hint_x: 1
+                size_hint_y: None
+                hide_root: True
+                indent_level: 4
+                indent_start: 50
+        BoxLayout:
+            orientation: 'vertical'
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+            disabled:False
+            GridLayout:
+                #orientation: 'horizontal'
+                cols:3
+                rows:1
+                padding: dp(10), dp(10)
+                spacing: dp(10)
+
+                BoxLayout:
+                    padding: dp(10)
+                    size_hint_x:.25
+                    MDLabel:
+                        font_style: 'Body2'
+                        theme_text_color: 'Primary'
+                        text: "Limit to"
+                        halign: 'left'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                BoxLayout:
+                    padding: dp(10)
+                    MDTextField:
+                        id:max_num_sync
+                        hint_text: "50"
+                        helper_text: "Maximum Number of Comics to Sync"
+                        helper_text_mode: "persistent"
+                        post_hint_x:root.center_x
+                BoxLayout:
+                    orientation: 'horizontal'
+                    padding: dp(10), dp(10)
+                    spacing: dp(10)
+                    SynLimitButton:
+                        id:limit_to_btn
+                        size_hint: None,None
+                        on_release:self.open_menu()
+                        text:"Books"
+                        elevation_normal: 2
+                        md_bg_color: app.theme_cls.primary_color
+            BoxLayout:
+                orientation: 'horizontal'
+                padding: dp(10), dp(10)
+                spacing: dp(10)
+                AnchorLayout:
+                    anchor_x:'left'
+                    anchor_y:'bottom'
+                    MDFillRoundFlatButton:
+                        id: ok_btn
+                        text: "MDFillRoundFlatButton"
+                        halign: 'center'
+                        size_hint: None, None
+                        color: app.theme_cls.primary_color
+                        font_size: '18sp'
+                        text: 'Save'
+                AnchorLayout:
+                    anchor_x:'right'
+                    anchor_y:'bottom'
+                    MDFillRoundFlatButton:
+                        text: "MDFillRoundFlatButton"
+                        halign: 'center'
+                        size_hint: None, None
+                        color: app.theme_cls.primary_color
+                        font_size: '18sp'
+                        text: 'Cancel'
+                
+                
+        
+
+<TreeViewRLNode>
+    text: "Single-line item with left icon"
+    IconRightSampleWidget:
+        id: chkbox
+    IconLeftSampleWidget:
+        id: li_icon_1
+        icon: 'folder'
+    
