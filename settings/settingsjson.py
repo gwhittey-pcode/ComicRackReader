@@ -32,6 +32,7 @@ settings_json_sync = json.dumps([
      'desc': 'Path to store downloaded sync comics',
      'section': 'Sync',
      'key': 'sync_folder'},
+
     {'type': 'numeric',
      'title': 'Default Max Comic to Sync',
      'desc': 'This is how many Comics to sync Default',
@@ -44,19 +45,19 @@ settings_json_server = json.dumps([
     {'type':    'string',
      'title':   'Server URL',
      'desc':    'URL for server. Leave ending / off. ex: http://192.168.1.215:8080/tablet',
-     'section': 'Server',
+     'section': 'General',
      'key':     'url'},
 
     {'type':    'path',
      'title':   'Cache Directory',
      'desc':    'Where to store Comic Pages Cache',
-     'section': 'Server',
+     'section': 'General',
      'key':     'storagedir'},
     {
         'type':     'options',
         'title':    'Maximum Page Height',
         'desc':     'Maximum Page Height to Download',
-        'section':  'Server',
+        'section':  'General',
         'key':      'max_height',
         'options': ['2000', '1500', '1280', '1200', '1024']
     },
@@ -64,38 +65,38 @@ settings_json_server = json.dumps([
     # {'type':    'bool',
     #  'title':   'Use Api key',
     #  'desc':    'Use API key to access server',
-    #  'section': 'Server',
+    #  'section': 'General',
     #  'key':     'use_api_key'},
 
     {'type':    'string',
      'title':   'API key',
      'desc':    'Api Key for server',
-     'section': 'Server',
+     'section': 'General',
      'key':     'api_key'},
 
     {'type':    'string',
      'title':   'Username',
      'desc':    'Username for server',
-     'section': 'Server',
+     'section': 'General',
      'key':     'username'},
 
     {'type':    'string',
      'title':   'Password',
      'desc':    'Password',
-     'section': 'Server',
+     'section': 'General',
      'key':     'password'},
 
     # {'type':    'bool',
     #  'title':   'Use Pagination',
     #  'desc':    'Use Pagination to limit number of books on each List/Series
     # page',
-    #  'section': 'Server',
+    #  'section': 'General',
     #  'key':     'use_pagination'},
 
     {'type':     'numeric',
      'title':    'Max ComicBooks',
      'desc':     'Number of books to show on list page(turn pagination on)',
-     'section':  'Server',
+     'section':  'General',
      'key':      'max_books_page'},
 
 
@@ -342,20 +343,3 @@ settings_json_hotkeys = json.dumps(
 
 
     ])
-#
-# {'type': 'bool',
-#  'title': 'A boolean setting',
-#  'desc': 'Boolean description text',
-#  'section': 'Server',
-#  'key': 'boolexample'},
-# {'type': 'numeric',
-#  'title': 'Page Buffer',
-#  'desc': 'How many pages to prefetch',
-#  'section': 'Server',
-#  'key': 'pagebuffer'},
-# {'type': 'options',
-#  'title': 'An options setting',
-#  'desc': 'Options description text',
-#  'section': 'Server',
-#  'key': 'optionsexample',
-#  'options': ['option1', 'option2', 'option3']},

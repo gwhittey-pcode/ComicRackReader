@@ -47,8 +47,17 @@ from PIL import Image
 import inspect
 
 
-class LoginPopup(BoxLayout):
+class LoginPopupContent(BoxLayout):
     info_text = StringProperty()
+
+
+class LoginPopup(Popup):
+    def on_open(self):
+        """ disable hotkeys while we do this"""
+        Window.unbind(on_keyboard=App.get_running_app().events_program)
+
+    def on_dismiss(self):
+        Window.bind(on_keyboard=App.get_running_app().events_program)
 
 
 class BaseScreen(Screen):
@@ -59,16 +68,16 @@ class BaseScreen(Screen):
         self.Data = ''
         self.api_key = ''
         self.fetch_data = ComicServerConn()
-        self.myLoginPop = LoginPopup()
-        self.popup = Popup(content=self.myLoginPop,
-                           size_hint=(None, None), size=(500, 400))
-        self.username = self.app.config.get('Server', 'username')
-        self.password = self.app.config.get('Server', 'password')
-        self.api_key = self.app.config.get('Server', 'api_key')
+        self.myLoginPop = LoginPopupContent()
+        self.popup = LoginPopup(content=self.myLoginPop,
+                                size_hint=(None, None), size=(500, 400))
+        self.username = self.app.config.get('General', 'username')
+        self.password = self.app.config.get('General', 'password')
+        self.api_key = self.app.config.get('General', 'api_key')
         self.myLoginPop.ids.username_field.text = self.username
         self.myLoginPop.ids.pwd_field.text = self.password
         self.myLoginPop.ids.url_field.text = self.app.config.get(
-            'Server', 'url')
+            'General', 'url')
 
     def on_pre_enter(self, *args):
         self.check_login()
@@ -96,7 +105,7 @@ class BaseScreen(Screen):
     def validate_user(self):
         def got_api(result):
             api_key = result['ApiKey']
-            self.app.config.set('Server', 'api_key', api_key)
+            self.app.config.set('General', 'api_key', api_key)
             self.app.config.write()
             self.api_key = api_key
             self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
@@ -113,9 +122,9 @@ class BaseScreen(Screen):
         user = self.myLoginPop.ids.username_field.text
         pwd = self.myLoginPop.ids.pwd_field.text
         url = self.myLoginPop.ids.url_field.text
-        self.app.get_running_app().config.set('Server', 'username', user)
-        self.app.get_running_app().config.set('Server', 'password', pwd)
-        self.app.get_running_app().config.set('Server', 'url', url)
+        self.app.get_running_app().config.set('General', 'username', user)
+        self.app.get_running_app().config.set('General', 'password', pwd)
+        self.app.get_running_app().config.set('General', 'url', url)
         self.app.get_running_app().config.write()
         self.app.base_url = url.strip()
         req_url = f"{self.app.base_url}/auth"
@@ -145,13 +154,14 @@ class BaseScreen(Screen):
             else:
                 new_readinglist = ComicReadingList(
                     name=readinglist_name, data=results, slug=readinglist_Id)
-                for item in new_readinglist.data["items"]:
-                    new_comic = ComicBook(item)
-                    new_readinglist.add_comic(new_comic)
+
+                # for item in new_readinglist.data["items"]:
+                #     new_comic = ComicBook(item)
+                #     new_readinglist.add_comic(new_comic)
                 max_books_page = int(self.app.config.get(
-                    'Server', 'max_books_page'))
+                    'General', 'max_books_page'))
                 orphans = max_books_page - 1
-                new_readinglist_reversed = new_readinglist.comics[::-1]
+                new_readinglist_reversed = new_readinglist.comics
                 paginator_obj = Paginator(
                     new_readinglist_reversed, max_books_page)
                 for x in range(1, paginator_obj.num_pages()):
@@ -185,11 +195,8 @@ class BaseScreen(Screen):
                         c.source = source = c_image_source
                         c.PageCount = comic.PageCount
                         c.pag_pagenum = tmp_last_pag_pagnum
-                        if comic.Id in self.app.current_files:
-                            is_sync = ' File Synced'
-                        else:
-                            is_sync = ''
-                        strtxt = f"{comic.Series} #{comic.Number}{is_sync}"
+
+                        strtxt = f"{comic.Series} #{comic.Number}"
                         tmp_color = get_hex_from_color((1, 1, 1, 1))
                         c.text = f'[color={tmp_color}]{strtxt}[/color]'
 #                        c.text_color = self.app.theme_cls.secondary_color

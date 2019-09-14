@@ -65,7 +65,7 @@ class ServerComicBookScreen(Screen):
         self.paginator_obj = ObjectProperty()
         self.paginator_obj = None
         self.fetch_data = ComicServerConn()
-        self.api_key = self.app.config.get('Server', 'api_key')
+        self.api_key = self.app.config.get('General', 'api_key')
         self.popup_bkcolor = (.5, .5, .5, .87)
         self.last_load = last_load
         self.full_screen = False
@@ -89,7 +89,7 @@ class ServerComicBookScreen(Screen):
         self.app.config.write()
         self.pag_pagenum = pag_pagenum
         if self.view_mode == 'FileOpen':
-            self.app.config.set('Saved', 'last_file_comic_id', self.comic_obj.file_path)
+            self.app.config.set('Saved', 'last_file_comic_id', self.comic_obj.FilePath)
             self.app.config.set('Saved', 'last_file_reading_list_id', self.readinglist_obj.slug)
             self.app.config.set('Saved', 'last_file_reading_list_name', self.readinglist_obj.name)
             self.app.config.set('Saved', 'last_file_pag_pagnum', self.pag_pagenum)
@@ -277,7 +277,7 @@ class ServerComicBookScreen(Screen):
         strech_image = App.get_running_app().config.get('Display',
                                                         'stretch_image')
 
-        max_height = App.get_running_app().config.get('Server', 'max_height')
+        max_height = App.get_running_app().config.get('General', 'max_height')
         comic_page_scatter = ComicBookPageScatter(id='comic_scatter'+str(i),
                                                   comic_page=i,
                                                   do_rotation=False,
@@ -949,8 +949,10 @@ class OptionToolBar(MDToolbar):
         app = App.get_running_app()
         screen_manager = app.manager
         comic_book_screen = screen_manager.get_screen(app.manager.current)
-        self.title = comic_book_screen.comic_obj.__str__
-
+        title_txt = comic_book_screen.comic_obj.__str__
+        if comic_book_screen.view_mode == 'FileOpen':
+            title_txt = f'{title_txt} *File*'
+        self.title = title_txt
         root = self
         self.left_action_items = [
             # ["menu", (lambda x: nav_drawer._toggle())],

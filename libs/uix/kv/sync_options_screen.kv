@@ -51,42 +51,7 @@
             padding: dp(10), dp(10)
             spacing: dp(10)
             disabled:False
-            GridLayout:
-                #orientation: 'horizontal'
-                cols:3
-                rows:1
-                padding: dp(10), dp(10)
-                spacing: dp(10)
-
-                BoxLayout:
-                    padding: dp(10)
-                    size_hint_x:.25
-                    MDLabel:
-                        font_style: 'Body2'
-                        theme_text_color: 'Primary'
-                        text: "Limit to"
-                        halign: 'left'
-                        size_hint_y: None
-                        height: self.texture_size[1]
-                BoxLayout:
-                    padding: dp(10)
-                    MDTextField:
-                        id:max_num_sync
-                        hint_text: "50"
-                        helper_text: "Maximum Number of Comics to Sync"
-                        helper_text_mode: "persistent"
-                        post_hint_x:root.center_x
-                BoxLayout:
-                    orientation: 'horizontal'
-                    padding: dp(10), dp(10)
-                    spacing: dp(10)
-                    SynLimitButton:
-                        id:limit_to_btn
-                        size_hint: None,None
-                        on_release:self.open_menu()
-                        text:"Books"
-                        elevation_normal: 2
-                        md_bg_color: app.theme_cls.primary_color
+            
             BoxLayout:
                 orientation: 'horizontal'
                 padding: dp(10), dp(10)

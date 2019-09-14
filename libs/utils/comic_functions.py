@@ -45,7 +45,7 @@ def get_comic_page(comic_obj, page_num):
     comic_dir = os.path.join(cahce_dir, comic_name)
     if not Path(comic_dir).is_dir():
         os.makedirs(comic_dir)
-    md = getComicMetadata(comic_obj.file_path)
+    md = getComicMetadata(comic_obj.FilePath)
     ca = ComicArchive(md.path)
     image_data = ca.getPage(int(page_num))
     filename = os.path.join(comic_dir, f'{page_num}.webp')

@@ -63,16 +63,6 @@
             theme_text_color: 'Custom'
             text_color: app.theme_cls.primary_color
             font_size: dp(35)
-        # SyncButton:
-        #     id:sync_button
-        #     text: ''
-        #     icon: "cloud-sync"
-        #     width: dp(50)
-        #     padding: dp(10), dp(10)
-        #     center_x:main_stack.right - (self.width)
-        #     theme_text_color: 'Custom'
-        #     text_color: app.theme_cls.primary_color
-            #on_release:root.sync_readinglist_button()
         
         MDFlatButton:
             id:spacer
@@ -129,13 +119,38 @@
             rows:1
             padding: dp(10), dp(10)
             spacing: dp(10)
-
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDSwitch:
+                    id:sw_syn_this
+                    size_hint: None, None
+                    size: dp(36), dp(48)
+                    padding: dp(10), dp(10)
+                    active:root.sw_syn_this_active
+                MDLabel:
+                    font_style: 'Body2'
+                    theme_text_color: 'Primary'
+                    text: "Sync this ReadingList"
+                    halign: 'left'
+                    valign:'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    padding: dp(25), dp(10)
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:3
+            rows:1
+            padding: dp(10), dp(10)
+            spacing: dp(10)
             BoxLayout:
                 padding: dp(10)
                 size_hint_x:.15
                 MDCheckbox:
+                    id:cb_limit
                     size_hint: None, None
                     size: dp(48), dp(48)
+                    state:root.cb_limit_state
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
@@ -147,10 +162,10 @@
                 padding: dp(10)
                 size_hint_x:.4
                 MDTextField:
-                    id:max_num_sync
-                    hint_text: "50"
-                    helper_text: "Maximum Number of Comics to Sync"
-                    helper_text_mode: "persistent"
+                    id:limit_num
+                    helper_text: "Must be a whole number"
+                    helper_text_mode: "on_error"
+                    text:root.limit_num_text
                     post_hint_x:root.center_x
             BoxLayout:
                 orientation: 'horizontal'
@@ -174,6 +189,29 @@
                 padding: dp(10)
                 size_hint_x:.15
                 MDCheckbox:
+                    id:cb_optimize_size
+                    size_hint: None, None
+                    size: dp(48), dp(48)
+                    state:root.cb_optimize_size_state
+                MDLabel:
+                    font_style: 'Body2'
+                    theme_text_color: 'Primary'
+                    text: "Optimize Size"
+                    halign: 'left'
+                    valign:'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:3
+            rows:1
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDCheckbox:
+                    id:cb_only_read
                     size_hint: None, None
                     size: dp(48), dp(48)
                 MDLabel:
@@ -184,12 +222,15 @@
                     valign:'top'
                     size_hint_y: None
                     height: self.texture_size[1]
+                    state:root.cb_only_read_state
             BoxLayout:
                 padding: dp(10)
                 size_hint_x:.15
                 MDCheckbox:
+                    id:cb_keep_last_read
                     size_hint: None, None
                     size: dp(48), dp(48)
+                    state:root.cb_keep_last_read_state
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
@@ -213,6 +254,7 @@
                     color: app.theme_cls.primary_color
                     font_size: '18sp'
                     text: 'Save'
+                    on_release:root.on_ok()
             AnchorLayout:
                 anchor_x:'right'
                 anchor_y:'bottom'
@@ -223,4 +265,5 @@
                     color: app.theme_cls.primary_color
                     font_size: '18sp'
                     text: 'Cancel'
+                    on_release:root.on_cancel()
 

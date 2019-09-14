@@ -77,7 +77,7 @@ class OpenComicScreen(Screen):
         self.app.show_action_bar()
 
     def on_enter(self):
-        self.api_key = self.app.config.get('Server', 'api_key')
+        self.api_key = self.app.config.get('General', 'api_key')
         self.api_url = self.app.api_url
         self.main_stack = self.ids['main_stack']
         self.m_grid = self.ids["main_grid"]

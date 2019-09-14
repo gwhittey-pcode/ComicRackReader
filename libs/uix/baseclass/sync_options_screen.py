@@ -23,30 +23,6 @@ from kivymd.uix.list import (
 from kivymd.uix.button import MDIconButton
 
 
-class SynLimitButton(MDRaisedButton):
-    def __init__(self, **kwargs):
-        super(SynLimitButton, self).__init__(**kwargs)
-        self.menu_items = [{'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Book[/color]',
-                            'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]GB[/color]',
-                            'callback': self.callback_for_menu_items},
-
-                           ]
-
-    def callback_for_menu_items(self, *args):
-        action = args[0].replace(
-            '[color=#000000]', "").replace('[/color]', "")
-        if action == "Books":
-            self.text = "Book"
-        elif action == "GB":
-            self.text = "GB"
-
-    def open_menu(self):
-        MDDropdownMenu(items=self.menu_items, width_mult=2).open(self)
-
-
 class MyTv(TreeView):
     def __init__(self, **kwargs):
         super(MyTv, self).__init__(**kwargs)

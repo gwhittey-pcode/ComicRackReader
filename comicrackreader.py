@@ -26,7 +26,6 @@ from kivy.clock import Clock
 from kivy.utils import get_color_from_hex, get_hex_from_color
 from kivy.metrics import dp
 from kivy.properties import ObjectProperty, StringProperty, ListProperty
-
 from main import __version__
 from libs.translation import Translation
 from libs.uix.baseclass.startscreen import StartScreen
@@ -56,10 +55,10 @@ class ComicRackReader(App):
     theme_cls.primary_palette = 'Amber'
     lang = StringProperty('en')
     open_comics_list = ListProperty()
-    sync_dir = StringProperty()
+    sync_folder = StringProperty()
     full_screen = False
     LIST_SCREENS = ListProperty()
-    cache_dir = StringProperty()
+    store_dir = StringProperty()
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
@@ -101,9 +100,9 @@ class ComicRackReader(App):
             print(gen_reading_rl_sync_options(item))
         '''Creates an application settings file ComicRackReader.ini.'''
 
-        config.adddefaultsection('General')
+        config.adddefaultsection('Language')
         config.adddefaultsection('Saved')
-        config.setdefault('General', 'language', 'en')
+        config.setdefault('Language', 'language', 'en')
 
         config.setdefault('Saved', 'last_server_comic_id', '')
         config.setdefault('Saved', 'last_server_reading_list_id', '')
@@ -115,7 +114,7 @@ class ComicRackReader(App):
         config.setdefault('Saved', 'last_file_reading_list_name', '')
         config.setdefault('Saved', 'last_file_pag_pagnum', '')
 
-        config.setdefaults('Server', {
+        config.setdefaults('General', {
             'url':          'http://',
             'storagedir':       self.user_data_dir,
             'max_height':       1500,
@@ -176,17 +175,13 @@ class ComicRackReader(App):
         file ComicRackReader.ini.'''
 
         self.config.read(os.path.join(self.directory, 'comicrackreader.ini'))
-        self.lang = self.config.get('General', 'language')
-        self.sync_dir = self.config.get('Sync','sync_folder')
-        my_data_dir = Path(os.path.join(self.sync_dir, 'data'))
-        my_comic_dir = Path(os.path.join(self.sync_dir, 'comics'))
-        if not my_data_dir.is_dir():os.makedirs(my_data_dir)
-        if not my_comic_dir.is_dir():os.makedirs(my_comic_dir)
-        self.current_files  = JsonStore(f'{self.sync_dir}/data/current_files.json')
-        self.cache_dir = os.path.join(
-            self.config.get('Server','storagedir'),'cache')
+        self.lang = self.config.get('Language', 'language')
+        self.sync_folder = self.config.get('Sync','sync_folder')
+       
+        self.store_dir = os.path.join(
+            self.config.get('General','storagedir'),'store_dir')
             
-        if not Path(self.cache_dir).is_dir():os.makedirs(self.cache_dir)
+        if not Path(self.store_dir).is_dir():os.makedirs(self.store_dir)
             
     def set_window_size(self):
         app = App.get_running_app()
@@ -199,9 +194,9 @@ class ComicRackReader(App):
  
         
     def build(self):
-        self.base_url = self.config.get('Server', 'url').rstrip('\\')
+        self.base_url = self.config.get('General', 'url').rstrip('\\')
         self.api_url = self.base_url + "/API"
-        self.api_key = self.config.get('Server', 'api_key')
+        self.api_key = self.config.get('General', 'api_key')
         self.set_value_from_config()
         self.load_all_kv_files(os.path.join(
             self.directory, 'libs', 'uix', 'kv'))
@@ -222,6 +217,7 @@ class ComicRackReader(App):
                 ['settings', lambda x: self.open_settings()],
                 ['fullscreen',lambda x: self.toggle_full_screen()]
             ]
+        
         return self.screen
 
     def load_all_kv_files(self, directory_kv_files):
@@ -343,22 +339,22 @@ class ComicRackReader(App):
             ['chevron-left', lambda x: self.back_screen(27)]]
         self.screen.ids.action_bar.title='MIT LICENSE'
 
-    def select_locale(self, *args):
-        '''Displays a window with a list of available language localizations'''
+    # def select_locale(self, *args):
+    #     '''Displays a window with a list of available language localizations'''
 
-        def select_locale(name_locale):
-            '''Sets the selected location..'''
+    #     def select_locale(name_locale):
+    #         '''Sets the selected location..'''
 
-            for locale in self.dict_language.keys():
-                if name_locale == self.dict_language[locale]:
-                    self.lang=locale
-                    self.config.set('General', 'language', self.lang)
-                    self.config.write()
+    #         for locale in self.dict_language.keys():
+    #             if name_locale == self.dict_language[locale]:
+    #                 self.lang=locale
+    #                 self.config.set('Language', 'language', self.lang)
+    #                 self.config.write()
 
-        dict_info_locales={}
-        for locale in self.dict_language.keys():
-            dict_info_locales[self.dict_language[locale]]=[
-                'locale', locale == self.lang]
+    #     dict_info_locales={}
+    #     for locale in self.dict_language.keys():
+    #         dict_info_locales[self.dict_language[locale]]=[
+    #             'locale', locale == self.lang]
 
         # if not self.window_language:
         #     self.window_language = card(
@@ -390,7 +386,7 @@ class ComicRackReader(App):
         settings.add_json_panel('Sync Settings',
                                 self.config,
                                 data=settings_json_sync)
-        settings.add_json_panel('Server Settings',
+        settings.add_json_panel('General Settings',
                                 self.config,
                                 data=settings_json_server)
         
@@ -407,9 +403,9 @@ class ComicRackReader(App):
     def on_config_change(self, config, section,
                          key, value):
         if key == 'url':
-            self.base_url=self.config.get('Server', 'url')
+            self.base_url=self.config.get('General', 'url')
         if key == 'api_key':
-            self.api_key=self.config.get('Server', 'api_key')
+            self.api_key=self.config.get('General', 'api_key')
         if key == 'dbl_tap_time':
             self.Config.set('postproc', 'double_tap_time', value)
 
@@ -504,7 +500,7 @@ class ComicRackReader(App):
                 new_rl.add_comic(new_comic)
 
         max_books_page = int(self.config.get(
-            'Server', 'max_books_page'))
+            'General', 'max_books_page'))
         paginator_obj = Paginator(
             new_rl.comics, max_books_page)
         new_screen_name = str(new_rl.comics[0].Id)

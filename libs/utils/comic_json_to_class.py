@@ -1,6 +1,25 @@
+from pathlib import Path
+import os
+from kivy.storage.jsonstore import JsonStore
 from kivy.properties import ListProperty, ObjectProperty, DictProperty,\
     StringProperty
 from operator import attrgetter
+from kivy.app import App
+from kivy.clock import Clock
+
+
+def sync_delayed_work(self, func, items, delay=0):
+    '''Apply the func() on each item contained in items
+    '''
+    if not items:
+        return
+
+    def _sync_delayed_work(*l):
+        item = items.pop(0)
+        if func(item) is False or not len(items):
+            return False
+        Clock.schedule_once(_sync_delayed_work, delay)
+    Clock.schedule_once(_sync_delayed_work, delay)
 
 
 class ComicReadingList(object):
@@ -16,7 +35,9 @@ class ComicReadingList(object):
         self.slug = slug
         # self.next_page_url = data['next']
         # self.prev_page_url = data['previous']
-    '''Group of Comics in bundlded together'''
+        for item in self.data["items"][::-1]:
+            new_comic = ComicBook(item)
+            self.add_comic(new_comic)
 
     @property
     def reverse_comics_order(self):
@@ -111,11 +132,48 @@ class ComicBook(object):
         self.Number = comic_data['Number']
         self.Series = comic_data['Series']
         self.date = f"{comic_data['Month']}/{comic_data['Year']}"
-        self.year = comic_data['Year']
-        self.month = comic_data['Month']
+        self.Year = comic_data['Year']
+        self.Month = comic_data['Month']
         self.UserLastPageRead = comic_data['UserLastPageRead']
         self.UserCurrentPage = comic_data['UserCurrentPage']
         self.PageCount = comic_data['PageCount']
         self.Summary = comic_data['Summary']
-        self.file_path = comic_data['FilePath']
+        self.FilePath = comic_data['FilePath']
         self.Volume = comic_data['Volume']
+        app = App.get_running_app()
+        my_data_dir = Path(os.path.join(app.store_dir, 'comics_db'))
+        if not my_data_dir.is_dir():
+            os.makedirs(my_data_dir)
+        comic_db_json = os.path.join(my_data_dir, 'comics_db.json')
+        self.comic_jsonstore = JsonStore(comic_db_json)
+
+    def callback(self, store, key, result):
+        print(result)
+
+    def save(self, *args, **kwargs):
+        lsit_store_keys = [
+            'Id', 'slug', 'Series', 'Number', 'Year', 'Month',
+            'UserCurrentPage', 'UserLastPageRead', 'PageCount',
+            'Summary', 'Index', 'FilePath', 'ReadListID', 'local_file'
+        ]
+        put_value = f'{self.Id}'
+        for key in lsit_store_keys:
+            if key in kwargs:
+                print(key)
+        self.comic_jsonstore.async_put(
+            self.Id, callback=self.callback,
+            slug=self.slug,
+            data_type='ComicBook',
+            Series=self.Series,
+            Number=self.Number,
+            Month=self.month,
+            Year=self.year,
+            UserCurrentPage=self.UserCurrentPage,
+            UserLastPageRead=self.UserLastPageRead,
+            PageCount=self.PageCount,
+            Summary=self.Summary,
+            Index=0,
+            FilePath=self.FilePath,
+            ReadlistID=self.readlist_obj.slug,
+            file=''
+        )
