@@ -59,6 +59,7 @@ class ComicRackReader(App):
     full_screen = False
     LIST_SCREENS = ListProperty()
     store_dir = StringProperty()
+    comic_db = ObjectProperty()
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
@@ -217,7 +218,11 @@ class ComicRackReader(App):
                 ['settings', lambda x: self.open_settings()],
                 ['fullscreen',lambda x: self.toggle_full_screen()]
             ]
-        
+        my_data_dir = Path(os.path.join(self.store_dir, 'comics_db'))
+        if not my_data_dir.is_dir():
+            os.makedirs(my_data_dir)
+        comic_db_json = os.path.join(my_data_dir, 'comics_db.json')
+        self.comic_db = JsonStore(comic_db_json)
         return self.screen
 
     def load_all_kv_files(self, directory_kv_files):
@@ -520,3 +525,16 @@ class ComicRackReader(App):
 
         self.md_manager.dismiss()
         self.manager_open = False
+
+    def sync_delayed_work(self,func, items, delay=0):
+        '''Apply the func() on each item contained in items
+        '''
+        if not items:
+            return
+
+        def _sync_delayed_work(*l):
+            item = items.pop(0)
+            if func(item) is False or not len(items):
+                return False
+            Clock.schedule_once(_sync_delayed_work, delay)
+        Clock.schedule_once(_sync_delayed_work, delay)

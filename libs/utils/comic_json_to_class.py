@@ -8,20 +8,6 @@ from kivy.app import App
 from kivy.clock import Clock
 
 
-def sync_delayed_work(self, func, items, delay=0):
-    '''Apply the func() on each item contained in items
-    '''
-    if not items:
-        return
-
-    def _sync_delayed_work(*l):
-        item = items.pop(0)
-        if func(item) is False or not len(items):
-            return False
-        Clock.schedule_once(_sync_delayed_work, delay)
-    Clock.schedule_once(_sync_delayed_work, delay)
-
-
 class ComicReadingList(object):
 
     # ids = DictProperty({})
@@ -36,8 +22,13 @@ class ComicReadingList(object):
         # self.next_page_url = data['next']
         # self.prev_page_url = data['previous']
         for item in self.data["items"][::-1]:
-            new_comic = ComicBook(item)
-            self.add_comic(new_comic)
+            new_comic = ComicBook(item, self)
+            self.comics.insert(0, new_comic)
+        app = App.get_running_app()
+        app.sync_delayed_work(self.comics_write, self.comics, delay=.1)
+
+    def comics_write(self, comic):
+        comic.save()
 
     @property
     def reverse_comics_order(self):
@@ -77,13 +68,6 @@ class ComicReadingList(object):
         '''
             Add Single comic book to this colection
         '''
-        if index == 0 or len(self.comics) == 0:
-            self.comics.insert(0, comic)
-        else:
-            comics = self.comics
-            if index >= len(comics):
-                index = len(comics)
-            comics.insert(index, comic)
 
     def remove_comic(self, comic):
         '''
@@ -122,7 +106,7 @@ class ComicBook(object):
     class representing a single comic
     '''
 
-    def __init__(self, data, * args, **kwargs):
+    def __init__(self, data, readlist_obj=None, * args, **kwargs):
 
         comic_data = data
         self.Id = comic_data['Id']
@@ -141,39 +125,38 @@ class ComicBook(object):
         self.FilePath = comic_data['FilePath']
         self.Volume = comic_data['Volume']
         app = App.get_running_app()
-        my_data_dir = Path(os.path.join(app.store_dir, 'comics_db'))
-        if not my_data_dir.is_dir():
-            os.makedirs(my_data_dir)
-        comic_db_json = os.path.join(my_data_dir, 'comics_db.json')
-        self.comic_jsonstore = JsonStore(comic_db_json)
+        self.comic_jsonstore = app.comic_db
+        self.readlist_obj = readlist_obj
+        #self.comic_jsonstore.put(self.Id, tesval='test')
 
     def callback(self, store, key, result):
         print(result)
 
     def save(self, *args, **kwargs):
-        lsit_store_keys = [
-            'Id', 'slug', 'Series', 'Number', 'Year', 'Month',
-            'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-            'Summary', 'Index', 'FilePath', 'ReadListID', 'local_file'
-        ]
-        put_value = f'{self.Id}'
-        for key in lsit_store_keys:
-            if key in kwargs:
-                print(key)
-        self.comic_jsonstore.async_put(
-            self.Id, callback=self.callback,
-            slug=self.slug,
-            data_type='ComicBook',
-            Series=self.Series,
-            Number=self.Number,
-            Month=self.month,
-            Year=self.year,
-            UserCurrentPage=self.UserCurrentPage,
-            UserLastPageRead=self.UserLastPageRead,
-            PageCount=self.PageCount,
-            Summary=self.Summary,
-            Index=0,
-            FilePath=self.FilePath,
-            ReadlistID=self.readlist_obj.slug,
-            file=''
-        )
+        self.comic_jsonstore.async_put(self.callback, self.Id, tesval='test')
+        # lsit_store_keys = [
+        #     'Id', 'slug', 'Series', 'Number', 'Year', 'Month',
+        #     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
+        #     'Summary', 'Index', 'FilePath', 'ReadListID', 'local_file'
+        # ]
+        # put_value = f'{self.Id}'
+        # for key in lsit_store_keys:
+        #     if key in kwargs:
+        #         print(key)
+        # self.comic_jsonstore.async_put(self.callback,
+        #                                self.Id,
+        #                                slug=self.slug,
+        #                                data_type='ComicBook',
+        #                                Series=self.Series,
+        #                                Number=self.Number,
+        #                                Month=self.Month,
+        #                                Year=self.Year,
+        #                                UserCurrentPage=self.UserCurrentPage,
+        #                                UserLastPageRead=self.UserLastPageRead,
+        #                                PageCount=self.PageCount,
+        #                                Summary=self.Summary,
+        #                                Index=0,
+        #                                FilePath=self.FilePath,
+        #                                ReadlistID=self.readlist_obj.slug,
+        #                                file=''
+        #                                )

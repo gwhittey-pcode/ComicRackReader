@@ -106,20 +106,14 @@ class SyncReadingListObject(object):
         self.sync_range = int(self.last) + int(self.limit_num)
         self.sw_syn_this_active = sw_syn_this_active
 
-    def sync_delayed_work(self, func, items, delay=0):
-        '''Apply the func() on each item contained in items
-        '''
-        if not items:
-            return
-
-        def _sync_delayed_work(*l):
-            item = items.pop(0)
-            if func(item) is False or not len(items):
-                return False
-            Clock.schedule_once(_sync_delayed_work, delay)
-        Clock.schedule_once(_sync_delayed_work, delay)
-
     def download_file(self, comic):
+        comic_index = 0
+        self.file_download = False
+        file_name = ntpath.basename(comic.FilePath)
+        for i, j in enumerate(self.reading_list.comics):
+            if j.Id == comic.Id:
+                comic_index = i
+
         def got_file(results):
             self.num_file_done += 1
             toast(f'{file_name} Synced')
@@ -143,9 +137,6 @@ class SyncReadingListObject(object):
 
         def got_thumb(results):
             pass
-        self.file_download = False
-        file_name = ntpath.basename(comic.FilePath)
-        comic_index = self.reading_list.comics.index(comic)
 
         x = self.comic_thumb_width
         y = self.comic_thumb_height
@@ -157,7 +148,6 @@ class SyncReadingListObject(object):
             sync_url = f'{self.api_url}/Comics/{comic.Id}/File/'
         elif self.cb_optimize_size_state == 'down':
             sync_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
-        print(f'sync_url:{sync_url}')
         self.fetch_data.get_server_file_download(
             sync_url, callback=lambda req,
             results: got_file(results),
@@ -189,7 +179,8 @@ class SyncReadingListObject(object):
         sync_num_comics = list_comics[self.last: self.sync_range]
 
         print(len(sync_num_comics))
-        self.sync_delayed_work(self.download_file, sync_num_comics, delay=.5)
+        self.app.sync_delayed_work(
+            self.download_file, sync_num_comics, delay=.5)
         self.event = Clock.schedule_interval(self._finish_sync, 0.5)
 
         # sync_screen = self.app.manager.get_screen('syncscreen')
