@@ -154,10 +154,9 @@ class BaseScreen(Screen):
             else:
                 new_readinglist = ComicReadingList(
                     name=readinglist_name, data=results, slug=readinglist_Id)
-
-                # for item in new_readinglist.data["items"]:
-                #     new_comic = ComicBook(item)
-                #     new_readinglist.add_comic(new_comic)
+                for item in new_readinglist.data["items"]:
+                    new_comic = ComicBook(item)
+                    new_readinglist.add_comic(new_comic)
                 max_books_page = int(self.app.config.get(
                     'General', 'max_books_page'))
                 orphans = max_books_page - 1

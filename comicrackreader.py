@@ -36,6 +36,7 @@ from kivymd.uix.label import MDLabel
 from kivymd.toast.kivytoast import toast
 from kivy.storage.jsonstore import JsonStore
 from kivymd.uix.filemanager import MDFileManager
+from libs.utils.db_functions import start_db
 # from dialogs import card
 # End KivyMD imports
 from settings.settingsjson import settings_json_server, settings_json_dispaly,\
@@ -223,6 +224,7 @@ class ComicRackReader(App):
             os.makedirs(my_data_dir)
         comic_db_json = os.path.join(my_data_dir, 'comics_db.json')
         self.comic_db = JsonStore(comic_db_json)
+        start_db()
         return self.screen
 
     def load_all_kv_files(self, directory_kv_files):

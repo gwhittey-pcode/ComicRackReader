@@ -6,6 +6,7 @@ from kivy.properties import ListProperty, ObjectProperty, DictProperty,\
 from operator import attrgetter
 from kivy.app import App
 from kivy.clock import Clock
+from libs.utils.db_functions import ReadingList, Comic
 
 
 class ComicReadingList(object):
@@ -19,16 +20,22 @@ class ComicReadingList(object):
         self.name = name
         self.data = data
         self.slug = slug
-        # self.next_page_url = data['next']
-        # self.prev_page_url = data['previous']
-        for item in self.data["items"][::-1]:
-            new_comic = ComicBook(item, self)
-            self.comics.insert(0, new_comic)
-        app = App.get_running_app()
-        app.sync_delayed_work(self.comics_write, self.comics, delay=.1)
+        self.db = None
+        self.comic_json = self.data["items"][::-1]
+        self.get_or_create_db_item()
 
-    def comics_write(self, comic):
-        comic.save()
+    def get_or_create_db_item(self):
+        db_item, created = ReadingList.get_or_create(
+            slug=self.slug, defaults={'name': self.name})
+        print(f'db_item.id - main:{db_item.id}')
+        if created is True:
+            print('created')
+
+    def comics_write(self):
+        def __comics_write(comic):
+            comic.save()
+        app = App.get_running_app()
+        app.sync_delayed_work(__comics_write, self.comics, delay=.1)
 
     @property
     def reverse_comics_order(self):
@@ -68,6 +75,7 @@ class ComicReadingList(object):
         '''
             Add Single comic book to this colection
         '''
+        self.comics.insert(0, comic)
 
     def remove_comic(self, comic):
         '''
@@ -106,33 +114,50 @@ class ComicBook(object):
     class representing a single comic
     '''
 
-    def __init__(self, data, readlist_obj=None, * args, **kwargs):
-
-        comic_data = data
-        self.Id = comic_data['Id']
-        self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
-        self.slug = str(comic_data['Id'])
-        self.name = f"{comic_data['Series']} #{comic_data['Number']}"
-        self.Number = comic_data['Number']
-        self.Series = comic_data['Series']
-        self.date = f"{comic_data['Month']}/{comic_data['Year']}"
-        self.Year = comic_data['Year']
-        self.Month = comic_data['Month']
-        self.UserLastPageRead = comic_data['UserLastPageRead']
-        self.UserCurrentPage = comic_data['UserCurrentPage']
-        self.PageCount = comic_data['PageCount']
-        self.Summary = comic_data['Summary']
-        self.FilePath = comic_data['FilePath']
-        self.Volume = comic_data['Volume']
-        app = App.get_running_app()
-        self.comic_jsonstore = app.comic_db
-        self.readlist_obj = readlist_obj
+    def __init__(self, data, readlist_obj=None, comic_Id='', * args, **kwargs):
+        if comic_Id == '':
+            comic_data = data
+            self.Id = comic_data['Id']
+            self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
+            self.slug = str(comic_data['Id'])
+            self.name = f"{comic_data['Series']} #{comic_data['Number']}"
+            self.Number = comic_data['Number']
+            self.Series = comic_data['Series']
+            self.date = f"{comic_data['Month']}/{comic_data['Year']}"
+            self.Year = comic_data['Year']
+            self.Month = comic_data['Month']
+            self.UserLastPageRead = comic_data['UserLastPageRead']
+            self.UserCurrentPage = comic_data['UserCurrentPage']
+            self.PageCount = comic_data['PageCount']
+            self.Summary = comic_data['Summary']
+            self.FilePath = comic_data['FilePath']
+            self.Volume = comic_data['Volume']
+            app = App.get_running_app()
+            self.comic_jsonstore = app.comic_db
+            self.readlist_obj = readlist_obj
+            self.comic_index = 0
+            self.local_file = ''
         #self.comic_jsonstore.put(self.Id, tesval='test')
 
+    def get_or_create_db_item(self):
+        t_defaults = {'Number': self.Number,
+                      'Series': self.Series, 'Year': self.Year, 'Month': self.Month, 'UserLastPageRead': self.UserLastPageRead}
+        lsit_store_keys = [
+            'Id', 'slug', 'Series', 'Number', 'Volume' 'Year', 'Month',
+            'UserCurrentPage', 'UserLastPageRead', 'PageCount',
+            'Summary', 'comic_index', 'FilePath', 'local_file'
+        ]
+        tmp_defaults = {}
+        for key in lsit_store_keys:
+            tmp_defaults[key] = getattr(self, key)
+        db_item, created = Comic.get_or_create(
+            Id=self.Id, defaults=tmp_defaults)
+
     def callback(self, store, key, result):
-        print(result)
+        pass
 
     def save(self, *args, **kwargs):
+        self.get_or_create_db_item()
         self.comic_jsonstore.async_put(self.callback, self.Id, tesval='test')
         # lsit_store_keys = [
         #     'Id', 'slug', 'Series', 'Number', 'Year', 'Month',

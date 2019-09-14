@@ -19,17 +19,17 @@ class BaseModel(Model):
 
 
 class Comic(BaseModel):
-    comic_Id = CharField(unique=True)
+    Id = CharField(primary_key=True)
     Number = CharField()
-    Series = CharField()
-    Year = IntegerField()
-    Month = IntegerField()
+    Series = CharField(null=True)
+    Year = IntegerField(null=True)
+    Month = IntegerField(null=True)
     UserLastPageRead = IntegerField()
     UserCurrentPage = IntegerField()
     PageCount = IntegerField()
-    Summary = TextField()
-    FilePath = CharField()
-    Volume = CharField()
+    Summary = TextField(null=True)
+    FilePath = CharField(null=True)
+    Volume = CharField(null=True)
     comic_file = CharField(null=True)
     comic_index = IntegerField(null=True)
 
@@ -39,7 +39,7 @@ class Comic(BaseModel):
 
 class ReadingList(BaseModel):
     name = CharField()
-    slug = CharField(unique=True)
+    slug = CharField(primary_key=True)
     comics = ManyToManyField(Comic, backref='comics')
 
     class Meta:

@@ -405,12 +405,13 @@ class ServerReadingListsScreen(Screen):
             
     def got_json(self, req, result):
         self.comic_collection = result
-        self.new_readinglist = ComicReadingList(
+        self.tmp_readinglist = ComicReadingList(
             name=self.readinglist_name, data=result, slug=self.readinglist_Id)
-        
-        # for item in self.new_readinglist.data["items"]:
-        #     new_comic = ComicBook(item)
-        #     self.new_readinglist.add_comic(new_comic)
+        self.new_readinglist = self.tmp_readinglist
+        for item in self.new_readinglist.comic_json:
+            new_comic = ComicBook(item)
+            self.new_readinglist.add_comic(new_comic)
+        #self.new_readinglist.comics_write()
         self.max_books_page = int(self.app.config.get(
             'General', 'max_books_page'))
         self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
