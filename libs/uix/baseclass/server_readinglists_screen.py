@@ -29,7 +29,7 @@ from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import MDTextFieldRound, FixedHintTextInput
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
-from libs.utils.server_sync import  SyncReadingListObject
+#from libs.utils.server_sync import  SyncReadingListObject
 
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.button import MDFillRoundFlatIconButton, MDIconButton
@@ -431,7 +431,7 @@ class ServerReadingListsScreen(Screen):
      
         self.max_books_page = int(self.app.config.get(
             'General', 'max_books_page'))
-        self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
+        #self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
         orphans = self.max_books_page - 1
         new_readinglist_reversed = self.new_readinglist.comics
         self.paginator_obj = Paginator(

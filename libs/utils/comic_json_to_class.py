@@ -55,7 +55,7 @@ class ComicReadingList(object):
         self.limit_num = 25
         self.sw_syn_this_active = False
 
-        if mode != 'OpenFile':
+        if mode != 'FileOpen':
             self.get_or_create_db_item()
 
     def get_or_create_db_item(self):
@@ -149,7 +149,7 @@ class ComicBook(object):
             self.comic_index = comic_index
             self.local_file = ''
         # self.comic_jsonstore.put(self.Id, tesval='test')
-        if mode != 'OpenFile':
+        if mode != 'FileOpen':
             Clock.schedule_once(lambda dt: self.get_or_create_db_item(), 0.15)
 
     def get_or_create_db_item(self):

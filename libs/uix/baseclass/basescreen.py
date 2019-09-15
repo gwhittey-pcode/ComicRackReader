@@ -22,7 +22,7 @@ from kivy.network.urlrequest import UrlRequest
 from kivy.app import App
 from kivy.logger import Logger
 import json
-
+from kivy.clock import Clock
 from kivymd.uix.filemanager import MDFileManager
 from base64 import b64encode
 from kivy.uix.button import Button
@@ -159,7 +159,7 @@ class BaseScreen(Screen):
                 return
             else:
                 self.new_readinglist = ComicReadingList(
-                    name=self.readinglist_name, data=results, slug=self.readinglist_Id)
+                    name=self.readinglist_name, data=results, slug=self.readinglist_Id, mode='FileOpen')
                 for item in self.new_readinglist.comic_json:
                     comic_index = self.new_readinglist.comic_json.index(item)
                     new_comic = ComicBook(
@@ -180,11 +180,14 @@ class BaseScreen(Screen):
                 server_readinglists_screen = self.app.manager.get_screen(
                     'server_readinglists_screen')
                 server_readinglists_screen.list_loaded = False
-                server_readinglists_screen.setup_screen()
+                Clock.schedule_once(
+                    lambda dt: server_readinglists_screen.setup_screen(), 0.15)
                 page = paginator_obj.page(tmp_last_pag_pagnum)
                 server_readinglists_screen.page_number = tmp_last_pag_pagnum
-                server_readinglists_screen.collect_readinglist_data(
-                    readinglist_name, readinglist_Id)
+                Clock.schedule_once(lambda dt: server_readinglists_screen.collect_readinglist_data
+                                    (readinglist_name, readinglist_Id), 0.15)
+                # server_readinglists_screen.collect_readinglist_data(
+                #    readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]
                 grid.cols = 1
                 grid.clear_widgets()
