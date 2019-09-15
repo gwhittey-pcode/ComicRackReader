@@ -309,37 +309,8 @@ class ServerReadingListsScreen(Screen):
         return super().on_leave(*args)
 
     def on_enter(self, *args):
-        self.sync_options = SyncOptionsPopup(
-                        size_hint = (.76,.76),
-                        cb_limit_state = self.new_readinglist.cb_limit_state,
-                        limit_num_text = str(self.new_readinglist.limit_num),
-                        cb_only_read_state = self.new_readinglist.cb_only_read_state,
-                        cb_keep_last_read_state = self.new_readinglist.cb_keep_last_read_state,
-                        cb_optimize_size_state = self.new_readinglist.cb_optimize_size_state,
-                        sw_syn_this_active=bool(self.new_readinglist.sw_syn_this_active),
-                        )
-        self.sync_options.ids.limit_num.bind(
-            on_text_validate=self.sync_options.check_input,
-            focus=self.sync_options.check_input,
-        )
-        
-        if self.new_readinglist.sw_syn_this_active == True:
-            self.sync_btn_menu_items('add')
-        return super().on_enter(*args)
-        
-        self.sync_options.title = self.new_readinglist.name
-    def sync_btn_menu_items(self, action):
-        sb = self.ids.sync_button
-        if action == 'add':
-            
-            sb.menu_items.append(
-                    {'viewclass': 'MDMenuItem',
-                    'text': '[color=#000000]Start Sync[/color]',
-                    'callback': self.callback_for_menu_items
-                    }
-                )
-        elif action == 'del':
-            sb.menu_items.pop()
+        pass
+
     def my_width_callback(self, obj, value):
         win_x = (Window.width-30)//self.comic_thumb_width
         win_div = (Window.width-30) % self.comic_thumb_width
@@ -348,16 +319,18 @@ class ServerReadingListsScreen(Screen):
                 c = val
                 c.cols = (Window.width-10)//self.comic_thumb_width
 
-    def collect_readinglist_data(self, readinglist_name, readinglist_Id):
+    def collect_readinglist_data(self, readinglist_name, readinglist_Id, mode='From Server'):
         self.readinglist_name = readinglist_name
         self.app.set_screen(self.readinglist_name + ' Page 1')
         self.reading_list_title = self.readinglist_name + ' Page 1'
         self.readinglist_Id = readinglist_Id
-        self.fetch_data = ComicServerConn()
-        lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
-        # self.fetch_data.get_list_count(lsit_count_url,self)
-        self.fetch_data.get_server_data(lsit_count_url, self)
-        
+        if mode == 'From Server':
+            self.fetch_data = ComicServerConn()
+            lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
+            # self.fetch_data.get_list_count(lsit_count_url,self)
+            self.fetch_data.get_server_data(lsit_count_url, self)
+        elif mode == 'From DataBase':
+            self.got_db_data()
     def get_page(self, instance):
         page_num = instance.page_num
         self.app.set_screen(self.readinglist_name + f' Page {page_num}')
@@ -415,28 +388,23 @@ class ServerReadingListsScreen(Screen):
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
             self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
-            
-            
-    def got_json(self, req, results):
-        
+    
+    def got_db_data(self):
+        """
+        used if rl data is already stored in db.
+        """
         self.new_readinglist = ComicReadingList(
-            name=self.readinglist_name, data=results, slug=self.readinglist_Id)
-        for item in self.new_readinglist.comic_json:
-            comic_index = self.new_readinglist.comic_json.index(item)
-            new_comic = ComicBook(item,readlist_obj=self.new_readinglist,comic_index=comic_index)
-            self.new_readinglist.add_comic(new_comic)
-            
-     
+            name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
         self.max_books_page = int(self.app.config.get(
             'General', 'max_books_page'))
         #self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
+        self.setup_options()
         orphans = self.max_books_page - 1
         new_readinglist_reversed = self.new_readinglist.comics
         self.paginator_obj = Paginator(
             new_readinglist_reversed, self.max_books_page)
         page = self.paginator_obj.page(self.page_number)
         self.current_page = page
-        
         if page.has_next():
             self.next_button.opacity = 1
             self.next_button.disabled = False
@@ -456,6 +424,73 @@ class ServerReadingListsScreen(Screen):
         self.build_page(page.object_list)
         self.list_loaded = True
 
+    def got_json(self, req, results):
+        self.new_readinglist = ComicReadingList(
+            name=self.readinglist_name, data=results, slug=self.readinglist_Id)
+        for item in self.new_readinglist.comic_json:
+            comic_index = self.new_readinglist.comic_json.index(item)
+            new_comic = ComicBook(item,readlist_obj=self.new_readinglist,comic_index=comic_index)
+            self.new_readinglist.add_comic(new_comic)
+        self.max_books_page = int(self.app.config.get(
+            'General', 'max_books_page'))
+        #self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
+        self.setup_options()
+        orphans = self.max_books_page - 1
+        new_readinglist_reversed = self.new_readinglist.comics
+        self.paginator_obj = Paginator(
+            new_readinglist_reversed, self.max_books_page)
+        page = self.paginator_obj.page(self.page_number)
+        self.current_page = page
+        if page.has_next():
+            self.next_button.opacity = 1
+            self.next_button.disabled = False
+            self.next_button.page_num = page.next_page_number()
+        else:
+            self.next_button.opacity = 0
+            self.next_button.disabled = True
+            self.next_button.page_num = ''
+        if page.has_previous():
+            self.prev_button.opacity = 1
+            self.prev_button.disabled = False
+            self.prev_button.page_num = page.previous_page_number()
+        else:
+            self.prev_button.opacity = 0
+            self.prev_button.disabled = True
+            self.prev_button.page_num = ''
+        self.build_page(page.object_list)
+        self.list_loaded = True
+        
+    def setup_options(self):
+        self.sync_options = SyncOptionsPopup(
+                size_hint = (.76,.76),
+                cb_limit_state = self.new_readinglist.cb_limit_state,
+                limit_num_text = str(self.new_readinglist.limit_num),
+                cb_only_read_state = self.new_readinglist.cb_only_read_state,
+                cb_keep_last_read_state = self.new_readinglist.cb_keep_last_read_state,
+                cb_optimize_size_state = self.new_readinglist.cb_optimize_size_state,
+                sw_syn_this_active=bool(self.new_readinglist.sw_syn_this_active),
+                )
+        self.sync_options.ids.limit_num.bind(
+        on_text_validate=self.sync_options.check_input,
+        focus=self.sync_options.check_input,
+        )
+
+        if self.new_readinglist.sw_syn_this_active == True:
+            self.sync_btn_menu_items('add')
+            self.sync_options.title = self.new_readinglist.name
+
+    def sync_btn_menu_items(self, action):
+        sb = self.ids.sync_button
+        if action == 'add':
+
+            sb.menu_items.append(
+                    {'viewclass': 'MDMenuItem',
+                    'text': '[color=#000000]Start Sync[/color]',
+                    'callback': self.callback_for_menu_items
+                    }
+                )
+        elif action == 'del':
+            sb.menu_items.pop()
     def open_sync_options(self):
         self.sync_options.open()
 

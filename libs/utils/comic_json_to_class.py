@@ -2,14 +2,15 @@ from pathlib import Path
 import os
 from kivy.storage.jsonstore import JsonStore
 from kivy.properties import ListProperty, ObjectProperty, DictProperty,\
-    StringProperty
+    StringProperty, NumericProperty, BooleanProperty
+from kivy.event import EventDispatcher
 from operator import attrgetter
 from kivy.app import App
 from kivy.clock import Clock
-from libs.utils.db_functions import ReadingList, Comic
+from libs.utils.db_functions import ReadingList, Comic, ComicIndex
+from kivy.logger import Logger
 import peewee
 READINGLIST_DB_KEYS = [
-
     'name',
     'cb_limit_state',
     'limit_num',
@@ -28,34 +29,132 @@ READINGLIST_SETTINGS_KEYS = [
     'sw_syn_this_active',
 ]
 COMIC_DB_KEYS = [
-    'Id', 'slug', 'Series', 'Number', 'Volume', 'Year', 'Month',
+    'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-    'Summary', 'comic_index', 'FilePath', 'local_file'
+    'Summary',  'FilePath', 'local_file'
 ]
 
 
-class ComicReadingList(object):
+class ComicBook(EventDispatcher):
+    '''
+    class representing a single comic
+    '''
+    Id = StringProperty()
+    __str__ = StringProperty()
+    slug = StringProperty()
+    name = StringProperty()
+    Number = StringProperty()
+    Series = StringProperty()
+    date = StringProperty()
+    Year = NumericProperty()
+    Month = NumericProperty()
+    UserLastPageRead = NumericProperty()
+    UserCurrentPage = NumericProperty()
+    PageCount = NumericProperty()
+    Summary = StringProperty()
+    FilePath = StringProperty()
+    Volume = NumericProperty()
+    readlist_obj = ObjectProperty()
+    local_file = StringProperty('None')
+
+    def __init__(self, data=None, readlist_obj=None, comic_Id='',
+                 comic_index=0, mode='Server', * args, **kwargs):
+        self.readlist_obj = readlist_obj
+        if mode == 'Server':
+            if comic_Id == '':
+                comic_data = data
+                self.Id = comic_data['Id']
+                self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
+                self.slug = str(comic_data['Id'])
+                self.name = f"{comic_data['Series']} #{comic_data['Number']}"
+                self.Number = comic_data['Number']
+                self.Series = comic_data['Series']
+                self.date = f"{comic_data['Month']}/{comic_data['Year']}"
+                self.Year = comic_data['Year']
+                self.Month = comic_data['Month']
+                self.UserLastPageRead = comic_data['UserLastPageRead']
+                self.UserCurrentPage = comic_data['UserCurrentPage']
+                self.PageCount = comic_data['PageCount']
+                self.Summary = comic_data['Summary']
+                self.FilePath = comic_data['FilePath']
+                self.Volume = comic_data['Volume']
+                app = App.get_running_app()
+                self.comic_jsonstore = app.comic_db
+                self.readlist_obj = readlist_obj
+                self.comic_index = comic_index
+                self.local_file = ''
+                Clock.schedule_once(
+                    lambda dt: self.get_or_create_db_item(), 0.15)
+        if mode == 'db_data':
+            self.Id = comic_Id
+        if mode != 'FileOpen':
+            # Clock.schedule_once(
+            #    lambda dt: self.get_or_create_db_item())
+            self.get_or_create_db_item()
+
+    def get_or_create_db_item(self):
+        tmp_defaults = {}
+        for key in COMIC_DB_KEYS:
+            if key == 'comic_index':
+                pass
+            else:
+                tmp_defaults[key] = getattr(self, key)
+
+        db_item, created = Comic.get_or_create(
+            Id=self.Id, defaults=tmp_defaults)
+        if created is True:
+            rl = self.readlist_obj
+            db_item.comic_index.index = self.comic_index
+            comic_index_db, created_index = ComicIndex.get_or_create(
+                comic=db_item, readinglist=rl.db, index=self.comic_index)
+            db_item.save()
+            if rl.slug not in [item.slug for item in db_item.readinglists]:
+                rl.db.comics.add(db_item)
+        else:
+            for key in COMIC_DB_KEYS:
+                if key == 'comic_index':
+                    pass
+                else:
+                    setattr(self, key, getattr(db_item, key))
+            self.__str__ = f"{db_item.Series} #{db_item.Number}"
+            self.name = self.__str__
+            self.date = f"{db_item.Month}/{db_item.Year}"
+            self.slug = str(self.Id)
+            self.comic_index = db_item.comic_index.select(
+                ReadingList.slug == self.readlist_obj.slug)
+
+    def callback(self, store, key, result):
+        pass
+
+
+class ComicReadingList(EventDispatcher):
 
     # ids = DictProperty({})
-    # name = StringProperty()
-    def __init__(self, name='', data=None, slug='', mode='Server'):
-        self.size = 65
-        self.comics = []
-        self.mynumber = 32
-        self.name = name
-        self.data = data
-        self.slug = slug
-        self.db = None
-        self.comics_db = None
-        self.comic_json = self.data["items"][::-1]
-        self.cb_only_read_state = 'normal'
-        self.cb_keep_last_read_state = 'normal'
-        self.cb_optimize_size_state = 'normal'
-        self.cb_limit_state = 'normal'
-        self.limit_num = 25
-        self.sw_syn_this_active = False
+    name = StringProperty()
+    comics = ListProperty()
+    data = DictProperty()
+    slug = StringProperty()
+    comic_db = ObjectProperty()
+    comic_json = ListProperty()
+    cb_only_read_state = StringProperty('normal')
+    cb_only_read_state = StringProperty('normal')
+    cb_keep_last_read_state = StringProperty('normal')
+    cb_optimize_size_state = StringProperty('normal')
+    cb_limit_state = StringProperty('normal')
+    limit_num = NumericProperty(25)
+    sw_syn_this_active = BooleanProperty(False)
+    comic_db_in = BooleanProperty(False)
+    db = ObjectProperty()
+    comics_loaded = ObjectProperty(False)
 
+    def __init__(self, name='', data=None, slug='', mode='Server'):
+        self.slug = slug
+        self.name = name
+        if data != 'db_data':
+            self.data = data
+            self.comic_json = self.data["items"][::-1]
         if mode != 'FileOpen':
+            pass
             self.get_or_create_db_item()
 
     def get_or_create_db_item(self):
@@ -68,9 +167,21 @@ class ComicReadingList(object):
             self.db = db_item
             for key in READINGLIST_SETTINGS_KEYS:
                 setattr(self, key, getattr(db_item, key))
-            return True
+            if created is True:
+                if len(db_item.comics) == len(self.comic_json):
+                    self.comic_db_in = True
+                    self.comics = self.db.comics.order_by(
+                        Comic.comic_index.index)
+            else:
+                self.comic_db_in = True
+                for comic in self.db.comics:
+                    new_comic = ComicBook(comic_Id=comic.Id,
+                                          readlist_obj=self, mode='db_data',)
+                    self.comics.insert(0, new_comic)
+                self.comics_loaded = True
         except peewee.OperationalError:
-            return False
+            Logger.critical(
+                'Somthing happened in get_or_create of readinglist')
 
     def save_settings(self, *args, **kwargs):
         try:
@@ -116,81 +227,3 @@ class ComicReadingList(object):
         for comic in self.comics:
             if comic.Id == comic_number:
                 return comic
-
-
-class ComicBook(object):
-    cover = ObjectProperty()
-    '''
-    class representing a single comic
-    '''
-
-    def __init__(self, data, readlist_obj=None, comic_Id='',
-                 comic_index=0, mode='Server', * args, **kwargs):
-        if comic_Id == '':
-            comic_data = data
-            self.Id = comic_data['Id']
-            self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
-            self.slug = str(comic_data['Id'])
-            self.name = f"{comic_data['Series']} #{comic_data['Number']}"
-            self.Number = comic_data['Number']
-            self.Series = comic_data['Series']
-            self.date = f"{comic_data['Month']}/{comic_data['Year']}"
-            self.Year = comic_data['Year']
-            self.Month = comic_data['Month']
-            self.UserLastPageRead = comic_data['UserLastPageRead']
-            self.UserCurrentPage = comic_data['UserCurrentPage']
-            self.PageCount = comic_data['PageCount']
-            self.Summary = comic_data['Summary']
-            self.FilePath = comic_data['FilePath']
-            self.Volume = comic_data['Volume']
-            app = App.get_running_app()
-            self.comic_jsonstore = app.comic_db
-            self.readlist_obj = readlist_obj
-            self.comic_index = comic_index
-            self.local_file = ''
-        # self.comic_jsonstore.put(self.Id, tesval='test')
-        if mode != 'FileOpen':
-            Clock.schedule_once(lambda dt: self.get_or_create_db_item(), 0.15)
-
-    def get_or_create_db_item(self):
-        tmp_defaults = {}
-        for key in COMIC_DB_KEYS:
-            tmp_defaults[key] = getattr(self, key)
-        db_item, created = Comic.get_or_create(
-            Id=self.Id, defaults=tmp_defaults)
-        rl = self.readlist_obj
-        if rl.slug not in [item.slug for item in db_item.readinglists]:
-            rl.db.comics.add(db_item)
-
-    def callback(self, store, key, result):
-        pass
-
-    def save(self, *args, **kwargs):
-        self.get_or_create_db_item()
-        self.comic_jsonstore.async_put(self.callback, self.Id, tesval='test')
-        # lsit_store_keys = [
-        #     'Id', 'slug', 'Series', 'Number', 'Year', 'Month',
-        #     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-        #     'Summary', 'Index', 'FilePath', 'ReadListID', 'local_file'
-        # ]
-        # put_value = f'{self.Id}'
-        # for key in lsit_store_keys:
-        #     if key in kwargs:
-        #         print(key)
-        # self.comic_jsonstore.async_put(self.callback,
-        #                                self.Id,
-        #                                slug=self.slug,
-        #                                data_type='ComicBook',
-        #                                Series=self.Series,
-        #                                Number=self.Number,
-        #                                Month=self.Month,
-        #                                Year=self.Year,
-        #                                UserCurrentPage=self.UserCurrentPage,
-        #                                UserLastPageRead=self.UserLastPageRead,
-        #                                PageCount=self.PageCount,
-        #                                Summary=self.Summary,
-        #                                Index=0,
-        #                                FilePath=self.FilePath,
-        #                                ReadlistID=self.readlist_obj.slug,
-        #                                file=''
-        #                                )

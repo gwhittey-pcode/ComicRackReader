@@ -151,6 +151,7 @@ class BaseScreen(Screen):
             results: got_readlist_data(results))
 
         def got_readlist_data(results):
+            pass
             tmp_last_server_comic_id = self.app.config.get(
                 'Saved', 'last_server_comic_id')
             tmp_last_pag_pagnum = self.app.config.get(
@@ -159,7 +160,7 @@ class BaseScreen(Screen):
                 return
             else:
                 self.new_readinglist = ComicReadingList(
-                    name=self.readinglist_name, data=results, slug=self.readinglist_Id, mode='FileOpen')
+                    name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
                 for item in self.new_readinglist.comic_json:
                     comic_index = self.new_readinglist.comic_json.index(item)
                     new_comic = ComicBook(
@@ -185,7 +186,7 @@ class BaseScreen(Screen):
                 page = paginator_obj.page(tmp_last_pag_pagnum)
                 server_readinglists_screen.page_number = tmp_last_pag_pagnum
                 Clock.schedule_once(lambda dt: server_readinglists_screen.collect_readinglist_data
-                                    (readinglist_name, readinglist_Id), 0.15)
+                                    (readinglist_name, readinglist_Id))
                 # server_readinglists_screen.collect_readinglist_data(
                 #    readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]

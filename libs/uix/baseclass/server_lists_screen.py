@@ -8,6 +8,8 @@ from kivy.uix.image import Image
 from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
 from kivy.logger import Logger
+from kivy.clock import Clock
+from libs.utils.db_functions import ReadingList
 
 
 class MyTv(TreeView):
@@ -54,8 +56,17 @@ class ServerListsScreen(Screen):
         readinglist_Id = instance.id
         readinglist_name = (instance.text).split(' : ')[0]
         server_readinglists_screen.list_loaded = False
+        query = ReadingList.select().where(ReadingList.slug == readinglist_Id)
+        if query.exists():
+            Logger.info(f'{readinglist_name} already in Database')
+            set_mode = 'From DataBase'
+        else:
+            Logger.info(
+                f'{readinglist_name} not in Database getting infor from server')
+            set_mode = 'From Server'
+        # set_mode = 'From Server'
         server_readinglists_screen.collect_readinglist_data(
-            readinglist_name, readinglist_Id)
+            readinglist_name, readinglist_Id, mode=set_mode)
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()
