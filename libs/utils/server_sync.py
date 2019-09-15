@@ -11,6 +11,14 @@ import os
 from kivy.storage.jsonstore import JsonStore
 from kivy.metrics import dp
 
+"""
+NOTE: Sync outline
+    - hit sync button:
+        TODO: check for last read comic using comic.UserLastPageRead(0 base index) and compare it with PageCount(1 index so needs -1)
+        
+        
+"""
+
 
 class SyncReadingListObject(object):
     cb_only_read_state = 'normal'
@@ -179,7 +187,7 @@ class SyncReadingListObject(object):
         sync_num_comics = list_comics[self.last: self.sync_range]
 
         print(len(sync_num_comics))
-        self.app.sync_delayed_work(
+        self.app.delayed_work(
             self.download_file, sync_num_comics, delay=.5)
         self.event = Clock.schedule_interval(self._finish_sync, 0.5)
 

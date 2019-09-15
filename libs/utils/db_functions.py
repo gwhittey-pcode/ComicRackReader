@@ -40,7 +40,7 @@ class Comic(BaseModel):
 class ReadingList(BaseModel):
     name = CharField()
     slug = CharField(primary_key=True)
-    comics = ManyToManyField(Comic, backref='comics')
+    comics = ManyToManyField(Comic, backref='readinglists')
 
     class Meta:
         database = db  # This model uses the "comics_data.db" database.

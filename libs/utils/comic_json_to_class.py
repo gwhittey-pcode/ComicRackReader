@@ -7,13 +7,18 @@ from operator import attrgetter
 from kivy.app import App
 from kivy.clock import Clock
 from libs.utils.db_functions import ReadingList, Comic
+LSIT_STORE_KEYS = [
+    'Id', 'slug', 'Series', 'Number', 'Volume', 'Year', 'Month',
+    'UserCurrentPage', 'UserLastPageRead', 'PageCount',
+    'Summary', 'comic_index', 'FilePath', 'local_file'
+]
 
 
 class ComicReadingList(object):
 
     # ids = DictProperty({})
     # name = StringProperty()
-    def __init__(self, name='', data=None, slug=''):
+    def __init__(self, name='', data=None, slug='', mode='Server'):
         self.size = 65
         self.comics = []
         self.mynumber = 32
@@ -21,55 +26,28 @@ class ComicReadingList(object):
         self.data = data
         self.slug = slug
         self.db = None
+        self.comics_db = None
         self.comic_json = self.data["items"][::-1]
-        self.get_or_create_db_item()
+        if mode == 'Server':
+            self.get_or_create_db_item()
 
     def get_or_create_db_item(self):
         db_item, created = ReadingList.get_or_create(
             slug=self.slug, defaults={'name': self.name})
-        print(f'db_item.id - main:{db_item.id}')
-        if created is True:
-            print('created')
+        self.db = db_item
 
-    def comics_write(self):
+    def comics_write(self, comic):
+        print('Start Comic write')
+        comic.save()
+
         def __comics_write(comic):
+            print(f'self.db.slug:{self.db.slug}')
+            comic_db = Comic.get(Comic.Id == comic.Id)
+            self.db.comics.add(comic_db)
             comic.save()
+
         app = App.get_running_app()
-        app.sync_delayed_work(__comics_write, self.comics, delay=.1)
-
-    @property
-    def reverse_comics_order(self):
-        return reverse(self.comics)
-        # return comic list in reverse for comicTopNav )
-
-    @property
-    def do_sort_series(self):
-        return sorted(self.comics, key=attrgetter('series'))
-
-    @property
-    def do_sort_issue(self):
-        return sorted(self.comics, key=attrgetter('series', 'issue'))
-        # return sorted(comic.issue for comic in
-        # sorted(comic.series for comic in self.comics) )
-
-    @property
-    def do_sort_pub_date(self):
-        return sorted(self.comics, key=attrgetter('pubdate'))
-
-    @property
-    def do_sort_order_number(self):
-        return sorted(self.comics, key=attrgetter('order_number'))
-
-    def do_sort(self, sort_by):
-        if sort_by == 'Issue':
-            comic_collection_sorted = self.do_sort_issue
-        elif sort_by == 'Pub Date':
-            comic_collection_sorted = self.do_sort_pub_date
-        elif sort_by == 'order_number':
-            comic_collection_sorted = self.do_sort_order_number
-        else:
-            comic_collection_sorted = self.comics
-        return comic_collection_sorted
+        # app.delayed_work(__comics_write, self.comics, delay=0)
 
     def add_comic(self, comic, index=0):
         '''
@@ -114,7 +92,8 @@ class ComicBook(object):
     class representing a single comic
     '''
 
-    def __init__(self, data, readlist_obj=None, comic_Id='', * args, **kwargs):
+    def __init__(self, data, readlist_obj=None, comic_Id='',
+                 comic_index=0, mode='Server', * args, **kwargs):
         if comic_Id == '':
             comic_data = data
             self.Id = comic_data['Id']
@@ -135,23 +114,21 @@ class ComicBook(object):
             app = App.get_running_app()
             self.comic_jsonstore = app.comic_db
             self.readlist_obj = readlist_obj
-            self.comic_index = 0
+            self.comic_index = comic_index
             self.local_file = ''
-        #self.comic_jsonstore.put(self.Id, tesval='test')
+        # self.comic_jsonstore.put(self.Id, tesval='test')
+        if mode == 'Server':
+            Clock.schedule_once(lambda dt: self.get_or_create_db_item(), 0.5)
 
     def get_or_create_db_item(self):
-        t_defaults = {'Number': self.Number,
-                      'Series': self.Series, 'Year': self.Year, 'Month': self.Month, 'UserLastPageRead': self.UserLastPageRead}
-        lsit_store_keys = [
-            'Id', 'slug', 'Series', 'Number', 'Volume' 'Year', 'Month',
-            'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-            'Summary', 'comic_index', 'FilePath', 'local_file'
-        ]
         tmp_defaults = {}
-        for key in lsit_store_keys:
+        for key in LSIT_STORE_KEYS:
             tmp_defaults[key] = getattr(self, key)
         db_item, created = Comic.get_or_create(
             Id=self.Id, defaults=tmp_defaults)
+        rl = self.readlist_obj
+        if rl.slug not in [item.slug for item in db_item.readinglists]:
+            rl.db.comics.add(db_item)
 
     def callback(self, store, key, result):
         pass

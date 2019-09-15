@@ -18,8 +18,8 @@ def convert_comicapi_to_json(comic_path):
     """ returns comic format to pass to json_obj"""
     if os.path.exists(comic_path):
         md = getComicMetadata(comic_path)
-
         data = {
+
             "Id": f"{md.series}_{md.issue}_{md.volume}",
             "Series": md.series,
             "Number": md.issue,
@@ -31,7 +31,10 @@ def convert_comicapi_to_json(comic_path):
             "Summary": md.comments,
             "FilePath": comic_path,
             'Volume': md.volume
+
         }
+        print('************************************')
+        print(data)
         return data
     else:
         Logger.error(f'{comic_path} is not valid')
@@ -40,7 +43,7 @@ def convert_comicapi_to_json(comic_path):
 def get_comic_page(comic_obj, page_num):
     """returns name of cache file of requested page """
     app = App.get_running_app()
-    cahce_dir = app.cache_dir
+    cahce_dir = app.store_dir
     comic_name = f'{comic_obj.Series}_{comic_obj.Number}_{comic_obj.Volume}'
     comic_dir = os.path.join(cahce_dir, comic_name)
     if not Path(comic_dir).is_dir():

@@ -9,6 +9,12 @@
 # <kivydevelopment@gmail.com>
 #
 # LICENSE: MIT
+
+"""
+TODO: add in button for link to ReadingList page - only shows if last_comic_read is set
+FIXME: fix so actionbar buttons only show when page has item loaded
+
+"""
 import os
 from datetime import datetime, timedelta, date
 from kivy.uix.screenmanager import Screen
@@ -152,15 +158,18 @@ class BaseScreen(Screen):
             if tmp_last_server_comic_id == '':
                 return
             else:
-                new_readinglist = ComicReadingList(
-                    name=readinglist_name, data=results, slug=readinglist_Id)
-                for item in new_readinglist.data["items"]:
-                    new_comic = ComicBook(item)
-                    new_readinglist.add_comic(new_comic)
+                self.new_readinglist = ComicReadingList(
+                    name=self.readinglist_name, data=results, slug=self.readinglist_Id)
+                for item in self.new_readinglist.comic_json:
+                    comic_index = self.new_readinglist.comic_json.index(item)
+                    new_comic = ComicBook(
+                        item, readlist_obj=self.new_readinglist, comic_index=comic_index)
+                    self.new_readinglist.add_comic(new_comic)
+                # self.new_readinglist.comics_write()
                 max_books_page = int(self.app.config.get(
                     'General', 'max_books_page'))
                 orphans = max_books_page - 1
-                new_readinglist_reversed = new_readinglist.comics
+                new_readinglist_reversed = self.new_readinglist.comics
                 paginator_obj = Paginator(
                     new_readinglist_reversed, max_books_page)
                 for x in range(1, paginator_obj.num_pages()):
@@ -179,11 +188,11 @@ class BaseScreen(Screen):
                 grid = self.ids["main_grid"]
                 grid.cols = 1
                 grid.clear_widgets()
-                for comic in new_readinglist.comics:
+                for comic in self.new_readinglist.comics:
                     if comic.slug == tmp_last_server_comic_id:
                         c = CustomeST()
                         c.comic_obj = comic
-                        c.readinglist_obj = new_readinglist
+                        c.readinglist_obj = self.new_readinglist
                         c.paginator_obj = paginator_obj
                         x = self.app.comic_thumb_width
                         y = self.app.comic_thumb_height
@@ -200,7 +209,7 @@ class BaseScreen(Screen):
                         c.text = f'[color={tmp_color}]{strtxt}[/color]'
 #                        c.text_color = self.app.theme_cls.secondary_color
                         grid.add_widget(c)
-                        tmp_txt = f'Last Comic Load from {new_readinglist.name}'
+                        tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
                         self.ids.last_comic_label.text = tmp_txt
 
     def update_leaf(self):

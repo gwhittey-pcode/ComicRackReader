@@ -9,7 +9,10 @@
 # <kivydevelopment@gmail.com>
 ###
 # LICENSE: MIT
+"""
+FIXME: add in settings change update all app settings
 
+"""
 import sys
 import os
 from pathlib import Path
@@ -467,8 +470,8 @@ class ComicRackReader(App):
                 previous=previous,
             )
             self.md_manager.add_widget(self.file_manager)
-            comics_folder = f'{self.user_data_dir}/comics'
-            self.file_manager.show('/')
+            
+            self.file_manager.show(self.sync_folder)
         self.manager_open = True
         self.md_manager.open()
 
@@ -480,10 +483,12 @@ class ComicRackReader(App):
         """
         self.exit_manager()
         if os.path.isfile(path):
+            data = {"items": []}
             comic_data = convert_comicapi_to_json(path)
+            data["items"].append(comic_data)
             new_rl = ComicReadingList(
-                name='FileLoad', data=comic_data, slug='SingFileOpen')
-            new_comic = ComicBook(comic_data)
+                name='FileLoad', data=data, slug='SingFileOpen')
+            new_comic = ComicBook(data['items'][0],mode = 'FileOpen')
             new_rl.add_comic(new_comic)
 
         elif os.path.isdir(path):
@@ -501,9 +506,11 @@ class ComicRackReader(App):
                     data["items"].append(comic_data)
                 else:
                     pass
-            new_rl = ComicReadingList(name=path, data=data, slug='path')
-            for item in new_rl.data["items"]:
-                new_comic = ComicBook(item)
+            new_rl = ComicReadingList(name=path, data=data, slug='path',mode='FileOpen')
+            print(data)
+            for item in new_rl.comic_json:
+                comic_index = new_rl.comic_json
+                new_comic = ComicBook(item,readinglist_ob=new_rl,comic_index=comic_index,mode='FileOpen')
                 new_rl.add_comic(new_comic)
 
         max_books_page = int(self.config.get(
@@ -528,7 +535,7 @@ class ComicRackReader(App):
         self.md_manager.dismiss()
         self.manager_open = False
 
-    def sync_delayed_work(self,func, items, delay=0):
+    def delayed_work(self,func, items, delay=0):
         '''Apply the func() on each item contained in items
         '''
         if not items:

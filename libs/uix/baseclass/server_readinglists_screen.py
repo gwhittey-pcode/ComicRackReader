@@ -403,15 +403,16 @@ class ServerReadingListsScreen(Screen):
             self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
             
             
-    def got_json(self, req, result):
-        self.comic_collection = result
-        self.tmp_readinglist = ComicReadingList(
-            name=self.readinglist_name, data=result, slug=self.readinglist_Id)
-        self.new_readinglist = self.tmp_readinglist
+    def got_json(self, req, results):
+        
+        self.new_readinglist = ComicReadingList(
+            name=self.readinglist_name, data=results, slug=self.readinglist_Id)
         for item in self.new_readinglist.comic_json:
-            new_comic = ComicBook(item)
+            comic_index = self.new_readinglist.comic_json.index(item)
+            new_comic = ComicBook(item,readlist_obj=self.new_readinglist,comic_index=comic_index)
             self.new_readinglist.add_comic(new_comic)
-        #self.new_readinglist.comics_write()
+            
+     
         self.max_books_page = int(self.app.config.get(
             'General', 'max_books_page'))
         self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
