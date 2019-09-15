@@ -10,14 +10,21 @@ from pathlib import Path
 import os
 from kivy.storage.jsonstore import JsonStore
 from kivy.metrics import dp
-
+from libs.utils.db_functions import ReadingList, Comic
 """
 NOTE: Sync outline
     - hit sync button:
         TODO: check for last read comic using comic.UserLastPageRead(0 base index) and compare it with PageCount(1 index so needs -1)
-        
+        TODO: add in db functions
         
 """
+SYNC_SETTINGS_ITEMS = [
+    'cb_limit_state',
+    'limit_num',
+    'cb_only_read_state',
+    'cb_keep_last_read_state',
+    'cb_optimize_size_state',
+    'sw_syn_this_active', ]
 
 
 class SyncReadingListObject(object):
@@ -41,12 +48,22 @@ class SyncReadingListObject(object):
         my_data_dir = Path(os.path.join(id_folder, 'data'))
         self.my_comic_dir = Path(os.path.join(id_folder, 'comics'))
         self.my_thumb_dir = Path(os.path.join(self.my_comic_dir, 'thumb'))
-        if not my_data_dir.is_dir():
-            os.makedirs(my_data_dir)
         if not self.my_comic_dir.is_dir():
             os.makedirs(self.my_comic_dir)
         if not self.my_thumb_dir.is_dir():
             os.makedirs(self.my_thumb_dir)
+        try:
+            db_item = ReadingListLSyncSettings.readinglists.get(
+                ReadingList.slug == self.reading_list.slug)
+            print(db_item.cb_limt_state)
+        except:
+            print('error')
+        # for item in SYNC_SETTINGS_ITEMS:
+        #    val = ""
+        #    tmp_defaults[key] = getattr(self, key)
+        # NOTE: can be removed once DB functions added
+        if not my_data_dir.is_dir():
+            os.makedirs(my_data_dir)
         settings_json = os.path.join(my_data_dir, 'settings.json')
         comics_json = os.path.join(my_data_dir, 'sync_comics.json')
         self.this_test = "Test"
@@ -72,6 +89,8 @@ class SyncReadingListObject(object):
             self.cb_limit_state = 'normal'
             self.limit_num = 25
             self.sw_syn_this_active = False
+        # end note
+
         self.last = 0
         self.limit = 25
         self.sync_range = int(self.last) + int(self.limit_num)
@@ -152,10 +171,12 @@ class SyncReadingListObject(object):
         part_url = f'/Comics/{comic.Id}/Pages/0?'
         part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
         thumb_url = f"{self.api_url}{part_url}{part_api}"
+
         if self.cb_optimize_size_state == 'normal':
             sync_url = f'{self.api_url}/Comics/{comic.Id}/File/'
         elif self.cb_optimize_size_state == 'down':
             sync_url = f'{self.api_url}/Comics/{comic.Id}/Sync/'
+
         self.fetch_data.get_server_file_download(
             sync_url, callback=lambda req,
             results: got_file(results),

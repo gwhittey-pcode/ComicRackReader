@@ -7,7 +7,27 @@ from operator import attrgetter
 from kivy.app import App
 from kivy.clock import Clock
 from libs.utils.db_functions import ReadingList, Comic
-LSIT_STORE_KEYS = [
+import peewee
+READINGLIST_DB_KEYS = [
+
+    'name',
+    'cb_limit_state',
+    'limit_num',
+    'cb_only_read_state',
+    'cb_keep_last_read_state',
+    'cb_optimize_size_state',
+    'sw_syn_this_active',
+]
+
+READINGLIST_SETTINGS_KEYS = [
+    'cb_limit_state',
+    'limit_num',
+    'cb_only_read_state',
+    'cb_keep_last_read_state',
+    'cb_optimize_size_state',
+    'sw_syn_this_active',
+]
+COMIC_DB_KEYS = [
     'Id', 'slug', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
     'Summary', 'comic_index', 'FilePath', 'local_file'
@@ -28,26 +48,38 @@ class ComicReadingList(object):
         self.db = None
         self.comics_db = None
         self.comic_json = self.data["items"][::-1]
-        if mode == 'Server':
+        self.cb_only_read_state = 'normal'
+        self.cb_keep_last_read_state = 'normal'
+        self.cb_optimize_size_state = 'normal'
+        self.cb_limit_state = 'normal'
+        self.limit_num = 25
+        self.sw_syn_this_active = False
+
+        if mode != 'OpenFile':
             self.get_or_create_db_item()
 
     def get_or_create_db_item(self):
-        db_item, created = ReadingList.get_or_create(
-            slug=self.slug, defaults={'name': self.name})
-        self.db = db_item
+        tmp_defaults = {}
+        try:
+            for key in READINGLIST_DB_KEYS:
+                tmp_defaults[key] = getattr(self, key)
+            db_item, created = ReadingList.get_or_create(
+                slug=self.slug, defaults=tmp_defaults)
+            self.db = db_item
+            for key in READINGLIST_SETTINGS_KEYS:
+                setattr(self, key, getattr(db_item, key))
+            return True
+        except peewee.OperationalError:
+            return False
 
-    def comics_write(self, comic):
-        print('Start Comic write')
-        comic.save()
-
-        def __comics_write(comic):
-            print(f'self.db.slug:{self.db.slug}')
-            comic_db = Comic.get(Comic.Id == comic.Id)
-            self.db.comics.add(comic_db)
-            comic.save()
-
-        app = App.get_running_app()
-        # app.delayed_work(__comics_write, self.comics, delay=0)
+    def save_settings(self, *args, **kwargs):
+        try:
+            rl = ReadingList.get(ReadingList.slug == self.slug)
+            for key in READINGLIST_SETTINGS_KEYS:
+                setattr(rl, key, kwargs[key])
+            rl.save()
+        except peewee.OperationalError:
+            pass
 
     def add_comic(self, comic, index=0):
         '''
@@ -117,12 +149,12 @@ class ComicBook(object):
             self.comic_index = comic_index
             self.local_file = ''
         # self.comic_jsonstore.put(self.Id, tesval='test')
-        if mode == 'Server':
-            Clock.schedule_once(lambda dt: self.get_or_create_db_item(), 0.5)
+        if mode != 'OpenFile':
+            Clock.schedule_once(lambda dt: self.get_or_create_db_item(), 0.15)
 
     def get_or_create_db_item(self):
         tmp_defaults = {}
-        for key in LSIT_STORE_KEYS:
+        for key in COMIC_DB_KEYS:
             tmp_defaults[key] = getattr(self, key)
         db_item, created = Comic.get_or_create(
             Id=self.Id, defaults=tmp_defaults)
