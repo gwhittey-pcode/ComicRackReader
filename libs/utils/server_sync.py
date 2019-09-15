@@ -52,12 +52,6 @@ class SyncReadingListObject(object):
             os.makedirs(self.my_comic_dir)
         if not self.my_thumb_dir.is_dir():
             os.makedirs(self.my_thumb_dir)
-        try:
-            db_item = ReadingListLSyncSettings.readinglists.get(
-                ReadingList.slug == self.reading_list.slug)
-            print(db_item.cb_limt_state)
-        except:
-            print('error')
         # for item in SYNC_SETTINGS_ITEMS:
         #    val = ""
         #    tmp_defaults[key] = getattr(self, key)
@@ -104,7 +98,7 @@ class SyncReadingListObject(object):
         for comic in self.reading_list.comics:
             if comic.UserLastPageRead == comic.PageCount-1:
                 last_read_comic = self.reading_list.comics.index(comic)
-                print(f'last_read_comic:{last_read_comic}')
+
         return last_read_comic
 
     def save_values(self,
@@ -207,7 +201,6 @@ class SyncReadingListObject(object):
         list_comics = self.reading_list.comics
         sync_num_comics = list_comics[self.last: self.sync_range]
 
-        print(len(sync_num_comics))
         self.app.delayed_work(
             self.download_file, sync_num_comics, delay=.5)
         self.event = Clock.schedule_interval(self._finish_sync, 0.5)

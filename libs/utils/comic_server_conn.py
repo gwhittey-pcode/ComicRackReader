@@ -113,7 +113,7 @@ class ComicServerConn():
 
     def get_server_file_download(self, req_url, callback, file_path):
         def update_progress(request, current_size, total_size):
-            print(current_size/total_size)
+            pass
         username = self.app.config.get('General', 'username')
         api_key = self.app.config.get('General', 'api_key')
         str_cookie = f'API_apiKey={api_key}; BCR_username={username}'

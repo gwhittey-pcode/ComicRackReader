@@ -225,7 +225,6 @@ class SynLimitButton(MDRaisedButton):
             self.text = "MB"
 
     def open_menu(self):
-        print('ok')
         MDDropdownMenu(items=self.limit_menu_items, width_mult=3).open(self)
 
 
@@ -325,7 +324,6 @@ class ServerReadingListsScreen(Screen):
         )
         
         if self.new_readinglist.sw_syn_this_active == True:
-            print('It is True')
             self.sync_btn_menu_items('add')
         return super().on_enter(*args)
         
@@ -522,7 +520,6 @@ class SyncOptionsPopup(Popup):
             self.ids.limit_num.focus = True
             return
     def on_cancel(self):
-        print(self.sw_syn_this_active)
         self.ids.cb_limit.state = self.current_screen.new_readinglist.cb_limit_state
         self.ids.limit_num.text = str(self.current_screen.new_readinglist.limit_num)
         self.ids.cb_only_read.state = self.current_screen.new_readinglist.cb_only_read_state

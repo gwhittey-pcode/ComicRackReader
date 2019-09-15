@@ -100,9 +100,7 @@ class ComicRackReader(App):
     #         '{}/%(appname)s.ini'.format(self.directory))
 
     def build_config(self, config):
-        test_rl = ['RL1','RK2','RL2']
-        for item in test_rl:
-            print(gen_reading_rl_sync_options(item))
+        
         '''Creates an application settings file ComicRackReader.ini.'''
 
         config.adddefaultsection('Language')
@@ -481,54 +479,60 @@ class ComicRackReader(App):
         :type path: str;
         :param path: path to the selected directory or file;
         """
+        has_cb_files = False
         self.exit_manager()
         if os.path.isfile(path):
-            data = {"items": []}
-            comic_data = convert_comicapi_to_json(path)
-            data["items"].append(comic_data)
-            new_rl = ComicReadingList(
-                name='FileLoad', data=data, slug='SingFileOpen')
-            new_comic = ComicBook(data['items'][0],mode = 'FileOpen')
-            new_rl.add_comic(new_comic)
 
+            ext = os.path.splitext(path)[-1].lower()
+            if ext in (".cbz", ".cbr", ".cb7",".cbp"):
+                has_cb_files = True
+                data = {"items": []}
+                comic_data = convert_comicapi_to_json(path)
+                data["items"].append(comic_data)
+                new_rl = ComicReadingList(
+                    name='FileLoad', data=data, slug='SingFileOpen')
+                new_comic = ComicBook(data['items'][0],mode = 'FileOpen')
+                new_rl.add_comic(new_comic)
+            else:
+                pass
         elif os.path.isdir(path):
-            from os import listdir
-            from os.path import isfile, join
+            
             if os.path.isdir(path):
-                onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+                onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
             data = {"items": []}
             for file in onlyfiles:
-                
                 ext = os.path.splitext(file)[-1].lower()
                 if ext in (".cbz", ".cbr", ".cb7",".cbp"):
                     file_path = os.path.join(path, file)
                     comic_data = convert_comicapi_to_json(file_path)
                     data["items"].append(comic_data)
+                    has_cb_files = True
                 else:
                     pass
-            new_rl = ComicReadingList(name=path, data=data, slug='path',mode='FileOpen')
-            print(data)
-            for item in new_rl.comic_json:
-                comic_index = new_rl.comic_json
-                new_comic = ComicBook(item,readinglist_ob=new_rl,comic_index=comic_index,mode='FileOpen')
-                new_rl.add_comic(new_comic)
-
-        max_books_page = int(self.config.get(
-            'General', 'max_books_page'))
-        paginator_obj = Paginator(
-            new_rl.comics, max_books_page)
-        new_screen_name = str(new_rl.comics[0].Id)
-        if new_screen_name not in self.manager.screen_names:
-            new_screen = ServerComicBookScreen(
-                readinglist_obj=new_rl,
-                comic_obj=new_rl.comics[0],
-                paginator_obj=paginator_obj,
-                pag_pagenum=1, view_mode='FileOpen',
-                name=new_screen_name)
-            self.manager.add_widget(new_screen)
-            self.manager.current = new_screen_name
-        toast(f'Opening {new_rl.comics[0].__str__}')
-
+            if has_cb_files is True:
+                new_rl = ComicReadingList(name=path, data=data, slug='path',mode='FileOpen')
+                for item in new_rl.comic_json:
+                    comic_index = new_rl.comic_json
+                    new_comic = ComicBook(item,readinglist_ob=new_rl,comic_index=comic_index,mode='FileOpen')
+                    new_rl.add_comic(new_comic)
+        if has_cb_files is True:
+            max_books_page = int(self.config.get(
+                'General', 'max_books_page'))
+            paginator_obj = Paginator(
+                new_rl.comics, max_books_page)
+            new_screen_name = str(new_rl.comics[0].Id)
+            if new_screen_name not in self.manager.screen_names:
+                new_screen = ServerComicBookScreen(
+                    readinglist_obj=new_rl,
+                    comic_obj=new_rl.comics[0],
+                    paginator_obj=paginator_obj,
+                    pag_pagenum=1, view_mode='FileOpen',
+                    name=new_screen_name)
+                self.manager.add_widget(new_screen)
+                self.manager.current = new_screen_name
+            toast(f'Opening {new_rl.comics[0].__str__}')
+        else:
+            toast('A vaild ComicBook File was not found')
     def exit_manager(self, *args):
         """Called when the user reaches the root of the directory tree."""
 

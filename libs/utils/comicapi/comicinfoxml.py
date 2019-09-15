@@ -81,12 +81,12 @@ class ComicInfoXML(object):
         # Now extract the credit info
         for n in root:
             if (n.tag == 'Writer' or
-                n.tag == 'Penciller' or
-                n.tag == 'Inker' or
-                n.tag == 'Colorist' or
-                n.tag == 'Letterer' or
-                n.tag == 'Editor'
-                ):
+                    n.tag == 'Penciller' or
+                    n.tag == 'Inker' or
+                    n.tag == 'Colorist' or
+                    n.tag == 'Letterer' or
+                    n.tag == 'Editor'
+                    ):
                 if n.text is not None:
                     for name in n.text.split(','):
                         metadata.addCredit(name.strip(), n.tag)
@@ -101,7 +101,6 @@ class ComicInfoXML(object):
         if pages_node is not None:
             for page in pages_node:
                 metadata.pages.append(page.attrib)
-                # print page.attrib
 
         metadata.isEmpty = False
 
