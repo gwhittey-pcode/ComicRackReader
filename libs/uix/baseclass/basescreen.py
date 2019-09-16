@@ -97,6 +97,7 @@ class BaseScreen(Screen):
             # self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
+
             tmp_readinglist_name = self.app.config.get(
                 'Saved', 'last_server_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
@@ -151,7 +152,7 @@ class BaseScreen(Screen):
             results: got_readlist_data(results))
 
         def got_readlist_data(results):
-            pass
+
             tmp_last_server_comic_id = self.app.config.get(
                 'Saved', 'last_server_comic_id')
             tmp_last_pag_pagnum = self.app.config.get(
@@ -181,14 +182,15 @@ class BaseScreen(Screen):
                 server_readinglists_screen = self.app.manager.get_screen(
                     'server_readinglists_screen')
                 server_readinglists_screen.list_loaded = False
-                Clock.schedule_once(
-                    lambda dt: server_readinglists_screen.setup_screen(), 0.15)
+                server_readinglists_screen.setup_screen()
+                # Clock.schedule_once(
+                #     lambda dt: server_readinglists_screen.setup_screen(), 0.15)
                 page = paginator_obj.page(tmp_last_pag_pagnum)
                 server_readinglists_screen.page_number = tmp_last_pag_pagnum
-                Clock.schedule_once(lambda dt: server_readinglists_screen.collect_readinglist_data
-                                    (readinglist_name, readinglist_Id))
-                # server_readinglists_screen.collect_readinglist_data(
-                #    readinglist_name, readinglist_Id)
+                # Clock.schedule_once(lambda dt: server_readinglists_screen.collect_readinglist_data
+                #                     (readinglist_name, readinglist_Id))
+                server_readinglists_screen.collect_readinglist_data(
+                    readinglist_name, readinglist_Id)
                 grid = self.ids["main_grid"]
                 grid.cols = 1
                 grid.clear_widgets()

@@ -481,16 +481,18 @@ class ServerReadingListsScreen(Screen):
 
     def sync_btn_menu_items(self, action):
         sb = self.ids.sync_button
-        if action == 'add':
-
-            sb.menu_items.append(
-                    {'viewclass': 'MDMenuItem',
+        start_sync_item = {'viewclass': 'MDMenuItem',
                     'text': '[color=#000000]Start Sync[/color]',
                     'callback': self.callback_for_menu_items
                     }
-                )
+        if action == 'add':
+            if start_sync_item not in sb.menu_items:
+                sb.menu_items.append(
+                        start_sync_item
+                    )
         elif action == 'del':
-            sb.menu_items.pop()
+            if start_sync_item  in sb.menu_items:
+                sb.menu_items.pop()
     def open_sync_options(self):
         self.sync_options.open()
 
@@ -514,7 +516,9 @@ class SyncOptionsPopup(Popup):
     def __init__(self, **kwargs):
         super(SyncOptionsPopup, self).__init__(**kwargs)
         app = App.get_running_app()
-        self.current_screen = app.manager.current_screen
+        server_readinglists_screen = app.manager.get_screen(
+                    'server_readinglists_screen')
+        self.current_screen = server_readinglists_screen
        
     def check_input(self,*args):
         text_field = args[0]
@@ -549,8 +553,6 @@ class SyncOptionsPopup(Popup):
             elif self.ids.sw_syn_this.active is True:
                 self.current_screen.sync_btn_menu_items('add')
             self.dismiss()
-            
-                
         else:
             self.ids.limit_num.focus = True
             return

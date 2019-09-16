@@ -1,21 +1,54 @@
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty, BooleanProperty
+from kivy.properties import ObjectProperty, BooleanProperty, StringProperty, ListProperty
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.list import ILeftBodyTouch, ILeftBody
+from kivymd.uix.selectioncontrol import MDCheckbox
 from kivy.uix.image import Image
 from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
 from kivy.logger import Logger
 from kivy.clock import Clock
 from libs.utils.db_functions import ReadingList
+from kivymd.uix.list import (
+    ILeftBody,
+    ILeftBodyTouch,
+    IRightBodyTouch,
+    OneLineIconListItem,
+    OneLineAvatarIconListItem,
+)
 
 
 class MyTv(TreeView):
     def __init__(self, **kwargs):
         super(MyTv, self).__init__(**kwargs)
+
+    def on_node_expand(self, node):
+        print('node exbanded')
+        node.icon = 'folder-open'
+
+
+class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
     pass
+
+
+class TreeViewFolder(OneLineIconListItem, TreeViewNode):
+    text = StringProperty()
+    color = ListProperty([1, 1, 0.4, 1])
+    icon = StringProperty('folder')
+
+    def __init__(self, **kwargs):
+        super(TreeViewFolder, self).__init__(**kwargs)
+
+
+class TreeViewItem(OneLineIconListItem, TreeViewNode):
+    text = StringProperty()
+    color = ListProperty([0.4, 0.4, 0.4, 1])
+    icon = StringProperty('view-list')
+
+    def __init__(self, **kwargs):
+        super(TreeViewItem, self).__init__(**kwargs)
 
 
 class ServerListsScreen(Screen):
@@ -44,8 +77,18 @@ class ServerListsScreen(Screen):
         self.app.list_previous_screens.append(self.name)
 
     def get_comicrack_list(self):
-        url_send = f'{self.api_url}/lists/'
-        self.fetch_data.get_server_data(url_send, self)
+        if self.lists_loaded is False:
+            url_send = f'{self.api_url}/lists/'
+            self.fetch_data.get_server_data(url_send, self)
+
+    def node_expand(self, instance, node):
+        node.icon = 'folder-open'
+
+    def node_collapse(self, instance, node):
+        node.icon = 'folder'
+
+    def do_expand(self, instance, node):
+        self.my_tree.toggle_node(instance)
 
     def open_readinglist(self, instance, node):
         self.app.manager.current = 'server_readinglists_screen'
@@ -73,19 +116,22 @@ class ServerListsScreen(Screen):
         self.my_tree = self.ids.mytv
         self.my_tree.clear_widgets()
         self.my_tree.bind(minimum_height=self.my_tree.setter('height'))
+        self.my_tree.bind(on_node_expand=self.node_expand)
+        self.my_tree.bind(on_node_collapse=self.node_collapse)
         for item in result:
             if item['Type'] == "ComicLibraryListItem" or\
                     item['Type'] == "ComicSmartListItem":
-                new_node = self.my_tree.add_node(TreeViewLabel(
+                new_node = self.my_tree.add_node(TreeViewItem(
                     text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,
                         0.21176470588235294, 1), id=item['Id']))
                 new_node.bind(on_touch_down=self.open_readinglist)
             elif item['Type'] == "ComicListItemFolder":
                 parent = self.my_tree.add_node(
-                    TreeViewLabel(text=item['Name'], color=(
+                    TreeViewFolder(text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,
                         0.21176470588235294, 1), id=item['Id']))
+                parent.bind(on_touch_down=self.do_expand)
                 self.set_files(parent, item['Lists'])
         self.lists_loaded = True
 
@@ -94,14 +140,15 @@ class ServerListsScreen(Screen):
             if item['Type'] == "ComicLibraryListItem" or\
                     item['Type'] == "ComicSmartListItem" or\
                     item['Type'] == "ComicIdListItem":
-                new_node = self.my_tree.add_node(TreeViewLabel(
+                new_node = self.my_tree.add_node(TreeViewItem(
                     text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,
                         0.21176470588235294, 1), id=item['Id']), parent)
                 new_node.bind(on_touch_down=self.open_readinglist)
             elif item['Type'] == "ComicListItemFolder":
-                sub_parent = self.my_tree.add_node(TreeViewLabel(
+                sub_parent = self.my_tree.add_node(TreeViewFolder(
                     text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,
                         0.21176470588235294, 1), id=item['Id']), parent)
+                sub_parent.bind(on_touch_down=self.do_expand)
                 self.set_files(sub_parent, item['Lists'])

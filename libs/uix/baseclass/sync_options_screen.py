@@ -62,13 +62,13 @@ class IconRightSampleWidget(IRightBodyTouch, MDCheckbox):
         print('touch down')
 
 
-class TreeViewRLNode(OneLineAvatarIconListItem, TreeViewNode):
+class TreeViewRLNode2(OneLineAvatarIconListItem, TreeViewNode):
     text = StringProperty()
     color = ListProperty([0.4, 0.4, 0.4, 1])
     icon = StringProperty('folder')
 
     def __init__(self, **kwargs):
-        super(TreeViewRLNode, self).__init__(**kwargs)
+        super(TreeViewRLNode2, self).__init__(**kwargs)
 
 
 class SyncOptions(Screen):

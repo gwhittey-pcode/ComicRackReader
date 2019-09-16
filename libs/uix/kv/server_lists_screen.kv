@@ -1,4 +1,4 @@
- #:kivy 1.11.0
+#:kivy 1.11.0
 <ServerListsScreen>:
     name: 'server_lists_screen'
     ScrollView:
@@ -9,5 +9,25 @@
             size_hint_x: 1
             size_hint_y: None
             hide_root: True
-            indent_level: 4
+            indent_level: 50
             indent_start: 50
+           
+<TreeViewFolder>
+    color_selected:app.theme_cls.primary_color
+    
+    text: "Single-line item with left icon"
+    IconLeftSampleWidget:
+        id: li_icon_1
+        icon: root.icon
+        theme_text_color:'Custom'
+        text_color: app.theme_cls.primary_color
+        font_style:'H3'
+        
+
+<TreeViewItem>
+    text: "Single-line item with left icon"
+    IconLeftSampleWidget:
+        id: li_icon_1
+        icon: root.icon
+        theme_text_color:'Custom'
+        text_color: app.theme_cls.primary_color
