@@ -1,13 +1,21 @@
 from peewee import SqliteDatabase, OperationalError, CharField, \
     IntegerField, ForeignKeyField, TextField, Model, ManyToManyField, BooleanField, \
-    DeferredThroughModel
+    DeferredThroughModel, DatabaseProxy
 
 from kivy.logger import Logger
-db = SqliteDatabase('db/cr_comics_data.db')
+from kivy.app import App
+import os
+database_proxy = DatabaseProxy()
 
 
 def start_db():
-    db.create_tables([
+
+    app = App.get_running_app()
+    db_folder = app.my_data_dir
+    db_file = os.path.join(db_folder, "ComicRackReader.db")
+
+    database_proxy.initialize(SqliteDatabase(db_file))
+    database_proxy.create_tables([
         ReadingList,
         Comic,
         ComicIndex,
@@ -18,7 +26,8 @@ def start_db():
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        # This model uses the "ComicRackReader.db" database.
+        database = database_proxy
 
 
 class Comic(BaseModel):
@@ -36,9 +45,6 @@ class Comic(BaseModel):
     comic_file = CharField(null=True)
     #comic_index = IntegerField(null=True)
     local_file = CharField(null=True)
-
-    class Meta:
-        database = db  # This model uses the "comics_data.db" database.
 
 
 ComicIndexDeferred = DeferredThroughModel()
@@ -61,9 +67,6 @@ class ReadingList(BaseModel):
     cb_keep_last_read_state = CharField(null=True)
     cb_optimize_size_state = CharField(null=True)
     sw_syn_this_active = BooleanField(null=True)
-
-    class Meta:
-        database = db  # This model uses the "comics_data.db" database.
 
 
 class ComicIndex(BaseModel):

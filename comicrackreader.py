@@ -220,11 +220,12 @@ class ComicRackReader(App):
                 ['settings', lambda x: self.open_settings()],
                 ['fullscreen',lambda x: self.toggle_full_screen()]
             ]
-        my_data_dir = Path(os.path.join(self.store_dir, 'comics_db'))
-        if not my_data_dir.is_dir():
-            os.makedirs(my_data_dir)
-        comic_db_json = os.path.join(my_data_dir, 'comics_db.json')
-        self.comic_db = JsonStore(comic_db_json)
+        self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
+        if os.path.exists(self.my_data_dir):
+            if not os.path.isdir(self.my_data_dir):
+                os.makedirs(self.my_data_dir)
+            comic_db_json = os.path.join(self.my_data_dir, 'comics_db.json')
+            self.comic_db = JsonStore(comic_db_json)
         start_db()
         return self.screen
 
