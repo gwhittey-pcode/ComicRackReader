@@ -5,15 +5,18 @@ verify_ssl = true
 
 [dev-packages]
 
-pep8 = "*"
-pycodestyle = "*"
-autopep8 = "*"
-
 [packages]
-kivy = {git = "https://github.com/kivy/kivy.git",ref = "master"}
-cython = "*"
-requests = "*"
-pillow = "*"
+certifi = "==2019.6.16"
+chardet = "==3.0.4"
+docutils = "*"
+idna = "==2.8"
+kivy-garden = "==0.1.4"
+requests = "==2.22.0"
+urllib3 = "==1.25.3"
+Cython = "==0.29.10"
+Kivy = "==git+git://github.com:kivy/kivy.git"
+Pygments = "==2.4.2"
+Pillow = "==6.0.0"
 
 [requires]
-python_version = "3.7"
+python_version = "3.6"
