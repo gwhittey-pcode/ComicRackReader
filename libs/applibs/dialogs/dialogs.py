@@ -15,11 +15,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.uix.modalview import ModalView
+from kivymd.uix.card import MDCard, MDSeparator
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDFlatButton
 
-from kivymd.cards import MDCard, MDSeparator
-from kivymd.dialog import MDDialog
-from kivymd.label import MDLabel
-from kivymd.button import MDFlatButton
 
 from . selection import Selection
 
