@@ -48,11 +48,11 @@ class Comic(BaseModel):
 
 
 ComicIndexDeferred = DeferredThroughModel()
-#     cb_limit_state = CharField()
+#     cb_limit_active = CharField()
 #     limit_num = IntegerField()
-#     cb_only_read_state = CharField()
-#     cb_keep_last_read_state = CharField()
-#     cb_optimize_size_state = CharField()
+#     cb_only_read_active = CharField()
+#     cb_keep_last_read_active = CharField()
+#     cb_optimize_size_active = CharField()
 #     sw_syn_this_active = CharField()
 
 
@@ -61,11 +61,11 @@ class ReadingList(BaseModel):
     slug = CharField(primary_key=True)
     comics = ManyToManyField(
         Comic, backref='readinglists', through_model=ComicIndexDeferred)
-    cb_limit_state = CharField(null=True)
+    cb_limit_active = BooleanField(null=True)
     limit_num = IntegerField(null=True)
-    cb_only_read_state = CharField(null=True)
-    cb_keep_last_read_state = CharField(null=True)
-    cb_optimize_size_state = CharField(null=True)
+    cb_only_read_active = BooleanField(null=True)
+    cb_keep_last_read_active = BooleanField(null=True)
+    cb_optimize_size_active = BooleanField(null=True)
     sw_syn_this_active = BooleanField(null=True)
 
 

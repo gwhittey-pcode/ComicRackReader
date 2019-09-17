@@ -151,6 +151,7 @@ class BaseScreen(Screen):
                                     results: got_api(results))
 
     def build_last_comic_section(self, readinglist_name, readinglist_Id):
+
         self.readinglist_name = readinglist_name
         # self.app.set_screen(self.readinglist_name + ' Page 1')
         self.reading_list_title = self.readinglist_name + ' Page 1'
@@ -167,8 +168,8 @@ class BaseScreen(Screen):
 
             tmp_last_server_comic_id = self.app.config.get(
                 'Saved', 'last_server_comic_id')
-            tmp_last_pag_pagnum = self.app.config.get(
-                'Saved', 'last_server_pag_pagnum')
+            tmp_last_pag_pagnum = int(self.app.config.get(
+                'Saved', 'last_server_pag_pagnum'))
             if tmp_last_server_comic_id == '':
                 return
             else:

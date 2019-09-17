@@ -13,7 +13,7 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
-    BooleanProperty, OptionProperty
+    BooleanProperty, OptionProperty, DictProperty
 from kivy.uix.image import AsyncImage
 from kivy.uix.modalview import ModalView
 from kivymd.uix.imagelist import SmartTileWithLabel
@@ -163,23 +163,21 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
     def __init__(self, **kwargs):
         super(SyncButtonIcon, self).__init__(**kwargs)
         self.app = App.get_running_app()
-        self.menu_items = []
-        self.menu_items.append(
-            {'viewclass': 'MDMenuItem',
-            'text': '[color=#000000]Sync Options[/color]',
-            'callback': self.callback_for_menu_items
-            }
-        )
-       
-
+        self.sync_menu_items = [{
+            'viewclass': 'MDMenuItem', 'text': '[color=#000000]Sync Options[/color]',
+            'callback': self.callback_for_menu_items}, {
+            'viewclass': 'MDMenuItem', 'text': '[color=#000000]Start Sync[/color]',
+            'callback': self.callback_for_menu_items}]
 
     def callback_for_menu_items(self, *args):
+        print('callback')
         action = args[0].replace(
             '[color=#000000]', "").replace('[/color]', "")
         if action == "Sync Options":
             # self.app.switch_sync_control()
             self.app.manager.current_screen.open_sync_options()
         elif action == "Start Sync":
+            print('sync')
             self.do_sync_rf()
 
     def on_press(self):
@@ -197,22 +195,23 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
         return super(SyncButtonIcon, self).on_press()
 
     def do_sync_rf(self):
-        self.app.manager.current_screen.sync_readinglist()
+        self.app.manager.get_screen(
+            'server_readinglists_screen').sync_readinglist()
 
 
 class SynLimitButton(MDRaisedButton):
     def __init__(self, **kwargs):
         super(SynLimitButton, self).__init__(**kwargs)
         self.limit_menu_items = [{'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Books[/color]',
-                            'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]GB[/color]',
-                            'callback': self.callback_for_menu_items},
-                            {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]MB[/color]',
-                            'callback': self.callback_for_menu_items},
-                           ]
+                                  'text': '[color=#000000]Books[/color]',
+                                  'callback': self.callback_for_menu_items},
+                                 {'viewclass': 'MDMenuItem',
+                                  'text': '[color=#000000]GB[/color]',
+                                  'callback': self.callback_for_menu_items},
+                                 {'viewclass': 'MDMenuItem',
+                                  'text': '[color=#000000]MB[/color]',
+                                  'callback': self.callback_for_menu_items},
+                                 ]
 
     def callback_for_menu_items(self, *args):
         action = args[0].replace(
@@ -261,6 +260,7 @@ class ServerReadingListsScreen(Screen):
     reading_list_title = StringProperty()
     page_number = NumericProperty()
     max_books_page = NumericProperty()
+    dynamic_ids = DictProperty({})    # declare class attribute, dynamic_ids
 
     def __init__(self, **kwargs):
         super(ServerReadingListsScreen, self).__init__(**kwargs)
@@ -299,7 +299,7 @@ class ServerReadingListsScreen(Screen):
         self.m_grid = self.ids["main_grid"]
         self.prev_button = self.ids["prev_button"]
         self.next_button = self.ids["next_button"]
-        
+
     def on_pre_enter(self, *args):
         self.app.show_action_bar()
         return super().on_pre_enter(*args)
@@ -331,6 +331,7 @@ class ServerReadingListsScreen(Screen):
             self.fetch_data.get_server_data(lsit_count_url, self)
         elif mode == 'From DataBase':
             self.got_db_data()
+
     def get_page(self, instance):
         page_num = instance.page_num
         self.app.set_screen(self.readinglist_name + f' Page {page_num}')
@@ -354,7 +355,7 @@ class ServerReadingListsScreen(Screen):
             self.prev_button.disabled = True
             self.prev_button.page_num = ''
         self.build_page(page.object_list)
-        
+
         self.ids.main_scroll.scroll_to(
             self.ids.main_grid.children[0], padding=10, animate=True)
 
@@ -363,7 +364,7 @@ class ServerReadingListsScreen(Screen):
         main_stack = self.main_stack
         grid.clear_widgets()
         for comic in object_lsit:
-            c = CustomeST(id=comic.Id)
+            c = CustomeST()
             c.comic_obj = comic
             c.lines = 2
             c.readinglist_obj = self.new_readinglist
@@ -377,7 +378,6 @@ class ServerReadingListsScreen(Screen):
             c.source = source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
-            
             strtxt = f"{comic.Series} #{comic.Number}"
             if comic.UserLastPageRead == comic.PageCount-1:
                 c.img_color = (.89, .15, .21, 5)
@@ -389,7 +389,8 @@ class ServerReadingListsScreen(Screen):
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
             self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
-        
+            self.dynamic_ids[id] = c
+
     def got_db_data(self):
         """
         used if rl data is already stored in db.
@@ -430,7 +431,8 @@ class ServerReadingListsScreen(Screen):
             name=self.readinglist_name, data=results, slug=self.readinglist_Id)
         for item in self.new_readinglist.comic_json:
             comic_index = self.new_readinglist.comic_json.index(item)
-            new_comic = ComicBook(item,readlist_obj=self.new_readinglist,comic_index=comic_index)
+            new_comic = ComicBook(
+                item, readlist_obj=self.new_readinglist, comic_index=comic_index)
             self.new_readinglist.add_comic(new_comic)
         self.max_books_page = int(self.app.config.get(
             'General', 'max_books_page'))
@@ -460,68 +462,61 @@ class ServerReadingListsScreen(Screen):
             self.prev_button.page_num = ''
         self.build_page(page.object_list)
         self.list_loaded = True
-        
+
     def setup_options(self):
         self.sync_options = SyncOptionsPopup(
-                size_hint = (.76,.76),
-                cb_limit_state = self.new_readinglist.cb_limit_state,
-                limit_num_text = str(self.new_readinglist.limit_num),
-                cb_only_read_state = self.new_readinglist.cb_only_read_state,
-                cb_keep_last_read_state = self.new_readinglist.cb_keep_last_read_state,
-                cb_optimize_size_state = self.new_readinglist.cb_optimize_size_state,
-                sw_syn_this_active=bool(self.new_readinglist.sw_syn_this_active),
-                )
+            size_hint=(.76, .76),
+            cb_limit_active=self.new_readinglist.cb_limit_active,
+            limit_num_text=str(self.new_readinglist.limit_num),
+            cb_only_read_active=self.new_readinglist.cb_only_read_active,
+            cb_keep_last_read_active=self.new_readinglist.cb_keep_last_read_active,
+            cb_optimize_size_active=self.new_readinglist.cb_optimize_size_active,
+            sw_syn_this_active=bool(self.new_readinglist.sw_syn_this_active),
+        )
         self.sync_options.ids.limit_num.bind(
-        on_text_validate=self.sync_options.check_input,
-        focus=self.sync_options.check_input,
+            on_text_validate=self.sync_options.check_input,
+            focus=self.sync_options.check_input,
         )
 
-        if self.new_readinglist.sw_syn_this_active == True:
-            self.sync_btn_menu_items('add')
-            self.sync_options.title = self.new_readinglist.name
+        self.sync_options.title = self.new_readinglist.name
 
-    def sync_btn_menu_items(self, action):
-        sb = self.ids.sync_button
-        start_sync_item = {'viewclass': 'MDMenuItem',
-                    'text': '[color=#000000]Start Sync[/color]',
-                    'callback': self.callback_for_menu_items
-                    }
-        if action == 'add':
-            if start_sync_item not in sb.menu_items:
-                sb.menu_items.append(
-                        start_sync_item
-                    )
-        elif action == 'del':
-            if start_sync_item  in sb.menu_items:
-                sb.menu_items.pop()
     def open_sync_options(self):
+        if self.sync_options.ids.sw_syn_this.active is True:
+            self.sync_options.ids.syn_on_off_label.text = f''
+            self.sync_options.ids.syn_on_off_label.theme_text_color = 'Primary'
         self.sync_options.open()
 
     def sync_readinglist(self):
-        self.sync_object.sync_readinglist()
+        if self.sync_options.ids.sw_syn_this.active is False:
+            self.sync_options.ids.syn_on_off_label.text = f'Sync Not Turned On'
+            self.open_sync_options()
+        elif self.sync_options.ids.sw_syn_this.active is True:
+            toast(f'Starting sync of {self.new_readinglist.name}')
+            self.new_readinglist.do_sync()
 
 
 class SyncOptionsPopup(Popup):
     background = 'assets/cPop_bkg.png'
     text = StringProperty('')
-    cb_limit_state = StringProperty()
-    limit_num_text = StringProperty()
-    cb_only_read_state = StringProperty()
-    cb_keep_last_read_state = StringProperty()
-    cb_optimize_size_state = StringProperty()
+    cb_limit_active = BooleanProperty(False)
+    limit_num_text = BooleanProperty(False)
+    cb_only_read_active = BooleanProperty(False)
+    cb_keep_last_read_active = BooleanProperty(False)
+    cb_optimize_size_active = BooleanProperty(False)
     sw_syn_this_active = BooleanProperty(False)
     ok_text = StringProperty('OK')
     cancel_text = StringProperty('Cancel')
-    
+
     __events__ = ('on_ok', 'on_cancel')
+
     def __init__(self, **kwargs):
         super(SyncOptionsPopup, self).__init__(**kwargs)
         app = App.get_running_app()
         server_readinglists_screen = app.manager.get_screen(
-                    'server_readinglists_screen')
+            'server_readinglists_screen')
         self.current_screen = server_readinglists_screen
-       
-    def check_input(self,*args):
+
+    def check_input(self, *args):
         text_field = args[0]
         if text_field.text.isnumeric():
             text_field.error = False
@@ -529,12 +524,12 @@ class SyncOptionsPopup(Popup):
         else:
             text_field.error = True
             return False
-    
-    
+
     def on_open(self):
-        #self.sw_syn_this.active=bool(self.current_screen.new_readinglist.sw_syn_this_active)
+        # self.sw_syn_this.active=bool(self.current_screen.new_readinglist.sw_syn_this_active)
         """ disable hotkeys while we do this"""
         Window.unbind(on_keyboard=App.get_running_app().events_program)
+
     def on_dismiss(self):
         Window.bind(on_keyboard=App.get_running_app().events_program)
 
@@ -542,27 +537,26 @@ class SyncOptionsPopup(Popup):
         chk_input = self.check_input(self.ids.limit_num)
         if chk_input is True:
             self.current_screen.new_readinglist.save_settings(
-                cb_limit_state = self.ids.cb_limit.state,
-                limit_num = int(self.ids.limit_num.text),
-                cb_only_read_state = self.ids.cb_only_read.state,
-                cb_keep_last_read_state = self.ids.cb_keep_last_read.state,
-                cb_optimize_size_state = self.ids.cb_optimize_size.state,
-                sw_syn_this_active = self.ids.sw_syn_this.active,
+                cb_limit_active=self.ids.cb_limit.active,
+                limit_num=int(self.ids.limit_num.text),
+                cb_only_read_active=self.ids.cb_only_read.active,
+                cb_keep_last_read_active=self.ids.cb_keep_last_read.active,
+                cb_optimize_size_active=self.ids.cb_optimize_size.active,
+                sw_syn_this_active=self.ids.sw_syn_this.active,
             )
-            if self.ids.sw_syn_this.active is False:
-                self.current_screen.sync_btn_menu_items('del')
-            elif self.ids.sw_syn_this.active is True:
-                self.current_screen.sync_btn_menu_items('add')
             self.dismiss()
         else:
             self.ids.limit_num.focus = True
             return
+
     def on_cancel(self):
-        self.ids.cb_limit.state = self.current_screen.new_readinglist.cb_limit_state
-        self.ids.limit_num.text = str(self.current_screen.new_readinglist.limit_num)
-        self.ids.cb_only_read.state = self.current_screen.new_readinglist.cb_only_read_state
-        self.ids.cb_keep_last_read.state = self.current_screen.new_readinglist.cb_keep_last_read_state
-        self.ids.cb_optimize_size.state = self.current_screen.new_readinglist.cb_optimize_size_state
-        self.ids.sw_syn_this.active=bool(self.current_screen.new_readinglist.sw_syn_this_active)
+        self.ids.cb_limit.active = self.current_screen.new_readinglist.cb_limit_active
+        self.ids.limit_num.text = str(
+            self.current_screen.new_readinglist.limit_num)
+        self.ids.cb_only_read.active = self.current_screen.new_readinglist.cb_only_read_active
+        self.ids.cb_keep_last_read.active = self.current_screen.new_readinglist.cb_keep_last_read_active
+        self.ids.cb_optimize_size.active = self.current_screen.new_readinglist.cb_optimize_size_active
+        self.ids.sw_syn_this.active = bool(
+            self.current_screen.new_readinglist.sw_syn_this_active)
         self.ids.limit_num.error = False
         self.dismiss()

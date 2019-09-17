@@ -11,7 +11,7 @@
 from functools import partial
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ObjectProperty, StringProperty, ListProperty,\
-    NumericProperty, BooleanProperty
+    NumericProperty, BooleanProperty, DictProperty
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.app import App
 from kivy.core.image import Image as CoreImage
@@ -40,6 +40,7 @@ from kivymd.uix.toolbar import MDToolbar
 from kivy.core.window import Window
 from libs.utils.comic_functions import get_comic_page, get_file_page_size
 
+
 class ServerComicBookScreen(Screen):
     scroller = ObjectProperty()
     top_pop = ObjectProperty()
@@ -52,7 +53,9 @@ class ServerComicBookScreen(Screen):
     prev_nav_comic_thumb = ObjectProperty()
     pag_pagenum = NumericProperty()
     view_mode = StringProperty()
-    def __init__(self, readinglist_obj=None, comic_obj=None,view_mode='Server',
+    dynamic_ids = DictProperty({})    # declare class attribute, dynamic_ids
+
+    def __init__(self, readinglist_obj=None, comic_obj=None, view_mode='Server',
                  paginator_obj=None, pag_pagenum=1, last_load=0, ** kwargs):
         super(ServerComicBookScreen, self).__init__(**kwargs)
         self.fetch_data = None
@@ -89,16 +92,26 @@ class ServerComicBookScreen(Screen):
         self.app.config.write()
         self.pag_pagenum = pag_pagenum
         if self.view_mode == 'FileOpen':
-            self.app.config.set('Saved', 'last_file_comic_id', self.comic_obj.FilePath)
-            self.app.config.set('Saved', 'last_file_reading_list_id', self.readinglist_obj.slug)
-            self.app.config.set('Saved', 'last_file_reading_list_name', self.readinglist_obj.name)
-            self.app.config.set('Saved', 'last_file_pag_pagnum', self.pag_pagenum)
+            self.app.config.set('Saved', 'last_file_comic_id',
+                                self.comic_obj.FilePath)
+            self.app.config.set(
+                'Saved', 'last_file_reading_list_id', self.readinglist_obj.slug)
+            self.app.config.set(
+                'Saved', 'last_file_reading_list_name', self.readinglist_obj.name)
+            if int(self.pag_pagenum):
+                self.app.config.set(
+                    'Saved', 'last_file_pag_pagnum', self.pag_pagenum)
         else:
-            self.app.config.set('Saved', 'last_server_comic_id', self.comic_obj.Id)
-            
-            self.app.config.set('Saved', 'last_server_reading_list_id', self.readinglist_obj.slug)
-            self.app.config.set('Saved', 'last_server_reading_list_name', self.readinglist_obj.name)
-            self.app.config.set('Saved', 'last_server_pag_pagnum', self.pag_pagenum)
+            self.app.config.set(
+                'Saved', 'last_server_comic_id', self.comic_obj.Id)
+
+            self.app.config.set(
+                'Saved', 'last_server_reading_list_id', self.readinglist_obj.slug)
+            self.app.config.set(
+                'Saved', 'last_server_reading_list_name', self.readinglist_obj.name)
+            if int(self.pag_pagenum):
+                self.app.config.set(
+                    'Saved', 'last_server_pag_pagnum', self.pag_pagenum)
         self.app.config.write()
         comic_book_carousel = self.ids.comic_book_carousel
         comic_book_carousel.clear_widgets()
@@ -126,10 +139,14 @@ class ServerComicBookScreen(Screen):
                             do_scroll_y=False, id='page_thumb_scroll',
                             scroll_type=['bars', 'content']
                             )
+        self.dynamic_ids['page_thumb_scroll'] = scroll
+        t_y = round(dp(320))
         self.page_nav_popup = Popup(id='page_nav_popup', title=x_title,
                                     pos_hint={'y': 0},
-                                    size_hint=(1, .32)
+                                    size_hint=(1, None),
+                                    height=round(dp(320))
                                     )
+        self.dynamic_ids['page_nav_popup'] = self.page_nav_popup
         self.page_nav_popup.add_widget(scroll)
         self.scroller = scroll
         outer_grid = GridLayout(rows=1, size_hint=(None, None), spacing=(5, 0),
@@ -197,15 +214,14 @@ class ServerComicBookScreen(Screen):
     def on_pre_enter(self):
         self.app.hide_action_bar()
         self.build_option_pop()
-        
 
     def on_pre_leave(self, *args):
         self.top_pop.dismiss()
         self.page_nav_popup.dismiss()
         self.option_pop.dismiss()
-        
+
     def on_leave(self, *args):
-        
+
         self.app.manager.remove_widget(self)
         self = None
 
@@ -262,7 +278,6 @@ class ServerComicBookScreen(Screen):
                                 if child.zoom_state == 'zoomed':
                                     child.do_zoom(False)
 
-
     def add_pages(self, comic_book_carousel, outer_grid, comic_obj, i):
         # fire off dblpage split if server replies size of image is
         # width>height
@@ -292,7 +307,7 @@ class ServerComicBookScreen(Screen):
             s_allow_stretch = False
             s_keep_ratio = True
         s_max_height = round(dp(max_height))
-        
+
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_max_height}"
         s_url_api = f"&apiKey={self.api_key}"
         if self.view_mode == 'FileOpen':
@@ -323,7 +338,7 @@ class ServerComicBookScreen(Screen):
                                         id='page_thumb' + str(i), comic_page=i,
                                         source=src_img,
                                         allow_stretch=True)
-        
+
         page_thumb.size_hint_y = None
         page_thumb.height = dp(240)
         inner_grid.add_widget(page_thumb)
@@ -344,7 +359,7 @@ class ServerComicBookScreen(Screen):
         get_size_url = f"{self.api_url}{s_url_part}"
         if self.view_mode == 'FileOpen':
             width, height = get_file_page_size(comic_page_source)
-            data = {"width":width,"height":height}
+            data = {"width": width, "height": height}
             got_page_size(data)
         else:
             self.fetch_data.get_page_size_data(
@@ -368,7 +383,14 @@ class ServerComicBookScreen(Screen):
             if child.id == current_slide.id:
                 current_page = child
                 comic_page = current_page.comic_page
-
+        # scroller = self.dynamic_ids['page_thumb_scroll']
+        # for grandchild in scroller.walk():
+        #             c_page_thumb = f'page_thumb{comic_page}'
+        #             c_page_lbl = f'page_thumb_lbl{comic_page}'
+        #             if grandchild.id == c_page_thumb:
+        #                 target_thumb = grandchild
+        #                 self.scroller.scroll_to(
+        #                     target_thumb, padd7ing=10, animate=True)
         for child in self.page_nav_popup.walk():
             if child.id == 'page_thumb_scroll':
                 scroller = child
@@ -381,14 +403,22 @@ class ServerComicBookScreen(Screen):
                             target_thumb, padding=10, animate=True)
 
     def build_top_nav(self):
-
+        """
+        Build the top popup that contains the readnglist comics and links via cover image to open
+        them
+        """
         scroll = CommonComicsScroll(id='page_thumb_scroll', size_hint=(
             1, 1), do_scroll_x=True, do_scroll_y=False)
-        self.top_pop = Popup(id='page_pop', title='Comics in List',
-                             title_align='center', content=scroll,
-                             pos_hint={'y': .648}, size_hint=(1, .35),
+        self.top_pop = Popup(
+            id='page_pop',
+            title='Comics in List',
+            title_align='center',
+            content=scroll,
+            pos_hint={'top': 1},
+            size_hint=(1, None),
+            height=round(dp(325))
 
-                             )
+        )
         self.top_pop
         grid = CommonComicsOuterGrid(id='outtergrd', size_hint=(
             None, None), spacing=5, padding=(5, 5, 5, 5))
@@ -629,9 +659,9 @@ class ServerComicBookScreen(Screen):
         s_url_part = f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"
         s_url_api = f"&apiKey={self.api_key}"
         if self.view_mode == 'FileOpen':
-                src_thumb = get_comic_page(comic, 0)
+            src_thumb = get_comic_page(comic, 0)
         else:
-             src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
+            src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
 
         inner_grid = CommonComicsCoverInnerGrid(
             id='inner_grid'+str(comic.Id),
@@ -641,7 +671,7 @@ class ServerComicBookScreen(Screen):
         comic_thumb = CommonComicsCoverImage(source=src_thumb, id=str(
             comic.Id), comic_obj=comic)
         if self.view_mode == 'FileOpen':
-                comic_thumb.mode = 'FileOpen'
+            comic_thumb.mode = 'FileOpen'
         comic_thumb.readinglist_obj = self.readinglist_obj
         comic_thumb.comic = comic
         comic_thumb.last_load = self.last_load
@@ -678,7 +708,7 @@ class ServerComicBookScreen(Screen):
                                  content=content,
                                  pos_hint={.5: .724},
                                  size_hint=(None, None),
-                                 size = (dp(280), dp(340))
+                                 size=(dp(280), dp(340))
                                  )
         self.next_dialog.bind(on_dismiss=self.next_dialog_closed)
         c_padding = (self.next_dialog.width/4)
@@ -749,7 +779,7 @@ class ServerComicBookScreen(Screen):
         comic_thumb = CommonComicsCoverImage(source=src_thumb, id=str(
             comic.Id), pos_hint={.5: .5}, comic_obj=comic)
         if self.view_mode == 'FileOpen':
-                comic_thumb.mode = 'FileOpen'
+            comic_thumb.mode = 'FileOpen'
         comic_thumb.readinglist_obj = self.readinglist_obj
         comic_thumb.comic = comic
         if self.use_sections:
@@ -830,7 +860,7 @@ class ServerComicBookScreen(Screen):
 
     def close_prev_dialog(self, *args):
         self.prev_dialog.dismiss()
-        self.prev_dialog_open = False       
+        self.prev_dialog_open = False
 
     def load_random_comic(self):
         next_screen_name = self.app.manager.next()
@@ -891,33 +921,30 @@ class ServerComicBookScreen(Screen):
         else:
             if comic_scatter.comic_page == 0 and\
                     comic_book_carousel.previous_slide is None:
-                    if self.prev_dialog_open == False:
-                        self.open_prev_dialog()
-                        self.prev_dialog_open = True
+                if self.prev_dialog_open == False:
+                    self.open_prev_dialog()
+                    self.prev_dialog_open = True
+                else:
+                    if self.prev_nav_comic_thumb.action_do == 'load_prev_page_comic':
+                        self.load_prev_page_comic(self.prev_nav_comic_thumb)
                     else:
-                        if self.prev_nav_comic_thumb.action_do == 'load_prev_page_comic':
-                            self.load_prev_page_comic(self.prev_nav_comic_thumb)
-                        else:
-                            self.prev_nav_comic_thumb.do_action()
-                        self.close_prev_dialog()
-                    return
+                        self.prev_nav_comic_thumb.do_action()
+                    self.close_prev_dialog()
+                return
             else:
                 comic_book_carousel.load_previous()
                 return
                 ######
-        
 
-
-
-    
     def build_option_pop(self):
         def call_back_dismiss(instance):
             self.option_isopen = False
 
         bg_color = self.app.theme_cls.primary_color
         option_bar = OptionToolBar(comic_Id=self.comic_obj.Id)
-        self.option_pop = ModalView(pos_hint={'y': .917},
-                                    size_hint=(1, .1),
+        self.option_pop = ModalView(pos_hint={'top': 1},
+                                    size_hint=(1, None),
+                                    height = option_bar.height
 
                                     )
         self.option_pop.add_widget(option_bar)

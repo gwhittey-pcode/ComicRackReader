@@ -206,19 +206,20 @@ class ComicRackReader(App):
             'sync_folder': 'sync_folder',
             'password': 'password',
             'username': 'username',
-            'store_dir': 'store_dir',
+            'storagedir': 'store_dir',
             'max_books_page': 'max_books_page',
+            'sync_folder': 'sync_folder'
         }
         item_list = list(config_items.keys())
         if key in item_list:
             item = config_items[key]
             setattr(self, item, value)
-            print(item)
         self.api_url = self.base_url + "/API"
         self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
 
     def build(self):
         self.set_value_from_config()
+        start_db()
         self.load_all_kv_files(os.path.join(
             self.directory, 'libs', 'uix', 'kv'))
         self.screen = StartScreen()  # program main screen
@@ -236,7 +237,7 @@ class ComicRackReader(App):
             ['settings', lambda x: self.open_settings()],
             ['fullscreen', lambda x: self.toggle_full_screen()]
         ]
-        start_db()
+
         self.config.add_callback(self.config_callback)
         return self.screen
 

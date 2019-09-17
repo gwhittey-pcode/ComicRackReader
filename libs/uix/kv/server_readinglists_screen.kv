@@ -105,7 +105,7 @@
 <SyncButtonIcon>
     on_release:
         if self.do_action is 'read': self.do_sync_rf()
-        else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
+        else: MDDropdownMenu(items=root.sync_menu_items, width_mult=3).open(self)
 
 <SyncOptionsPopup>
     center: (root.center_x,root.center_y)
@@ -114,6 +114,25 @@
         padding: dp(10), dp(10)
         spacing: dp(10)
         disabled:False
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:3
+            rows:1
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDLabel:
+                    id:syn_on_off_label
+                    font_style: 'Body1'
+                    theme_text_color: 'Error'
+                    text: ""
+                    halign: 'left'
+                    valign:'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    padding: dp(25), dp(10)
         GridLayout:
             #orientation: 'horizontal'
             cols:3
@@ -151,7 +170,7 @@
                     id:cb_limit
                     size_hint: None, None
                     size: dp(48), dp(48)
-                    state:root.cb_limit_state
+                    active:root.cb_limit_active
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
@@ -193,7 +212,7 @@
                     id:cb_optimize_size
                     size_hint: None, None
                     size: dp(48), dp(48)
-                    state:root.cb_optimize_size_state
+                    active:root.cb_optimize_size_active
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
@@ -223,7 +242,7 @@
                     valign:'top'
                     size_hint_y: None
                     height: self.texture_size[1]
-                    state:root.cb_only_read_state
+                    active:root.cb_only_read_active
             BoxLayout:
                 padding: dp(10)
                 size_hint_x:.15
@@ -231,7 +250,7 @@
                     id:cb_keep_last_read
                     size_hint: None, None
                     size: dp(48), dp(48)
-                    state:root.cb_keep_last_read_state
+                    active:root.cb_keep_last_read_active
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
