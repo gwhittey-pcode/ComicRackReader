@@ -2,6 +2,7 @@ import json
 from kivy.app import App
 from kivy.logger import Logger
 from kivy.network.urlrequest import UrlRequest
+from kivy.event import EventDispatcher
 import inspect
 
 
@@ -13,10 +14,9 @@ class ComicDataType:
     ReadingLists = 'readinglists'
 
 
-class ComicServerConn():
+class ComicServerConn(EventDispatcher):
     def __init__(self, **kwargs):
         self.app = App.get_running_app()
-        self.base_url = self.app.base_url
 
     def get_page_size_data(self, req_url, callback):
         username = self.app.config.get('General', 'username')
@@ -83,7 +83,6 @@ class ComicServerConn():
                          )
 
     def get_api_key(self, req_url, username, password, callback):
-
         head = {'Content-type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'}
         strbody = f'username={username}&password={password}&rememberMe=True'

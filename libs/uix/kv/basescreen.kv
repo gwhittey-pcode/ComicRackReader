@@ -14,7 +14,10 @@
 
 <BaseScreen>:
     name: 'base'
-
+    password: app.password
+    username: app.username
+    base_url: app.base_url
+    api_key: app.api_key
     ScrollView:
         size_hint_x: None
         width: box.width
@@ -39,7 +42,7 @@
                 MDFillRoundFlatIconButton:
                     icon: 'server'
                     text: 'Open ComicRackAPIServer \nReadingLists'
-                    height:dp(50)
+                    height: dp(50)
                     opposite_colors: True
                     elevation_normal: 8
                     on_press: app.switch_server_lists_screen()
@@ -197,7 +200,7 @@
             text: "Login to ComicRack Server"
             bold: True
             size_hint_x: .9
-        FlatButton:
+        FlatButton:#TODO:Change to MDFlatIconButton
             text: "x"
             size_hint_x: .1
             on_release: app.root.ids.base.close_popup()
@@ -223,6 +226,7 @@
                 hint_text: "Username"
                 multiline: False
                 focus: True
+                text:app.username
                 on_text_validate: pwd_field.focus = True
             TextInput:
                 id: pwd_field
@@ -230,11 +234,13 @@
                 multiline: False
                 password: True
                 on_text_validate: url_field.focus = True
+                text:app.password
             TextInput:
                 id: url_field
                 hint_text: "ComicRack Server URL"
                 multiline: False
                 on_text_validate: app.root.ids.base.validate_user()
+                text:app.base_url
         Label:
             id: sp
             size_hint_y: None

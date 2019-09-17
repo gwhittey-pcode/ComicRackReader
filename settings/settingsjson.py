@@ -323,14 +323,7 @@ settings_json_hotkeys = json.dumps(
             'key':      'hk_toggle_navbar',
 
         },
-        {
-            'type':     'hotkeys',
-            'title':    'Goto Current Open Comics Screen',
-            'desc':     'This will set the Hotkeys to Current Open Comics Screen',
-            'section':  'Hotkeys',
-            'key':      'hk_open_comicscreen',
 
-        },
         {
             'type':     'hotkeys',
             'title':    'Toggle Full Screen',

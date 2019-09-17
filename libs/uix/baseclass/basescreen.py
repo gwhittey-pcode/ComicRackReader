@@ -67,30 +67,39 @@ class LoginPopup(Popup):
 
 
 class BaseScreen(Screen):
+    username = StringProperty()
+    password = StringProperty()
+    api_key = StringProperty()
+    base_url = StringProperty()
+
     def __init__(self, **kwargs):
         super(BaseScreen, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.fetch_data = None
         self.Data = ''
-        self.api_key = ''
+
         self.fetch_data = ComicServerConn()
         self.myLoginPop = LoginPopupContent()
         self.popup = LoginPopup(content=self.myLoginPop,
                                 size_hint=(None, None), size=(500, 400))
-        self.username = self.app.config.get('General', 'username')
-        self.password = self.app.config.get('General', 'password')
-        self.api_key = self.app.config.get('General', 'api_key')
-        self.myLoginPop.ids.username_field.text = self.username
-        self.myLoginPop.ids.pwd_field.text = self.password
-        self.myLoginPop.ids.url_field.text = self.app.config.get(
-            'General', 'url')
+        # self.update_settings()
+        # self.bind(username=self.update_settings)
+        # self.bind_settings()
+        self.password = self.app.password
+        self.api_key = self.app.api_key
+        self.username = self.app.username
+        self.base_url = self.app.base_url
 
-    def on_pre_enter(self, *args):
+    def update_settings(self, *args):
+        print(f'This is running : {self.username}')
+        #self.username = self.app.username
+
+    def on_enter(self, *args):
         self.check_login()
 
     def check_login(self):
         # see if user has a api key stored from server
-
+        print(f'username:{self.username}')
         if self.api_key == '':
 
             self.myLoginPop.ids.info.text = '[color=#FF0000]No API key stored login to get one[/color]'
@@ -116,6 +125,7 @@ class BaseScreen(Screen):
             self.app.config.write()
             self.api_key = api_key
             self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
+            self.popup.dismiss()
             tmp_readinglist_name = self.app.config.get(
                 'Saved', 'last_server_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
@@ -129,12 +139,14 @@ class BaseScreen(Screen):
         user = self.myLoginPop.ids.username_field.text
         pwd = self.myLoginPop.ids.pwd_field.text
         url = self.myLoginPop.ids.url_field.text
-        self.app.get_running_app().config.set('General', 'username', user)
-        self.app.get_running_app().config.set('General', 'password', pwd)
-        self.app.get_running_app().config.set('General', 'url', url)
-        self.app.get_running_app().config.write()
+        self.app.config.set('General', 'username', user)
+        self.app.config.set('General', 'password', pwd)
+        self.app.config.set('General', 'url', url)
+        self.app.config.write()
+
         self.app.base_url = url.strip()
-        req_url = f"{self.app.base_url}/auth"
+        self.base_url = self.app.base_url
+        req_url = f"{self.app.base_url}auth"
         self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req,
                                     results: got_api(results))
 

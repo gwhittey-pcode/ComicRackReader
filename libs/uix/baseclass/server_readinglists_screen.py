@@ -354,8 +354,9 @@ class ServerReadingListsScreen(Screen):
             self.prev_button.disabled = True
             self.prev_button.page_num = ''
         self.build_page(page.object_list)
+        
         self.ids.main_scroll.scroll_to(
-            self.ids.main_grid.children[-1], padding=10, animate=True)
+            self.ids.main_grid.children[0], padding=10, animate=True)
 
     def build_page(self, object_lsit):
         grid = self.m_grid
@@ -388,7 +389,7 @@ class ServerReadingListsScreen(Screen):
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
             self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
-    
+        
     def got_db_data(self):
         """
         used if rl data is already stored in db.

@@ -52,21 +52,25 @@ class TreeViewItem(OneLineIconListItem, TreeViewNode):
 
 
 class ServerListsScreen(Screen):
+    base_url = StringProperty()
+    api_url = StringProperty()
+
     def __init__(self, **kwargs):
+        super(ServerListsScreen, self).__init__(**kwargs)
+        self.lists_loaded = BooleanProperty()
+        self.lists_loaded = False
         self.app = App.get_running_app()
         self.fetch_data = None
         self.Data = ''
         self.fetch_data = ComicServerConn()
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
-        super(ServerListsScreen, self).__init__(**kwargs)
-        self.lists_loaded = BooleanProperty()
-        self.lists_loaded = False
 
     def on_pre_enter(self):
         self.app.show_action_bar()
 
     def on_enter(self, *args):
+        print(self.app.api_url)
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
         if self.lists_loaded is False:

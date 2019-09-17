@@ -1,6 +1,8 @@
 #:kivy 1.11.0
 <ServerListsScreen>:
     name: 'server_lists_screen'
+    base_url: app.base_url
+    api_url: app.api_url
     ScrollView:
         do_scroll_x: False
         do_scroll_y: True
@@ -22,6 +24,8 @@
         theme_text_color:'Custom'
         text_color: app.theme_cls.primary_color
         font_style:'H3'
+    #IconRightSampleWidget2:
+        #id: chkbox
         
 
 <TreeViewItem>
@@ -31,3 +35,5 @@
         icon: root.icon
         theme_text_color:'Custom'
         text_color: app.theme_cls.primary_color
+    #IconRightSampleWidget2:
+        #id: chkbox
