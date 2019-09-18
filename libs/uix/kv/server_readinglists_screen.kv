@@ -17,6 +17,7 @@
 <ServerReadingListsScreen>:
     name: 'server_readinglists_screen'
     max_books_page: app.max_books_page
+    sync_bool:self.so
     StackLayout:
         id:main_stack
         orientation: 'lr-tb'
@@ -51,10 +52,25 @@
             width: dp(1)
             text: ''
             disabled:False
+
+        SyncButtonIcon:
+            #font_style: 'Icon'
+            id:syn_options
+            icon_name: 'settings-transfer'
+            size_hint: None,None
+            size:dp(50),dp(50)
+            padding: dp(10), dp(10)
+            center_x:main_stack.right - (self.width)
+            center_y:root.top - (self.height/2)
+            text: md_icons.get(self.icon_name)
+            theme_text_color: 'Custom'
+            text_color: app.theme_cls.primary_color
+            font_size: dp(35)
+            on_release:self.do_options()
         SyncButtonIcon:
             #font_style: 'Icon'
             id:sync_button
-            icon_name: 'sync'
+            icon_name: 'sync' if root.sync_bool else 'sync-off'
             size_hint: None,None
             size:dp(50),dp(50)
             padding: dp(10), dp(10)
@@ -64,7 +80,22 @@
             theme_text_color: 'Custom'
             text_color: app.theme_cls.primary_color
             font_size: dp(35)
-        
+            on_release:self.do_sync_rf()
+        SyncButtonIcon:
+            #font_style: 'Icon'
+            id:sync_db
+            icon_name: 'database-refresh'
+            size_hint: None,None
+            size:dp(50),dp(50)
+            padding: dp(10), dp(10)
+            center_x:main_stack.right - (self.width)
+            center_y:root.top - (self.height/2)
+            text: md_icons.get(self.icon_name) 
+            theme_text_color: 'Custom'
+            text_color: app.theme_cls.primary_color
+            font_size: dp(35)
+            on_release:self.do_data_refresh()
+            
         MDFlatButton:
             id:spacer
             width: dp(10)
@@ -103,11 +134,12 @@
         else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
     
 <SyncButtonIcon>
-    on_release:
-        if self.do_action is 'read': self.do_sync_rf()
-        else: MDDropdownMenu(items=root.sync_menu_items, width_mult=3).open(self)
+    # on_release:
+    #     if self.do_action is 'read': self.do_sync_rf()
+    #     else: MDDropdownMenu(items=root.sync_menu_items, width_mult=3).open(self)
 
 <SyncOptionsPopup>
+    this_sync_bool:self.sw_syn_this_active
     center: (root.center_x,root.center_y)
 	BoxLayout:
         orientation: 'vertical'

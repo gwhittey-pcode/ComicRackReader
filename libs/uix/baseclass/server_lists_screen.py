@@ -8,6 +8,7 @@ from kivymd.uix.selectioncontrol import MDCheckbox
 from kivy.uix.image import Image
 from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
+from kivymd.uix.dialog import MDDialog
 from kivy.logger import Logger
 from kivy.clock import Clock
 from libs.utils.db_functions import ReadingList
@@ -18,6 +19,7 @@ from kivymd.uix.list import (
     OneLineIconListItem,
     OneLineAvatarIconListItem,
 )
+from kivymd.toast.kivytoast import toast
 
 
 class MyTv(TreeView):
@@ -25,7 +27,6 @@ class MyTv(TreeView):
         super(MyTv, self).__init__(**kwargs)
 
     def on_node_expand(self, node):
-        print('node exbanded')
         node.icon = 'folder-open'
 
 
@@ -70,7 +71,6 @@ class ServerListsScreen(Screen):
         self.app.show_action_bar()
 
     def on_enter(self, *args):
-        print(self.app.api_url)
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
         if self.lists_loaded is False:
@@ -94,6 +94,9 @@ class ServerListsScreen(Screen):
     def do_expand(self, instance, node):
         self.my_tree.toggle_node(instance)
 
+    def callback_for_menu_items(self, *args):
+        toast(args[0])
+
     def open_readinglist(self, instance, node):
         self.app.manager.current = 'server_readinglists_screen'
         server_readinglists_screen = self.app.manager.get_screen(
@@ -109,7 +112,7 @@ class ServerListsScreen(Screen):
             set_mode = 'From DataBase'
         else:
             Logger.info(
-                f'{readinglist_name} not in Database getting infor from server')
+                f'{readinglist_name} not in Database getting info from server')
             set_mode = 'From Server'
         # set_mode = 'From Server'
         server_readinglists_screen.collect_readinglist_data(

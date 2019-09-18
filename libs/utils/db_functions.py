@@ -1,12 +1,12 @@
 from peewee import SqliteDatabase, OperationalError, CharField, \
     IntegerField, ForeignKeyField, TextField, Model, ManyToManyField, BooleanField, \
-    DeferredThroughModel, DatabaseProxy
+    DeferredThroughModel, DatabaseProxy, BlobField
 
 from kivy.logger import Logger
 from kivy.app import App
 import os
 database_proxy = DatabaseProxy()
-
+from playhouse.fields import PickleField
 
 def start_db():
 
@@ -43,6 +43,7 @@ class Comic(BaseModel):
     FilePath = CharField(null=True)
     Volume = CharField(null=True)
     comic_file = CharField(null=True)
+    data = PickleField(null=True)
     #comic_index = IntegerField(null=True)
     local_file = CharField(null=True)
 
@@ -59,6 +60,7 @@ ComicIndexDeferred = DeferredThroughModel()
 class ReadingList(BaseModel):
     name = CharField()
     slug = CharField(primary_key=True)
+    data = PickleField(null=True)
     comics = ManyToManyField(
         Comic, backref='readinglists', through_model=ComicIndexDeferred)
     cb_limit_active = BooleanField(null=True)
@@ -67,6 +69,8 @@ class ReadingList(BaseModel):
     cb_keep_last_read_active = BooleanField(null=True)
     cb_optimize_size_active = BooleanField(null=True)
     sw_syn_this_active = BooleanField(null=True)
+    last_sync_num = IntegerField(null=True)
+    totalCount = IntegerField()
 
 
 class ComicIndex(BaseModel):

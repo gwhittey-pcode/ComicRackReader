@@ -13,7 +13,10 @@ from libs.utils.comic_server_conn import ComicServerConn
 from kivy.logger import Logger
 import peewee
 import ntpath
+import json
 from kivy.metrics import dp
+import pickle
+
 CHECKBOX_STATE_BOOL = {
     'normal': False, 'down': True
 }
@@ -25,6 +28,9 @@ READINGLIST_DB_KEYS = [
     'cb_keep_last_read_active',
     'cb_optimize_size_active',
     'sw_syn_this_active',
+    'last_sync_num',
+    'totalCount',
+    'data'
 ]
 
 READINGLIST_SETTINGS_KEYS = [
@@ -34,11 +40,16 @@ READINGLIST_SETTINGS_KEYS = [
     'cb_keep_last_read_active',
     'cb_optimize_size_active',
     'sw_syn_this_active',
+    'data',
+    'last_sync_num',
+    'totalCount'
+
+
 ]
 COMIC_DB_KEYS = [
     'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-    'Summary',  'FilePath', 'local_file'
+    'Summary',  'FilePath', 'local_file', 'data'
 ]
 
 
@@ -63,13 +74,16 @@ class ComicBook(EventDispatcher):
     Volume = NumericProperty()
     readlist_obj = ObjectProperty()
     local_file = StringProperty('None')
+    is_sync = BooleanProperty()
+    data = DictProperty()
 
     def __init__(self, data=None, readlist_obj=None, comic_Id='',
                  comic_index=0, mode='Server', * args, **kwargs):
         self.readlist_obj = readlist_obj
-        if mode == 'Server':
+        if mode in ('Server', 'FileOpen'):
             if comic_Id == '':
                 comic_data = data
+                self.data = comic_data
                 self.Id = comic_data['Id']
                 self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
                 self.slug = str(comic_data['Id'])
@@ -90,8 +104,9 @@ class ComicBook(EventDispatcher):
                 self.readlist_obj = readlist_obj
                 self.comic_index = comic_index
                 self.local_file = ''
-                Clock.schedule_once(
-                    lambda dt: self.get_or_create_db_item(), 0.15)
+                if mode != 'FileOpen':
+                    Clock.schedule_once(
+                        lambda dt: self.get_or_create_db_item(), 0.15)
         if mode == 'db_data':
             self.Id = comic_Id
         if mode != 'FileOpen':
@@ -104,6 +119,9 @@ class ComicBook(EventDispatcher):
         for key in COMIC_DB_KEYS:
             if key == 'comic_index':
                 pass
+            elif key is 'data':
+                new_dict = {k: self.data[k] for k in self.data.keys()}
+                tmp_defaults['data'] = new_dict
             else:
                 tmp_defaults[key] = getattr(self, key)
 
@@ -127,11 +145,20 @@ class ComicBook(EventDispatcher):
             self.name = self.__str__
             self.date = f"{db_item.Month}/{db_item.Year}"
             self.slug = str(self.Id)
+            self.set_is_sync
+
             self.comic_index = db_item.comic_index.select(
                 ReadingList.slug == self.readlist_obj.slug)
 
     def callback(self, store, key, result):
         pass
+
+    def set_is_sync(self):
+        db_item = ComicIndex.get(
+            ComicIndex.comic == self.Id, ComicIndex.readinglist == self.readlist_obj.slug)
+        if db_item:
+            if db_item.is_sync:
+                setattr(self, 'is_sync', db_item.is_sync)
 
 
 class ComicReadingList(EventDispatcher):
@@ -153,39 +180,61 @@ class ComicReadingList(EventDispatcher):
     comic_db_in = BooleanProperty(False)
     db = ObjectProperty()
     comics_loaded = ObjectProperty(False)
+    last_comic_read = NumericProperty()
+    last_sync_num = NumericProperty()
+    totalCount = NumericProperty()
+    pickled_data = ObjectProperty()
 
     def __init__(self, name='', data=None, slug='', mode='Server'):
         self.slug = slug
         self.name = name
         if data != 'db_data':
-            self.data = data
-            self.comic_json = self.data["items"][::-1]
+
+            self.pickled_data = pickle.dumps(data, -1)
+            self.data = pickle.loads(self.pickled_data)
+            self.comic_json = self.data["items"]
+            self.totalCount = self.data["totalCount"]
         if mode != 'FileOpen':
             pass
             self.get_or_create_db_item()
+
+    def add_comic(self, comic, index=0):
+        '''
+            Add Single comic book to this colection
+        '''
+        self.comics.insert(0, comic)
 
     def get_or_create_db_item(self):
         tmp_defaults = {}
         try:
             for key in READINGLIST_DB_KEYS:
-                tmp_defaults[key] = getattr(self, key)
+                if key is 'data':
+                    new_dict = {k: self.data[k] for k in self.data.keys()}
+                    tmp_defaults['data'] = new_dict
+                else:
+                    tmp_defaults[key] = getattr(self, key)
             db_item, created = ReadingList.get_or_create(
                 slug=self.slug, defaults=tmp_defaults)
             self.db = db_item
-            for key in READINGLIST_SETTINGS_KEYS:
-                setattr(self, key, getattr(db_item, key))
-            if created is True:
-                if len(db_item.comics) == len(self.comic_json) and len(self.comic_json) != 0:
+            if db_item:
+                for key in READINGLIST_SETTINGS_KEYS:
+                    setattr(self, key, getattr(db_item, key))
+                if created is True:
+                    if len(db_item.comics) == len(self.comic_json) and len(self.comic_json) != 0:
+                        self.comic_db_in = True
+                        self.comics = self.db.comics.order_by(
+                            -Comic.comic_index.index)
+                else:
                     self.comic_db_in = True
-                    self.comics = self.db.comics.order_by(
-                        Comic.comic_index.index)
-            else:
-                self.comic_db_in = True
-                for comic in self.db.comics:
-                    new_comic = ComicBook(
-                        comic_Id=comic.Id, readlist_obj=self, mode='db_data',)
-                    self.comics.insert(0, new_comic)
-                self.comics_loaded = True
+                    comicindex_db = ComicIndex.get(
+                        ComicIndex.readinglist == self.slug)
+                    list_comics = self.db.comics.order_by(
+                        comicindex_db.index)
+                    for comic in list_comics:
+                        new_comic = ComicBook(
+                            comic_Id=comic.Id, readlist_obj=self, mode='db_data',)
+                        self.comics.append(new_comic)
+                    self.comics_loaded = True
         except peewee.OperationalError:
             Logger.critical(
                 'Somthing happened in get_or_create of readinglist')
@@ -200,63 +249,67 @@ class ComicReadingList(EventDispatcher):
         except peewee.OperationalError:
             pass
 
-    def add_comic(self, comic, index=0):
-        '''
-            Add Single comic book to this colection
-        '''
-        self.comics.insert(0, comic)
+    def do_db_refresh(self):
+        the_keys = [
+            'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
+            'UserCurrentPage', 'UserLastPageRead', 'PageCount',
+            'Summary',  'FilePath']
+        self.fetch_data = ComicServerConn()
+        app = App.get_running_app()
+        api_url = app.api_url
+        server_url = f'{api_url}/Lists/{self.slug}/Comics/'
 
-    def remove_comic(self, comic):
-        '''
-            Remove a comic from the comics of this collection.
-        '''
+        self.fetch_data.get_server_data_callback(
+            server_url, callback=lambda req,
+            results: got_readlist_data(results))
 
-        if comic not in self.comics:
-            return
-        self.comics.remove(comic)
-        comic.collection = None
+        def got_readlist_data(results):
 
-    def clear_comics(self, comics=None):
-        '''
-            Remove all Comics added to this Collection.
-        '''
-
-        if not comics:
-            comics = self.comics
-        remove_comic = self.remove_comic
-        for comic in comics[:]:
-            remove_comic(comic)
-
-    def get_comic_by_number(self, comic_number):
-        '''
-            Will return the comic that matches id number x this number is
-            ATM django-db server id number.
-        '''
-        for comic in self.comics:
-            if comic.Id == comic_number:
-                return comic
+            new_dict = {k: self.data[k] for k in self.data.keys()}
+            shared_items = {
+                k: new_dict[k] for k in new_dict if k in results and new_dict[k] == results[k]}
+            for server_comic in results['items']:
+                y = server_comic
+                for db_comic in self.comics:
+                    if db_comic.Id == server_comic['Id']:
+                        for key in the_keys:
+                            if getattr(db_comic, key) != server_comic[key]:
+                                Logger.info(
+                                    f'Updating DB Record for {key} of {db_comic.__str__}')
+                                toast(
+                                    f'Updating DB Record for {key} of {db_comic.__str__}')
+                                db_item = Comic.get(Comic.Id == db_comic.Id)
+                                if db_item:
+                                    setattr(db_item, key, server_comic[key])
+                                    db_item.save()
+                                    setattr(self, key, getattr(db_item, key))
+            toast(f'Data refresh complete')
 
     def do_sync(self):
-        print('do_sync')
+
         self.num_file_done = 0
+        self.sync_range = 0
         self.fetch_data = ComicServerConn()
+        self.last_comic_read = 0
+        self.last_comic_read = self.get_last_comic_read()
         if self.cb_limit_active:
-            self.sync_range = int(
-                self.get_last_comic_read()) + int(self.limit_num)
+            self.sync_range = int(self.last_comic_read) + int(self.limit_num)
         else:
             self.sync_range = len(self.comics)
         db_item = ReadingList.get(ReadingList.slug == self.slug)
-        print(db_item.name)
+
         for key in READINGLIST_SETTINGS_KEYS:
             v = getattr(db_item, key)
             globals()['%s' % key] = v
         self.sync_readinglist()
 
     def get_last_comic_read(self):
+
         last_read_comic = 0
         for comic in self.comics:
-            if comic.UserLastPageRead == comic.PageCount-1:
+            if comic.UserLastPageRead == comic.PageCount-1 and comic.PageCount > 1:
                 last_read_comic = self.comics.index(comic)
+                print(comic.Id)
         return last_read_comic
 
     def download_file(self, comic):
@@ -294,7 +347,7 @@ class ComicReadingList(EventDispatcher):
         app = App.get_running_app()
         id_folder = os.path.join(app.sync_folder, self.slug)
         self.my_comic_dir = Path(os.path.join(id_folder, 'comics'))
-        self.my_thumb_dir = Path(os.path.join(self.my_comic_dir, 'thumb'))
+        self.my_thumb_dir = Path(os.path.join(id_folder, 'thumb'))
         if not self.my_comic_dir.is_dir():
             os.makedirs(self.my_comic_dir)
         if not self.my_thumb_dir.is_dir():
@@ -313,8 +366,8 @@ class ComicReadingList(EventDispatcher):
             toast('Reading List has been Synceddd')
 
         list_comics = self.comics
-        last_comic_read = int(self.get_last_comic_read())
-        sync_num_comics = list_comics[last_comic_read: self.sync_range]
+
+        sync_num_comics = list_comics[self.last_comic_read: self.sync_range]
         num_comic = len(sync_num_comics)
         if self.num_file_done == num_comic:
             Clock.schedule_once(_finish_toast, 3)
@@ -322,8 +375,8 @@ class ComicReadingList(EventDispatcher):
 
     def sync_readinglist(self):
         list_comics = self.comics
-        last_comic_read = int(self.get_last_comic_read())
-        sync_num_comics = list_comics[last_comic_read: self.sync_range]
+
+        sync_num_comics = list_comics[self.last_comic_read: self.sync_range]
         app = App.get_running_app()
         app.delayed_work(
             self.download_file, sync_num_comics, delay=.5)

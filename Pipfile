@@ -14,6 +14,7 @@ natsort = "*"
 pillow = "*"
 kivymd = {git = "https://github.com/HeaTTheatR/KivyMD.git"}
 
+
 [requires]
 python_version = "3.7"
 

@@ -50,6 +50,8 @@ from kivy.logger import Logger
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 from kivymd.uix.filemanager import MDFileManager
 from PIL import Image
+from libs.utils.db_functions import ReadingList
+from kivymd.uix.dialog import MDDialog
 import inspect
 
 
@@ -99,7 +101,6 @@ class BaseScreen(Screen):
 
     def check_login(self):
         # see if user has a api key stored from server
-        print(f'username:{self.username}')
         if self.api_key == '':
 
             self.myLoginPop.ids.info.text = '[color=#FF0000]No API key stored login to get one[/color]'
@@ -173,63 +174,65 @@ class BaseScreen(Screen):
             if tmp_last_server_comic_id == '':
                 return
             else:
-                self.new_readinglist = ComicReadingList(
-                    name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
-                for item in self.new_readinglist.comic_json:
-                    comic_index = self.new_readinglist.comic_json.index(item)
-                    new_comic = ComicBook(
-                        item, readlist_obj=self.new_readinglist, comic_index=comic_index)
-                    self.new_readinglist.add_comic(new_comic)
-                # self.new_readinglist.comics_write()
-                max_books_page = int(self.app.config.get(
-                    'General', 'max_books_page'))
-                orphans = max_books_page - 1
-                new_readinglist_reversed = self.new_readinglist.comics
-                paginator_obj = Paginator(
-                    new_readinglist_reversed, max_books_page)
-                for x in range(1, paginator_obj.num_pages()):
-                    this_page = paginator_obj.page(x)
-                    for comic in this_page.object_list:
-                        if tmp_last_server_comic_id == comic.Id:
-                            tmp_last_pag_pagnum = this_page.number
-                server_readinglists_screen = self.app.manager.get_screen(
-                    'server_readinglists_screen')
-                server_readinglists_screen.list_loaded = False
-                server_readinglists_screen.setup_screen()
-                # Clock.schedule_once(
-                #     lambda dt: server_readinglists_screen.setup_screen(), 0.15)
-                page = paginator_obj.page(tmp_last_pag_pagnum)
-                server_readinglists_screen.page_number = tmp_last_pag_pagnum
-                # Clock.schedule_once(lambda dt: server_readinglists_screen.collect_readinglist_data
-                #                     (readinglist_name, readinglist_Id))
-                server_readinglists_screen.collect_readinglist_data(
-                    readinglist_name, readinglist_Id)
-                grid = self.ids["main_grid"]
-                grid.cols = 1
-                grid.clear_widgets()
-                for comic in self.new_readinglist.comics:
-                    if comic.slug == tmp_last_server_comic_id:
-                        c = CustomeST()
-                        c.comic_obj = comic
-                        c.readinglist_obj = self.new_readinglist
-                        c.paginator_obj = paginator_obj
-                        x = self.app.comic_thumb_width
-                        y = self.app.comic_thumb_height
-                        thumb_size = f'height={y}&width={x}'
-                        part_url = f'/Comics/{comic.Id}/Pages/0?'
-                        part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-                        c_image_source = f"{self.app.api_url}{part_url}{part_api}"
-                        c.source = source = c_image_source
-                        c.PageCount = comic.PageCount
-                        c.pag_pagenum = tmp_last_pag_pagnum
+                query = ReadingList.select().where(ReadingList.slug == readinglist_Id)
+                if query.exists():
+                    Logger.info(f'{readinglist_name} already in Database')
+                    set_mode = 'From DataBase'
+                    self.new_readinglist = ComicReadingList(
+                        name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
 
-                        strtxt = f"{comic.Series} #{comic.Number}"
-                        tmp_color = get_hex_from_color((1, 1, 1, 1))
-                        c.text = f'[color={tmp_color}]{strtxt}[/color]'
-#                        c.text_color = self.app.theme_cls.secondary_color
-                        grid.add_widget(c)
-                        tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
-                        self.ids.last_comic_label.text = tmp_txt
+                    # self.new_readinglist.comics_write()
+                    max_books_page = int(self.app.config.get(
+                        'General', 'max_books_page'))
+                    orphans = max_books_page - 1
+                    new_readinglist_reversed = self.new_readinglist.comics
+                    paginator_obj = Paginator(
+                        new_readinglist_reversed, max_books_page)
+                    for x in range(1, paginator_obj.num_pages()):
+                        this_page = paginator_obj.page(x)
+                        for comic in this_page.object_list:
+                            if tmp_last_server_comic_id == comic.Id:
+                                tmp_last_pag_pagnum = this_page.number
+                    server_readinglists_screen = self.app.manager.get_screen(
+                        'server_readinglists_screen')
+                    server_readinglists_screen.list_loaded = False
+                    server_readinglists_screen.setup_screen()
+                    page = paginator_obj.page(tmp_last_pag_pagnum)
+                    server_readinglists_screen.page_number = tmp_last_pag_pagnum
+                    server_readinglists_screen.collect_readinglist_data(
+                        readinglist_name, readinglist_Id, mode=set_mode)
+                    grid = self.ids["main_grid"]
+                    grid.cols = 1
+                    grid.clear_widgets()
+                    for comic in self.new_readinglist.comics:
+                        if comic.slug == tmp_last_server_comic_id:
+                            c = CustomeST()
+                            c.comic_obj = comic
+                            c.readinglist_obj = self.new_readinglist
+                            c.paginator_obj = paginator_obj
+                            x = self.app.comic_thumb_width
+                            y = self.app.comic_thumb_height
+                            thumb_size = f'height={y}&width={x}'
+                            part_url = f'/Comics/{comic.Id}/Pages/0?'
+                            part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+                            c_image_source = f"{self.app.api_url}{part_url}{part_api}"
+                            c.source = source = c_image_source
+                            c.PageCount = comic.PageCount
+                            c.pag_pagenum = tmp_last_pag_pagnum
+
+                            strtxt = f"{comic.Series} #{comic.Number}"
+                            tmp_color = get_hex_from_color((1, 1, 1, 1))
+                            c.text = f'[color={tmp_color}]{strtxt}[/color]'
+    #                        c.text_color = self.app.theme_cls.secondary_color
+                            grid.add_widget(c)
+                            tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
+                            self.ids.last_comic_label.text = tmp_txt
+                else:
+                    Logger.info(
+                        f'{readinglist_name} not in Database This could be a problems')
+
+                    set_mode = 'From Server'
+                # set_mode = 'From Server'
 
     def update_leaf(self):
         Window.fullscreen = 'auto'
@@ -252,3 +255,6 @@ class BaseScreen(Screen):
 
     def got_redirect(self, req, results):
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
+
+    def callback_for_menu_items(self, *args):
+        pass

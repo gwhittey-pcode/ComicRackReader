@@ -102,7 +102,6 @@ class SyncOptions(Screen):
 
     def open_readinglist(self, instance, node):
         item_ckbox = instance.ids.chkbox.state
-        print(item_ckbox)
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()

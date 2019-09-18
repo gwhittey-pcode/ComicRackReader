@@ -190,13 +190,13 @@ class ComicRackReader(App):
         self.api_key = self.config.get('General', 'api_key')
         self.api_url = self.base_url + "/API"
         self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
-        if os.path.exists(self.my_data_dir):
-            if not os.path.isdir(self.my_data_dir):
-                os.makedirs(self.my_data_dir)
-            comic_db_json = os.path.join(self.my_data_dir, 'comics_db.json')
-            self.comic_db = JsonStore(comic_db_json)
+
+        if not os.path.isdir(self.my_data_dir):
+            os.makedirs(self.my_data_dir)
         self.username = self.config.get('General', 'username')
         self.password = self.config.get('General', 'password')
+        self.max_books_page = int(self.config.get(
+            'General', 'max_books_page'))
 
     def config_callback(self, section, key, value):
         config_items = {
@@ -501,7 +501,7 @@ class ComicRackReader(App):
                 comic_data = convert_comicapi_to_json(path)
                 data["items"].append(comic_data)
                 new_rl = ComicReadingList(
-                    name='FileLoad', data=data, slug='SingFileOpen')
+                    name='FileLoad', data=data, slug='FileOpen')
                 new_comic = ComicBook(data['items'][0], mode='FileOpen')
                 new_rl.add_comic(new_comic)
             else:
