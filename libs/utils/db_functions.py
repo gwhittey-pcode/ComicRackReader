@@ -42,11 +42,11 @@ class Comic(BaseModel):
     Summary = TextField(null=True)
     FilePath = CharField(null=True)
     Volume = CharField(null=True)
-    comic_file = CharField(null=True)
     data = PickleField(null=True)
     #comic_index = IntegerField(null=True)
     local_file = CharField(null=True)
-
+    local_UserLastPageRead = IntegerField(null=True)
+    local_UserCurrentPage = IntegerField(null=True)
 
 ComicIndexDeferred = DeferredThroughModel()
 #     cb_limit_active = CharField()
