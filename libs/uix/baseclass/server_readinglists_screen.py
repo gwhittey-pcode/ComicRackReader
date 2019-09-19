@@ -24,11 +24,10 @@ from kivymd.uix.list import (
     OneLineIconListItem,
     OneLineAvatarIconListItem,
 )
-
+from kivy.uix.label import Label
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import MDTextFieldRound, FixedHintTextInput
-from libs.utils.comic_server_conn import ComicServerConn
-from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
+
 #from libs.utils.server_sync import  SyncReadingListObject
 
 from kivymd.uix.button import MDRaisedButton
@@ -46,6 +45,8 @@ from functools import partial
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
 from libs.utils.comicapi.comicarchive import ComicArchive
+from libs.utils.comic_server_conn import ComicServerConn
+from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from kivy.graphics import BorderImage
 from kivy.uix.button import ButtonBehavior
 from kivy.uix.popup import Popup
@@ -156,15 +157,24 @@ class CustomMDFillRoundFlatIconButton(MDIconButton):
         super(CustomMDFillRoundFlatIconButton, self).__init__(**kwargs)
 
 
+class Tooltip(Label):
+    pass
+
+
 class SyncButtonIcon(ButtonBehavior, MDIcon):
     icon_name = StringProperty()
 
     my_clock = ObjectProperty()
     do_action = StringProperty()
+    tooltip_text = StringProperty()
+    tooltip = Tooltip(text='No Tooltip')
 
     def __init__(self, **kwargs):
+        Window.bind(mouse_pos=self.on_mouse_pos)
         super(SyncButtonIcon, self).__init__(**kwargs)
+        self.tooltip = Tooltip(text=self.tooltip_text)
         self.app = App.get_running_app()
+
     #     self.app = App.get_running_app()
     #     self.sync_menu_items = [{
     #         'viewclass': 'MDMenuItem', 'text': '[color=#000000]Sync Options[/color]',
@@ -196,6 +206,25 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
     #     Clock.unschedule(self.my_clock)
     #     self.do_action = 'menu'
     #     return super(SyncButtonIcon, self).on_press()
+
+    def on_mouse_pos(self, *args):
+        if not self.get_root_window():
+            return
+        pos = args[1]
+        self.tooltip.text = self.tooltip_text
+        self.tooltip.pos = pos
+        # cancel scheduled event since I moved the cursor
+        Clock.unschedule(self.display_tooltip)
+        self.close_tooltip()  # close if it's opened
+        if self.collide_point(*self.to_widget(*pos)):
+            Clock.schedule_once(self.display_tooltip, .5)
+
+    def close_tooltip(self, *args):
+        Window.remove_widget(self.tooltip)
+
+    def display_tooltip(self, *args):
+        print('display_tooltip')
+        Window.add_widget(self.tooltip)
 
     def do_sync_rf(self, *args):
         self.app.manager.get_screen(

@@ -57,6 +57,7 @@
             #font_style: 'Icon'
             id:syn_options
             icon_name: 'settings-transfer'
+            tooltip_text:'Sync Options'
             size_hint: None,None
             size:dp(50),dp(50)
             padding: dp(10), dp(10)
@@ -71,6 +72,7 @@
             #font_style: 'Icon'
             id:sync_button
             icon_name: 'sync' if root.sync_bool else 'sync-off'
+            tooltip_text:'Sync ReadingList'
             size_hint: None,None
             size:dp(50),dp(50)
             padding: dp(10), dp(10)
@@ -85,6 +87,7 @@
             #font_style: 'Icon'
             id:sync_db
             icon_name: 'database-refresh'
+            tooltip_text:'Refresh DB'
             size_hint: None,None
             size:dp(50),dp(50)
             padding: dp(10), dp(10)
@@ -319,3 +322,12 @@
                     text: 'Cancel'
                     on_release:root.on_cancel()
 
+<Tooltip>:
+    size_hint: None, None
+    size: self.texture_size[0]+5, self.texture_size[1]+5
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.2, 0.2
+        Rectangle:
+            size: self.size
+            pos: self.pos
