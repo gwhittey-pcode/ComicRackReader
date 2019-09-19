@@ -40,9 +40,7 @@ READINGLIST_SETTINGS_KEYS = [
     'cb_keep_last_read_active',
     'cb_optimize_size_active',
     'sw_syn_this_active',
-    'data',
-    'last_sync_num',
-    'totalCount'
+
 
 
 ]
@@ -217,7 +215,7 @@ class ComicReadingList(EventDispatcher):
                 slug=self.slug, defaults=tmp_defaults)
             self.db = db_item
             if db_item:
-                for key in READINGLIST_SETTINGS_KEYS:
+                for key in READINGLIST_DB_KEYS:
                     setattr(self, key, getattr(db_item, key))
                 if created is True:
                     if len(db_item.comics) == len(self.comic_json) and len(self.comic_json) != 0:

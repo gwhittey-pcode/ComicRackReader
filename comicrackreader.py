@@ -54,7 +54,7 @@ from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 
 
 class ComicRackReader(App):
-    title = 'ComicRackReader Home Screen'
+    title = 'ComicRackReader'
     icon = 'icon.png'
     nav_drawer = ObjectProperty()
     theme_cls = ThemeManager()
@@ -134,7 +134,7 @@ class ComicRackReader(App):
             'max_books_page':   25
         })
         config.setdefaults('Sync', {
-            'sync_folder': '.',
+            'sync_folder':  self.user_data_dir,
             'max_num_sync': 50
         })
         config.setdefaults('Display', {

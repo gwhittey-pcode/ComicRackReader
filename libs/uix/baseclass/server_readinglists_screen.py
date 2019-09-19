@@ -49,6 +49,7 @@ from libs.utils.comicapi.comicarchive import ComicArchive
 from kivy.graphics import BorderImage
 from kivy.uix.button import ButtonBehavior
 from kivy.uix.popup import Popup
+from kivy.logger import Logger
 import ntpath
 import re
 
@@ -85,6 +86,7 @@ class CustomeST(SmartTileWithLabel):
 
     def callback_for_menu_items(self, *args):
         def updated_progress(results, state):
+            Logger.info(results)
             tmp_txt = self.text
             if state == 'Unread':
                 self.img_color = (1, 1, 1, 1)
@@ -113,7 +115,7 @@ class CustomeST(SmartTileWithLabel):
 
         elif action == 'Mark as UnRead':
             server_con = ComicServerConn()
-            update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Progress'
+            update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Mark_Unread'
             server_con.update_progress(update_url, 0,
                                        callback=lambda req, results:
                                        updated_progress(results, 'Unread'))
