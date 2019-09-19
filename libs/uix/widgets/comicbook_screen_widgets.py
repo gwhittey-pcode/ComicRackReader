@@ -465,7 +465,7 @@ class ThumbPopPagebntlbl(MDRaisedButton):
 
     def __init__(self, **kwargs):
         super(ThumbPopPagebntlbl, self).__init__(**kwargs)
-        base_url = App.get_running_app().config.get('General', 'url')
+        base_url = App.get_running_app().config.get('General', 'base_url')
         opposite_colors = True
 
     def click(self, instance):
@@ -490,7 +490,7 @@ class ThumbPopPageSmallButton(Button):
 
 #     def __init__(self, **kwargs):
 #         super(ThumbPopPageImage, self).__init__(**kwargs)
-#         base_url = App.get_running_app().config.get('General', 'url')
+#         base_url = App.get_running_app().config.get('General', 'base_url'')
 
 #     def got_json(self, req, result):
 #         img = convert_to_image(result["page"])
@@ -517,7 +517,7 @@ class ComicBookPageThumb(ButtonBehavior, AsyncImage):
 
     def __init__(self, **kwargs):
         super(ComicBookPageThumb, self).__init__(**kwargs)
-        base_url = App.get_running_app().config.get('General', 'url')
+        base_url = App.get_running_app().config.get('General', 'base_url')
 
     def click(self, instance):
         app = App.get_running_app()

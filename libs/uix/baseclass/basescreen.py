@@ -26,7 +26,7 @@ from kivy.clock import Clock
 from kivymd.uix.filemanager import MDFileManager
 from base64 import b64encode
 from kivy.uix.button import Button
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ConfigParserProperty, ObjectProperty
 import urllib.parse
 from libs.utils.comic_server_conn import ComicServerConn
 from kivymd.uix.accordionlistitem import MDAccordionListItem
@@ -34,7 +34,6 @@ from kivy.uix.modalview import ModalView
 from kivymd.uix.list import OneLineIconListItem, OneLineAvatarListItem, ILeftBodyTouch, ILeftBody
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
@@ -69,10 +68,15 @@ class LoginPopup(Popup):
 
 
 class BaseScreen(Screen):
-    username = StringProperty()
-    password = StringProperty()
-    api_key = StringProperty()
-    base_url = StringProperty()
+    app = App.get_running_app()
+    username = ConfigParserProperty(
+        '', 'General', 'username', app.config)
+    password = ConfigParserProperty(
+        '', 'General', 'password', app.config)
+    api_key = ConfigParserProperty(
+        '', 'General', 'api_key', app.config)
+    base_url = ConfigParserProperty(
+        '', 'General', 'base_url', app.config)
 
     def __init__(self, **kwargs):
         super(BaseScreen, self).__init__(**kwargs)
@@ -91,12 +95,13 @@ class BaseScreen(Screen):
         self.api_key = self.app.api_key
         self.username = self.app.username
         self.base_url = self.app.base_url
+        self.open_last_comic_startup = self.app.open_last_comic_startup
 
     def update_settings(self, *args):
         print(f'This is running : {self.username}')
         #self.username = self.app.username
 
-    def on_enter(self, *args):
+    def on_pre_enter(self, *args):
         self.check_login()
 
     def check_login(self):
@@ -140,13 +145,9 @@ class BaseScreen(Screen):
         user = self.myLoginPop.ids.username_field.text
         pwd = self.myLoginPop.ids.pwd_field.text
         url = self.myLoginPop.ids.url_field.text
-        self.app.config.set('General', 'username', user)
-        self.app.config.set('General', 'password', pwd)
-        self.app.config.set('General', 'url', url)
-        self.app.config.write()
-
-        self.app.base_url = url.strip()
-        self.base_url = self.app.base_url
+        self.base_url = url.strip()
+        self.username = user
+        self.password = pwd
         req_url = f"{self.app.base_url}auth"
         self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req,
                                     results: got_api(results))
@@ -201,32 +202,48 @@ class BaseScreen(Screen):
                     server_readinglists_screen.page_number = tmp_last_pag_pagnum
                     server_readinglists_screen.collect_readinglist_data(
                         readinglist_name, readinglist_Id, mode=set_mode)
-                    grid = self.ids["main_grid"]
-                    grid.cols = 1
-                    grid.clear_widgets()
-                    for comic in self.new_readinglist.comics:
-                        if comic.slug == tmp_last_server_comic_id:
-                            c = CustomeST()
-                            c.comic_obj = comic
-                            c.readinglist_obj = self.new_readinglist
-                            c.paginator_obj = paginator_obj
-                            x = self.app.comic_thumb_width
-                            y = self.app.comic_thumb_height
-                            thumb_size = f'height={y}&width={x}'
-                            part_url = f'/Comics/{comic.Id}/Pages/0?'
-                            part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-                            c_image_source = f"{self.app.api_url}{part_url}{part_api}"
-                            c.source = source = c_image_source
-                            c.PageCount = comic.PageCount
-                            c.pag_pagenum = tmp_last_pag_pagnum
+                    if self.open_last_comic_startup == 1:
+                        for comic in self.new_readinglist.comics:
+                            if comic.slug == tmp_last_server_comic_id:
+                                new_screen_name = str(tmp_last_server_comic_id)
+                                if new_screen_name not in self.app.manager.screen_names:
+                                    new_screen = ServerComicBookScreen(
+                                        readinglist_obj=self.new_readinglist,
+                                        comic_obj=comic,
+                                        paginator_obj=paginator_obj,
+                                        pag_pagenum=tmp_last_pag_pagnum,
+                                        name=new_screen_name, last_load=0)
+                                    self.app.manager.add_widget(new_screen)
+                                    self.app.manager.current = new_screen_name
+                                else:
+                                    self.app.manager.current = new_screen_name
+                    else:
+                        grid = self.ids["main_grid"]
+                        grid.cols = 1
+                        grid.clear_widgets()
+                        for comic in self.new_readinglist.comics:
+                            if comic.slug == tmp_last_server_comic_id:
+                                c = CustomeST()
+                                c.comic_obj = comic
+                                c.readinglist_obj = self.new_readinglist
+                                c.paginator_obj = paginator_obj
+                                x = self.app.comic_thumb_width
+                                y = self.app.comic_thumb_height
+                                thumb_size = f'height={y}&width={x}'
+                                part_url = f'/Comics/{comic.Id}/Pages/0?'
+                                part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+                                c_image_source = f"{self.app.api_url}{part_url}{part_api}"
+                                c.source = source = c_image_source
+                                c.PageCount = comic.PageCount
+                                c.pag_pagenum = tmp_last_pag_pagnum
 
-                            strtxt = f"{comic.Series} #{comic.Number}"
-                            tmp_color = get_hex_from_color((1, 1, 1, 1))
-                            c.text = f'[color={tmp_color}]{strtxt}[/color]'
-    #                        c.text_color = self.app.theme_cls.secondary_color
-                            grid.add_widget(c)
-                            tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
-                            self.ids.last_comic_label.text = tmp_txt
+                                strtxt = f"{comic.Series} #{comic.Number}"
+                                tmp_color = get_hex_from_color((1, 1, 1, 1))
+                                c.text = f'[color={tmp_color}]{strtxt}[/color]'
+        #                        c.text_color = self.app.theme_cls.secondary_color
+                                grid.add_widget(c)
+                                tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
+                                self.ids.last_comic_label.text = tmp_txt
                 else:
                     Logger.info(
                         f'{readinglist_name} not in Database This could be a problems')
