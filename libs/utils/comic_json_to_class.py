@@ -30,7 +30,8 @@ READINGLIST_DB_KEYS = [
     'sw_syn_this_active',
     'last_sync_num',
     'totalCount',
-    'data'
+    'data',
+   
 ]
 
 READINGLIST_SETTINGS_KEYS = [
@@ -47,7 +48,7 @@ READINGLIST_SETTINGS_KEYS = [
 COMIC_DB_KEYS = [
     'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-    'Summary',  'FilePath', 'local_file', 'data'
+    'Summary',  'FilePath', 'local_file', 'data', 
 ]
 
 
@@ -248,10 +249,43 @@ class ComicReadingList(EventDispatcher):
             pass
 
     def do_db_refresh(self):
-        the_keys = [
-            'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
-            'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-            'Summary',  'FilePath']
+        def __got_readlist_data(results):
+            def __updated_progress(results):
+                pass
+            the_keys = [
+                'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
+                'UserCurrentPage', 'UserLastPageRead', 'PageCount',
+                'Summary',  'FilePath']
+            for server_comic in results['items']:
+                for db_comic in self.comics:
+                    if db_comic.Id == server_comic['Id']:
+                        for key in the_keys:
+                            if getattr(db_comic, key) != server_comic[key]:
+                                if key in ('UserCurrentPage','UserLastPageRead') and db_comic.is_sync:
+                                    if db_comic.UserLastPageRead > server_comic['UserLastPageRead'] or \
+                                        db_comic.UserCurrentPage > server_comic['UserCurrentPage']:
+                                        if db_comic.UserCurrentPage > db_comic.UserLastPageRead:
+                                            current_page = db_comic.UserCurrentPage
+                                        else:
+                                            current_page = db_comic.UserLastPageRead
+                                        update_url = f'{api_url}/Comics/{db_comic.Id}/Progress'
+                                        self.fetch_data.update_progress(update_url, current_page,
+                                                                        callback=lambda req, results:
+                                                                    __updated_progress(results))
+                                else:
+                                    Logger.info(
+                                        f'Updating DB Record for {key} of {db_comic.__str__}')
+                                    toast(
+                                        f'Updating DB Record for {key} of {db_comic.__str__}')
+                                    db_item = Comic.get(
+                                        Comic.Id == db_comic.Id)
+                                    if db_item:
+                                        setattr(db_item, key,
+                                                server_comic[key])
+                                        db_item.save()
+                                        setattr(self, key, db_item)
+            toast(f'Data refresh complete')
+
         self.fetch_data = ComicServerConn()
         app = App.get_running_app()
         api_url = app.api_url
@@ -259,29 +293,7 @@ class ComicReadingList(EventDispatcher):
 
         self.fetch_data.get_server_data_callback(
             server_url, callback=lambda req,
-            results: got_readlist_data(results))
-
-        def got_readlist_data(results):
-
-            new_dict = {k: self.data[k] for k in self.data.keys()}
-            shared_items = {
-                k: new_dict[k] for k in new_dict if k in results and new_dict[k] == results[k]}
-            for server_comic in results['items']:
-                y = server_comic
-                for db_comic in self.comics:
-                    if db_comic.Id == server_comic['Id']:
-                        for key in the_keys:
-                            if getattr(db_comic, key) != server_comic[key]:
-                                Logger.info(
-                                    f'Updating DB Record for {key} of {db_comic.__str__}')
-                                toast(
-                                    f'Updating DB Record for {key} of {db_comic.__str__}')
-                                db_item = Comic.get(Comic.Id == db_comic.Id)
-                                if db_item:
-                                    setattr(db_item, key, server_comic[key])
-                                    db_item.save()
-                                    setattr(self, key, getattr(db_item, key))
-            toast(f'Data refresh complete')
+            results: __got_readlist_data(results))
 
     def get_last_comic_read(self):
 

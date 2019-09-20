@@ -30,7 +30,6 @@ class ComicServerConn(EventDispatcher):
                          on_redirect=self.got_redirect,
                          on_failure=self.got_error
                          )
-
     def update_progress(self, req_url, index, callback):
         data = f'CurrentPage={index}'
         username = self.app.config.get('General', 'username')

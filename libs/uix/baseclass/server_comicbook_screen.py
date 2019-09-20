@@ -231,7 +231,7 @@ class ServerComicBookScreen(Screen):
                 self.ids.comic_book_carousel.load_slide(slide)
 
     def slide_changed(self, index):
-        if self.view_mode == 'FileOpen':
+        if self.view_mode == 'FileOpen' or self.comic_obj.is_sync:
             if index is not None:
                 comic_book_carousel = self.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
