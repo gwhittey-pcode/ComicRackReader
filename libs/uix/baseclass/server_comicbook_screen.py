@@ -39,8 +39,8 @@ import json
 from kivymd.uix.toolbar import MDToolbar
 from kivy.core.window import Window
 from libs.utils.comic_functions import get_comic_page, get_file_page_size
-
-
+from kivy.clock import Clock
+from libs.utils.db_functions import ReadingList,Comic
 class ServerComicBookScreen(Screen):
     scroller = ObjectProperty()
     top_pop = ObjectProperty()
@@ -233,11 +233,30 @@ class ServerComicBookScreen(Screen):
     def slide_changed(self, index):
         if self.view_mode == 'FileOpen' or self.comic_obj.is_sync:
             if index is not None:
+                def __update_page(key_val=None):
+                    db_item = Comic.get(Comic.Id == self.comic_obj.Id)
+                    for key, value in key_val.items():
+                        setattr(db_item,key,value)
+                    
+                        setattr(self.comic_obj,key,value)
+                    db_item.save()    
                 comic_book_carousel = self.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
                 current_page = comic_book_carousel.current_slide.comic_page
                 comic_obj = self.comic_obj
                 comic_Id = comic_obj.Id
+                if self.comic_obj.is_sync:
+                    if current_page > self.comic_obj.UserLastPageRead:
+                        key_val = {
+                        'UserLastPageRead' :current_page,
+                        'UserCurrentPage':current_page
+                        }
+                    else:
+                        key_val = {
+                        
+                        'UserCurrentPage':current_page
+                        }
+                    Clock.schedule_once(lambda dt, key_value={}:__update_page(key_val=key_val), 0.15)
                 prev_id = f'comic_scatter{current_page-1}'
                 next_id = f'comic_scatter{current_page+1}'
                 p_slide = comic_book_carousel.previous_slide

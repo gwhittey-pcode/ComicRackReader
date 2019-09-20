@@ -43,18 +43,10 @@ class Comic(BaseModel):
     FilePath = CharField(null=True)
     Volume = CharField(null=True)
     data = PickleField(null=True)
-    #comic_index = IntegerField(null=True)
+    
     local_file = CharField(null=True)
-    local_UserLastPageRead = IntegerField(null=True)
-    local_UserCurrentPage = IntegerField(null=True)
-
+    
 ComicIndexDeferred = DeferredThroughModel()
-#     cb_limit_active = CharField()
-#     limit_num = IntegerField()
-#     cb_only_read_active = CharField()
-#     cb_keep_last_read_active = CharField()
-#     cb_optimize_size_active = CharField()
-#     sw_syn_this_active = CharField()
 
 
 class ReadingList(BaseModel):

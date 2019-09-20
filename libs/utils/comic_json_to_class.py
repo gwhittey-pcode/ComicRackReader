@@ -31,7 +31,7 @@ READINGLIST_DB_KEYS = [
     'last_sync_num',
     'totalCount',
     'data',
-   
+
 ]
 
 READINGLIST_SETTINGS_KEYS = [
@@ -48,7 +48,7 @@ READINGLIST_SETTINGS_KEYS = [
 COMIC_DB_KEYS = [
     'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-    'Summary',  'FilePath', 'local_file', 'data', 
+    'Summary',  'FilePath', 'local_file', 'data',
 ]
 
 
@@ -249,6 +249,9 @@ class ComicReadingList(EventDispatcher):
             pass
 
     def do_db_refresh(self):
+        def __finish_toast(dt):
+            toast('DataBase Refresh Complete')
+
         def __got_readlist_data(results):
             def __updated_progress(results):
                 pass
@@ -261,9 +264,9 @@ class ComicReadingList(EventDispatcher):
                     if db_comic.Id == server_comic['Id']:
                         for key in the_keys:
                             if getattr(db_comic, key) != server_comic[key]:
-                                if key in ('UserCurrentPage','UserLastPageRead') and db_comic.is_sync:
+                                if key in ('UserCurrentPage', 'UserLastPageRead') and db_comic.is_sync:
                                     if db_comic.UserLastPageRead > server_comic['UserLastPageRead'] or \
-                                        db_comic.UserCurrentPage > server_comic['UserCurrentPage']:
+                                            db_comic.UserCurrentPage > server_comic['UserCurrentPage']:
                                         if db_comic.UserCurrentPage > db_comic.UserLastPageRead:
                                             current_page = db_comic.UserCurrentPage
                                         else:
@@ -271,20 +274,20 @@ class ComicReadingList(EventDispatcher):
                                         update_url = f'{api_url}/Comics/{db_comic.Id}/Progress'
                                         self.fetch_data.update_progress(update_url, current_page,
                                                                         callback=lambda req, results:
-                                                                    __updated_progress(results))
-                                else:
-                                    Logger.info(
-                                        f'Updating DB Record for {key} of {db_comic.__str__}')
-                                    toast(
-                                        f'Updating DB Record for {key} of {db_comic.__str__}')
-                                    db_item = Comic.get(
-                                        Comic.Id == db_comic.Id)
-                                    if db_item:
-                                        setattr(db_item, key,
-                                                server_comic[key])
-                                        db_item.save()
-                                        setattr(self, key, db_item)
-            toast(f'Data refresh complete')
+                                                                        __updated_progress(results))
+                                    else:
+                                        Logger.info(
+                                            f'Updating DB Record for {key} of {db_comic.__str__}')
+                                        toast(
+                                            f'Updating DB Record for {key} of {db_comic.__str__}')
+                                        db_item = Comic.get(
+                                            Comic.Id == db_comic.Id)
+                                        if db_item:
+                                            setattr(db_item, key,
+                                                    server_comic[key])
+                                            db_item.save()
+                                            setattr(self, key, db_item)
+            Clock.schedule_once(__finish_toast, 3)
 
         self.fetch_data = ComicServerConn()
         app = App.get_running_app()
@@ -376,7 +379,7 @@ class ComicReadingList(EventDispatcher):
             results), file_path=os.path.join(self.my_thumb_dir, thumb_name))
 
     def _finish_sync(self, dt):
-        def _finish_toast(dt):
+        def __finish_toast(dt):
             toast('Reading List has been Synceddd')
 
         list_comics = self.comics
@@ -384,7 +387,7 @@ class ComicReadingList(EventDispatcher):
         sync_num_comics = list_comics[self.last_comic_read: self.sync_range]
         num_comic = len(sync_num_comics)
         if self.num_file_done == num_comic:
-            Clock.schedule_once(_finish_toast, 3)
+            Clock.schedule_once(__finish_toast, 3)
             self.event.cancel()
 
     def sync_readinglist(self):
