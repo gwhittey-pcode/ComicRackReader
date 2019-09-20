@@ -1008,9 +1008,9 @@ class OptionToolBar(MDToolbar):
         ]
         self.right_action_items = [
             ['file-cabinet', lambda x: app.file_manager_open()],
-            ['view-list',
+            ['server',
                 lambda x: app.switch_server_lists_screen()],
-            ['library-books',
+            ['view-list',
                 lambda x: root.option_bar_action('server_readinglists_screen')],
             ['close-box-outline', lambda x: app.stop()]
         ]

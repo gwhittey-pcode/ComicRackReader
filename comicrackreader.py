@@ -230,17 +230,18 @@ class ComicRackReader(App):
         self.screen = StartScreen()  # program main screen
         self.manager = self.screen.ids.manager
         action_bar = self.screen.ids.action_bar
-        action_bar.right_action_items = [
-            ['file-cabinet', lambda x: self.file_manager_open()],
-            ['view-list', lambda x: self.switch_server_lists_screen()],
-            ['library-books', lambda x: self.switch_readinglists_screen()],
-            ['close-box-outline', lambda x: self.stop()]
-        ]
-
+        # Left side Action bar Icons
         action_bar.left_action_items = [
             ['home', lambda x: self.switch_base_screen()],
             ['settings', lambda x: self.open_settings()],
             ['fullscreen', lambda x: self.toggle_full_screen()]
+        ]
+        # right side Action bar Icons
+        action_bar.right_action_items = [
+            ['file-cabinet', lambda x: self.file_manager_open()],
+            ['server', lambda x: self.switch_server_lists_screen()],
+            ['view-list', lambda x: self.switch_readinglists_screen()],
+            ['close-box-outline', lambda x: self.stop()]
         ]
 
         self.config.add_callback(self.config_callback)
