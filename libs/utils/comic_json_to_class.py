@@ -283,6 +283,15 @@ class ComicReadingList(EventDispatcher):
                                     setattr(self, key, getattr(db_item, key))
             toast(f'Data refresh complete')
 
+    def get_last_comic_read(self):
+
+        last_read_comic = 0
+        for comic in self.comics:
+            if comic.UserLastPageRead == comic.PageCount-1 and comic.PageCount > 1:
+                last_read_comic = self.comics.index(comic)
+                print(comic.Id)
+        return last_read_comic
+
     def do_sync(self):
 
         self.num_file_done = 0
@@ -301,15 +310,6 @@ class ComicReadingList(EventDispatcher):
             globals()['%s' % key] = v
         self.sync_readinglist()
 
-    def get_last_comic_read(self):
-
-        last_read_comic = 0
-        for comic in self.comics:
-            if comic.UserLastPageRead == comic.PageCount-1 and comic.PageCount > 1:
-                last_read_comic = self.comics.index(comic)
-                print(comic.Id)
-        return last_read_comic
-
     def download_file(self, comic):
         comic_index = 0
         self.file_download = False
@@ -318,13 +318,16 @@ class ComicReadingList(EventDispatcher):
             if j.Id == comic.Id:
                 comic_index = i
 
-        def got_file(comic_obj):
+        def got_file(comic_obj, comic_file=""):
             self.num_file_done += 1
             toast(f'{file_name} Synced')
             self.file_download = True
-            db_comic = ComicIndex.get(
+            db_comic_index = ComicIndex.get(
                 ComicIndex.comic == comic_obj.Id, ComicIndex.readinglist == self.slug)
-            db_comic.is_sync = True
+            db_comic_index.is_sync = True
+            db_comic_index.save()
+            db_comic = Comic.get(Comic.Id == comic_obj.Id)
+            db_comic.local_file = comic_file
             db_comic.save()
 
         def got_thumb(results):
@@ -350,9 +353,10 @@ class ComicReadingList(EventDispatcher):
             os.makedirs(self.my_comic_dir)
         if not self.my_thumb_dir.is_dir():
             os.makedirs(self.my_thumb_dir)
+        t_file = os.path.join(self.my_comic_dir, file_name)
         self.fetch_data.get_server_file_download(
-            sync_url, callback=got_file(comic),
-            file_path=os.path.join(self.my_comic_dir, file_name)
+            sync_url, callback=got_file(comic, comic_file=t_file),
+            file_path=t_file
 
         )
         thumb_name = f'{comic.Id}.jpg'

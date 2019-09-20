@@ -46,7 +46,7 @@ settings_json_server = json.dumps([
      'title':   'Server URL',
      'desc':    'URL for server. Leave ending / off. ex: http://192.168.1.215:8080/tablet',
      'section': 'General',
-     'key':     'url'},
+     'key':     'base_url'},
 
     {'type':    'path',
      'title':   'Cache Directory',
@@ -99,6 +99,11 @@ settings_json_server = json.dumps([
      'section':  'General',
      'key':      'max_books_page'},
 
+    {'type':     'bool',
+     'title':    'Open Last Comic at Start',
+     'desc':     'Open last comic at application startup',
+     'section':  'General',
+     'key':      'open_last_comic_startup'},
 
 ])
 

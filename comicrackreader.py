@@ -28,7 +28,7 @@ from kivy.config import ConfigParser
 from kivy.clock import Clock
 from kivy.utils import get_color_from_hex, get_hex_from_color
 from kivy.metrics import dp
-from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty, BooleanProperty
 from main import __version__
 from libs.translation import Translation
 from libs.uix.baseclass.startscreen import StartScreen
@@ -70,6 +70,7 @@ class ComicRackReader(App):
     password = StringProperty()
     api_key = StringProperty()
     max_books_page = NumericProperty()
+    open_last_comic_startup = NumericProperty()
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
@@ -123,13 +124,14 @@ class ComicRackReader(App):
         config.setdefault('Saved', 'last_file_pag_pagnum', '')
 
         config.setdefaults('General', {
-            'url':          'http://',
+            'base_url':          'http://',
             'storagedir':       self.user_data_dir,
             'max_height':       1500,
             'use_api_key':      0,
             'api_key':          '',
             'username':         '',
             'password':         '',
+            'open_last_comic_startup': 0,
             # 'use_pagination':   '1',
             'max_books_page':   25
         })
@@ -186,23 +188,26 @@ class ComicRackReader(App):
             self.config.get('General', 'storagedir'), 'store_dir')
         if not Path(self.store_dir).is_dir():
             os.makedirs(self.store_dir)
-        self.base_url = self.config.get('General', 'url').rstrip('\\')
+        self.base_url = self.config.get('General', 'base_url').rstrip('\\')
         self.api_key = self.config.get('General', 'api_key')
+        self.username = self.config.get('General', 'username')
+        self.password = self.config.get('General', 'password')
+
         self.api_url = self.base_url + "/API"
         self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
 
         if not os.path.isdir(self.my_data_dir):
             os.makedirs(self.my_data_dir)
-        self.username = self.config.get('General', 'username')
-        self.password = self.config.get('General', 'password')
+
         self.max_books_page = int(self.config.get(
             'General', 'max_books_page'))
+        self.open_last_comic_startup = self.config.get(
+            'General', 'open_last_comic_startup')
 
     def config_callback(self, section, key, value):
         config_items = {
-            'url': 'base_url',
+            'base_url': 'base_url',
             'api_key': 'api_key',
-            'url': 'api_url',
             'sync_folder': 'sync_folder',
             'password': 'password',
             'username': 'username',
@@ -249,13 +254,7 @@ class ComicRackReader(App):
                     Builder.load_string(kv.read())
 
     def on_config_change(self, config, section, key, value):
-
-        if key == 'url':
-            self.base_url = self.config.get('General', 'url')
-        if key == 'api_key':
-            self.api_key = self.config.get('General', 'api_key')
-        if key == 'dbl_tap_time':
-            self.Config.set('postproc', 'double_tap_time', value)
+        pass
 
     def events_program(self, instance, keyboard, keycode, text, modifiers):
         c = Keyboard()
