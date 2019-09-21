@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# This file created with KivyCreatorProject
-# <https://github.com/HeaTTheatR/KivyCreatorProgect
+
 #
 # Copyright © 2017 Easy
 #
-# For suggestions and questions:
-# <kivydevelopment@gmail.com>
+
 #
 # LICENSE: MIT
 
@@ -38,7 +36,7 @@ from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup
-from libs.uix.baseclass.server_readinglists_screen import CustomeST
+from libs.uix.baseclass.server_readinglists_screen import ReadingListComicImage
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.utils.comic_functions import convert_comicapi_to_json
 from libs.utils.paginator import Paginator
@@ -223,8 +221,7 @@ class BaseScreen(Screen):
                         grid.clear_widgets()
                         for comic in self.new_readinglist.comics:
                             if comic.slug == tmp_last_server_comic_id:
-                                c = CustomeST()
-                                c.comic_obj = comic
+                                c = ReadingListComicImage(comic_obj=comic)
                                 c.readinglist_obj = self.new_readinglist
                                 c.paginator_obj = paginator_obj
                                 x = self.app.comic_thumb_width

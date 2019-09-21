@@ -62,6 +62,14 @@ settings_json_server = json.dumps([
         'options': ['2000', '1500', '1280', '1200', '1024']
     },
 
+    {
+        'type':     'options',
+        'title':    'How to Open Synced Comic',
+        'desc':     'Select Method to open click on comic in reading list screen if Synced',
+        'section':  'General',
+        'key':      'how_to_open_comic',
+        'options': ['Open Local Copy', 'Open From API Server']
+    },
     # {'type':    'bool',
     #  'title':   'Use Api key',
     #  'desc':    'Use API key to access server',

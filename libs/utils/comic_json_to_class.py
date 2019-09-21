@@ -192,7 +192,8 @@ class ComicReadingList(EventDispatcher):
             self.pickled_data = pickle.dumps(data, -1)
             self.data = pickle.loads(self.pickled_data)
             self.comic_json = self.data["items"]
-            self.totalCount = self.data["totalCount"]
+            if mode != 'FileOpen':
+                self.totalCount = self.data["totalCount"]
         if mode != 'FileOpen':
             pass
             self.get_or_create_db_item()

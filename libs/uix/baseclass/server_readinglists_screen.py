@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 #
-# This file created with KivyCreatorProject
-# <https://github.com/HeaTTheatR/KivyCreatorProgect
 #
 # Copyright © 2017 Easy
 #
-# For suggestions and questions:
-# <kivydevelopment@gmail.com>
+
 # LICENSE: MIT
+
+"""
+
+name:server_readinglists_screen
+
+"""
+
 from kivy.core.window import Window
 
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
-    BooleanProperty, OptionProperty, DictProperty
+    BooleanProperty, OptionProperty, DictProperty,ListProperty
 from kivy.uix.image import AsyncImage
 from kivy.uix.modalview import ModalView
-from kivymd.uix.imagelist import SmartTileWithLabel
+from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
 from kivymd.uix.list import (
     ILeftBody,
     ILeftBodyTouch,
@@ -47,6 +51,7 @@ from kivy.metrics import dp
 from libs.utils.comicapi.comicarchive import ComicArchive
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
+from libs.uix.widgets.myimagelist import ComicTileLabel
 from kivy.graphics import BorderImage
 from kivy.uix.button import ButtonBehavior
 from kivy.uix.popup import Popup
@@ -55,45 +60,69 @@ import ntpath
 import re
 
 
-class CustomeST(SmartTileWithLabel):
+
+class ReadingListComicImage(ComicTileLabel):
     my_clock = ObjectProperty()
     do_action = StringProperty()
-
-    def __init__(self, **kwargs):
-        super(CustomeST, self).__init__(**kwargs)
-        self.menu_items = [{'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Open This Comic[/color]',
-                            'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Mark as Read[/color]',
-                            'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Mark as UnRead[/color]',
-                            'callback': self.callback_for_menu_items},
-                           {'viewclass': 'MDMenuItem',
-                            'text': '[color=#000000]Download Readlist[/color]',
-                            'callback': self.callback_for_menu_items}
-                           ]
+    comic_slug = StringProperty()
+    page_count = NumericProperty()
+    leaf = NumericProperty()
+    percent_read = NumericProperty()
+    status = StringProperty()
+    comic_obj = ObjectProperty(rebind=True)
+    readinglist_obj = ObjectProperty(rebind=True)
+    paginator_obj = ObjectProperty(rebind=True)
+    pag_pagenum = NumericProperty()
+    UserLastPageRead = NumericProperty()
+    UserCurrentPage = NumericProperty()
+    percent_read = NumericProperty()
+    def __init__(self,comic_obj=None, **kwargs):
+        super(ReadingListComicImage, self).__init__(**kwargs)
+        list_menu_items = ['Open This Comic', 'Mark as Read', 'Mark as UnRead','Download Comic']
+        self.menu_items = []
+        for item in list_menu_items:
+            a_menu_item = {'viewclass': 'MDMenuItem',
+                           'text': f'[color=#000000]{item}[/color]',
+                           'callback': self.callback_for_menu_items}
+            self.menu_items.append(a_menu_item)
         self.app = App.get_running_app()
-        self.comic_slug = StringProperty()
-        self.page_count = NumericProperty()
-        self.leaf = NumericProperty()
-        self.percent_read = NumericProperty()
-        self.status = StringProperty()
-        self.comic_obj = ObjectProperty()
-        self.readinglist_obj = ObjectProperty()
-        self.paginator_obj = ObjectProperty()
-        self.pag_pagenum = NumericProperty()
-
+        self.comic_obj = comic_obj
+        self.UserCurrentPage = comic_obj.UserCurrentPage
+        self.UserLastPageRead = comic_obj.UserLastPageRead
+        if self.comic_obj !='None':self.has_localfile = True
+        if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount-1:
+            #self.img_color = (.89, .15, .21, 5)
+            self.is_read=True
+            #txt_color = get_hex_from_color((.89, .15, .21, 1))
+            txt_color = get_hex_from_color((1, 1, 1, 1))
+        else:
+            txt_color = get_hex_from_color((1, 1, 1, 1))
+            self.is_read=False
+        strtxt = f"{self.comic_obj.Series} #{self.comic_obj.Number}"
+        self.text = f'[color={txt_color}]{strtxt}[/color]'
+        self._comic_object = self.comic_obj
+        if comic_obj.UserLastPageRead == 0:
+            self.percent_read = 0
+        else:
+            self.percent_read = round(comic_obj.UserLastPageRead/(comic_obj.PageCount-1)*100)
+        self.page_count_text = f'{self.percent_read}%' 
     def callback_for_menu_items(self, *args):
-        def updated_progress(results, state):
+        def __updated_progress(results, state):
             Logger.info(results)
             tmp_txt = self.text
             if state == 'Unread':
                 self.img_color = (1, 1, 1, 1)
+                self.is_read = False
+                self.page_count_text = '0%'
+                self.comic_obj.UserLastPage = 0
+                self.comic_obj.UserCurrentPage = 0
             elif state == 'Read':
                 self.img_color = (.89, .15, .21, 5)
-
+                self.is_read = True
+                self.page_count_text = '100%'
+                the_page = self.comic_obj.PageCount
+                self.comic_obj.UserLastPage = the_page
+                self.comic_obj.UserCurrentPage = the_page
         action = args[0].replace(
             '[color=#000000]', "").replace('[/color]', "")
         if action == "Open This Comic":
@@ -112,14 +141,14 @@ class CustomeST(SmartTileWithLabel):
             update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Progress'
             server_con.update_progress(update_url, self.comic_obj.PageCount-1,
                                        callback=lambda req, results:
-                                       updated_progress(results, 'Read'))
+                                       __updated_progress(results, 'Read'))
 
         elif action == 'Mark as UnRead':
             server_con = ComicServerConn()
             update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Mark_Unread'
             server_con.update_progress(update_url, 0,
                                        callback=lambda req, results:
-                                       updated_progress(results, 'Unread'))
+                                       __updated_progress(results, 'Unread'))
 
     def on_press(self):
         callback = partial(self.menu)
@@ -133,7 +162,7 @@ class CustomeST(SmartTileWithLabel):
     def on_release(self):
         Clock.unschedule(self.my_clock)
         self.do_action = 'menu'
-        return super(CustomeST, self).on_press()
+        return super(ReadingListComicImage, self).on_press()
 
     def open_comic(self):
         new_screen_name = str(self.comic_obj.Id)
@@ -367,12 +396,13 @@ class ServerReadingListsScreen(Screen):
         self.app.set_screen(self.readinglist_name + ' Page 1')
         self.reading_list_title = self.readinglist_name + ' Page 1'
         self.readinglist_Id = readinglist_Id
-        if mode == 'From Server':
+        self.mode = mode
+        if self.mode == 'From Server':
             self.fetch_data = ComicServerConn()
             lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
             # self.fetch_data.get_list_count(lsit_count_url,self)
             self.fetch_data.get_server_data(lsit_count_url, self)
-        elif mode == 'From DataBase':
+        elif self.mode == 'From DataBase':
             self.got_db_data()
 
     def get_page(self, instance):
@@ -407,32 +437,32 @@ class ServerReadingListsScreen(Screen):
         main_stack = self.main_stack
         grid.clear_widgets()
         for comic in object_lsit:
-            c = CustomeST()
-            c.comic_obj = comic
+            c = ReadingListComicImage(comic_obj=comic)
             c.lines = 2
             c.readinglist_obj = self.new_readinglist
             c.paginator_obj = self.paginator_obj
             x = self.comic_thumb_width
             y = self.comic_thumb_height
             thumb_size = f'height={y}&width={x}'
-            part_url = f'/Comics/{comic.Id}/Pages/0?'
-            part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-            c_image_source = f"{self.api_url}{part_url}{part_api}"
-            c.source = source = c_image_source
+            if self.mode == 'From Server':
+                part_url = f'/Comics/{comic.Id}/Pages/0?'
+                part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+                c_image_source = f"{self.api_url}{part_url}{part_api}"
+            else:
+                import os
+                id_folder = os.path.join(self.app.sync_folder, self.new_readinglist.slug)
+                my_thumb_dir = os.path.join(id_folder, 'thumb')
+                thumb_name = f'{comic.Id}.jpg'
+                t_file = os.path.join(my_thumb_dir, thumb_name)
+                c_image_source = t_file
+            c.source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number
-            strtxt = f"{comic.Series} #{comic.Number}"
-            if comic.UserLastPageRead == comic.PageCount-1:
-                c.img_color = (.89, .15, .21, 5)
-                #txt_color = get_hex_from_color((.89, .15, .21, 1))
-                txt_color = get_hex_from_color((1, 1, 1, 1))
-            else:
-                txt_color = get_hex_from_color((1, 1, 1, 1))
-            c.text = f'[color={txt_color}]{strtxt}[/color]'
             grid.add_widget(c)
             grid.cols = (Window.width-10)//self.comic_thumb_width
-            self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
             self.dynamic_ids[id] = c
+        self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
+        
 
     def got_db_data(self):
         """

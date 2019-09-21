@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# This file created with KivyCreatorProject
-# <https://github.com/HeaTTheatR/KivyCreatorProgect
+
 #
 # Copyright © 2017 Easy
 #
-# For suggestions and questions:
-# <kivydevelopment@gmail.com>
+
 ###
 # LICENSE: MIT
 """
@@ -71,6 +69,7 @@ class ComicRackReader(App):
     api_key = StringProperty()
     max_books_page = NumericProperty()
     open_last_comic_startup = NumericProperty()
+    how_to_open_comic = StringProperty()
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
@@ -132,6 +131,7 @@ class ComicRackReader(App):
             'username':         '',
             'password':         '',
             'open_last_comic_startup': 0,
+            'how_to_open_comic': 'Open Local Copy',
             # 'use_pagination':   '1',
             'max_books_page':   25
         })
@@ -203,6 +203,8 @@ class ComicRackReader(App):
             'General', 'max_books_page'))
         self.open_last_comic_startup = self.config.get(
             'General', 'open_last_comic_startup')
+        self.how_to_open_comic = self.config.get(
+            'General', 'how_to_open_comic')
 
     def config_callback(self, section, key, value):
         config_items = {
@@ -452,6 +454,10 @@ class ComicRackReader(App):
     def switch_open_file_screen(self):
         self.set_screen("Open File")
         self.manager.current = 'open_file_screen'
+
+    def switch_local_lists_screen(self):
+        self.set_screen("Local Sync Comics")
+        self.manager.current = 'local_lists_screen'
 
     def set_screen(self, title):
         self.screen.ids.action_bar.title = title

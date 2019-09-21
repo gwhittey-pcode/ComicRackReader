@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 #
-# This file created with KivyCreatorProject
-# <https://github.com/HeaTTheatR/KivyCreatorProgect
+
 #
 # Copyright © 2017 Easy
 #
-# For suggestions and questions:
-# <kivydevelopment@gmail.com>
+
 # LICENSE: MIT
+
+"""
+
+name:server_comicbook_screen
+
+"""
 from functools import partial
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ObjectProperty, StringProperty, ListProperty,\
@@ -237,9 +241,8 @@ class ServerComicBookScreen(Screen):
                     db_item = Comic.get(Comic.Id == self.comic_obj.Id)
                     for key, value in key_val.items():
                         setattr(db_item,key,value)
-                    
                         setattr(self.comic_obj,key,value)
-                    db_item.save()    
+                    db_item.save()
                 comic_book_carousel = self.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
                 current_page = comic_book_carousel.current_slide.comic_page
@@ -252,10 +255,7 @@ class ServerComicBookScreen(Screen):
                         'UserCurrentPage':current_page
                         }
                     else:
-                        key_val = {
-                        
-                        'UserCurrentPage':current_page
-                        }
+                        key_val = {'UserCurrentPage':current_page}
                     Clock.schedule_once(lambda dt, key_value={}:__update_page(key_val=key_val), 0.15)
                 prev_id = f'comic_scatter{current_page-1}'
                 next_id = f'comic_scatter{current_page+1}'
@@ -329,7 +329,7 @@ class ServerComicBookScreen(Screen):
 
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_max_height}"
         s_url_api = f"&apiKey={self.api_key}"
-        if self.view_mode == 'FileOpen':
+        if self.view_mode == 'FileOpen' or self.comic_obj.is_sync:
             comic_page_source = get_comic_page(comic_obj, i)
         else:
             comic_page_source = f"{self.api_url}{s_url_part}{s_url_api}"

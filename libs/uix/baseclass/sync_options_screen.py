@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+#
+#
+# Copyright © 2017 Easy
+#
+
+# LICENSE: MIT
+
+"""
+
+name:sync_options_screen
+
+"""
+
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.boxlayout import BoxLayout

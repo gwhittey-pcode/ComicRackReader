@@ -1,13 +1,11 @@
 #:kivy 1.10.1
 # -*- coding: utf-8 -*-
 #
-# This file created with KivyCreatorProject
-# <https://github.com/HeaTTheatR/KivyCreatorProgect
+
 #
 # Copyright © 2017 Easy
 #
-# For suggestions and questions:
-# <kivydevelopment@gmail.com>
+
 # 
 # LICENSE: MIT
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
@@ -98,7 +96,6 @@
             text_color: app.theme_cls.primary_color
             font_size: dp(35)
             on_release:self.do_data_refresh()
-            
         MDFlatButton:
             id:spacer
             width: dp(10)
@@ -128,14 +125,14 @@
             disabled:False
             icon: "arrow-right"
 
-<CustomeST>
+<ReadingListComicImage>
     size: (dp(160),dp(240))
     mipmap: True
-    font_style: 'Subtitle2'
+    font_style: 'Subtitle1'
     on_release:
         if self.do_action is 'read': self.open_comic()
         else: MDDropdownMenu(items=root.menu_items, width_mult=3).open(self)
-    
+
 <SyncButtonIcon>
     # on_release:
     #     if self.do_action is 'read': self.do_sync_rf()

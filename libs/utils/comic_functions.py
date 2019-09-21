@@ -42,12 +42,19 @@ def convert_comicapi_to_json(comic_path):
 def get_comic_page(comic_obj, page_num):
     """returns name of cache file of requested page """
     app = App.get_running_app()
-    cahce_dir = app.store_dir
-    comic_name = f'{comic_obj.Series}_{comic_obj.Number}_{comic_obj.Volume}'
+    cahce_dir = os.path.join(app.store_dir, 'cache')
+    if comic_obj.is_sync:
+        comic_name = comic_obj.Id
+    else:
+        comic_name = f'{comic_obj.Series}_{comic_obj.Number}_{comic_obj.Volume}'
+
     comic_dir = os.path.join(cahce_dir, comic_name)
     if not Path(comic_dir).is_dir():
         os.makedirs(comic_dir)
-    md = getComicMetadata(comic_obj.FilePath)
+    if comic_obj.is_sync:
+        md = getComicMetadata(comic_obj.local_file)
+    else:
+        md = getComicMetadata(comic_obj.FilePath)
     ca = ComicArchive(md.path)
     image_data = ca.getPage(int(page_num))
     filename = os.path.join(comic_dir, f'{page_num}.webp')
