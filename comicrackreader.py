@@ -70,6 +70,7 @@ class ComicRackReader(App):
     max_books_page = NumericProperty()
     open_last_comic_startup = NumericProperty()
     how_to_open_comic = StringProperty()
+    app_started = BooleanProperty(False)
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)

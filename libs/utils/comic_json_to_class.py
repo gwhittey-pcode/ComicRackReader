@@ -153,11 +153,14 @@ class ComicBook(EventDispatcher):
         pass
 
     def set_is_sync(self):
-        db_item = ComicIndex.get(
-            ComicIndex.comic == self.Id, ComicIndex.readinglist == self.readlist_obj.slug)
-        if db_item:
-            if db_item.is_sync:
-                setattr(self, 'is_sync', db_item.is_sync)
+        try:
+            db_item = ComicIndex.get(
+                ComicIndex.comic == self.Id, ComicIndex.readinglist == self.readlist_obj.slug)
+            if db_item:
+                if db_item.is_sync:
+                    setattr(self, 'is_sync', db_item.is_sync)
+        except:
+            Logger.error('Somthing went wrong')
 
 
 class ComicReadingList(EventDispatcher):

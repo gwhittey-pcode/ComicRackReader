@@ -11,9 +11,9 @@
 name:server_readinglists_screen
 
 """
-
+import os
 from kivy.core.window import Window
-
+from kivymd.utils import asynckivy
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
@@ -31,7 +31,7 @@ from kivymd.uix.list import (
 from kivy.uix.label import Label
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import MDTextFieldRound, FixedHintTextInput
-
+from kivymd.utils import asynckivy
 #from libs.utils.server_sync import  SyncReadingListObject
 
 from kivymd.uix.button import MDRaisedButton
@@ -43,7 +43,9 @@ from kivymd.theming import ThemableBehavior
 from kivymd.icon_definitions import md_icons
 from libs.utils.paginator import Paginator
 from kivymd.uix.menu import MDDropdownMenu, MDMenuItem
+from kivymd.uix.dialog import MDDialog
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from libs.utils.comic_functions import save_thumb
 from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
@@ -355,6 +357,7 @@ class ServerReadingListsScreen(Screen):
         self.file_download = True
         self.num_file_done = 0
         self.max_books_page = self.app.max_books_page
+        self.please_wait_dialog = None
 
     def callback_for_menu_items(self, *args):
         pass
@@ -376,7 +379,7 @@ class ServerReadingListsScreen(Screen):
         return super().on_leave(*args)
 
     def on_enter(self, *args):
-        pass
+        self.show_please_wait_dialog()
 
     def my_width_callback(self, obj, value):
         win_x = (Window.width-30)//self.comic_thumb_width
@@ -424,40 +427,51 @@ class ServerReadingListsScreen(Screen):
             self.prev_button.page_num = ''
         self.build_page(page.object_list)
 
-        self.ids.main_scroll.scroll_to(
-            self.ids.main_grid.children[0], padding=10, animate=True)
+        
 
     def build_page(self, object_lsit):
-        grid = self.m_grid
-        main_stack = self.main_stack
-        grid.clear_widgets()
-        for comic in object_lsit:
-            c = ReadingListComicImage(comic_obj=comic)
-            c.lines = 2
-            c.readinglist_obj = self.new_readinglist
-            c.paginator_obj = self.paginator_obj
-            x = self.comic_thumb_width
-            y = self.comic_thumb_height
-            thumb_size = f'height={y}&width={x}'
-            part_url = f'/Comics/{comic.Id}/Pages/0?'
-            part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-            c_image_source = f"{self.api_url}{part_url}{part_api}"
-            c.source = c_image_source
-            c.PageCount = comic.PageCount
-            c.pag_pagenum = self.current_page.number
-            grid.add_widget(c)
-            grid.cols = (Window.width-10)//self.comic_thumb_width
-            self.dynamic_ids[id] = c
-        self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
+        async def build_page():
+            grid = self.m_grid
+            main_stack = self.main_stack
+            grid.clear_widgets()
+            for comic in object_lsit:
+                await asynckivy.sleep(0)
+                c = ReadingListComicImage(comic_obj=comic)
+                c.lines = 2
+                c.readinglist_obj = self.new_readinglist
+                c.paginator_obj = self.paginator_obj
+                x = self.comic_thumb_width
+                y = self.comic_thumb_height
+                thumb_size = f'height={y}&width={x}'
+                thumb_filename = f'{comic.Id}.jpg'
+                id_folder = self.app.store_dir
+                my_thumb_dir = os.path.join(
+                    id_folder, 'comic_thumbs')
+                t_file = os.path.join(my_thumb_dir, thumb_filename)
+                if os.path.isfile(t_file):
+                    c_image_source = t_file
+                else:
+                    part_url = f'/Comics/{comic.Id}/Pages/0?'
+                    part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+                    c_image_source = f"{self.api_url}{part_url}{part_api}"
+                    asynckivy.start(save_thumb(comic.Id, c_image_source))
+                c.source = c_image_source
+                c.PageCount = comic.PageCount
+                c.pag_pagenum = self.current_page.number
+                grid.add_widget(c)
+                grid.cols = (Window.width-10)//self.comic_thumb_width
+                self.dynamic_ids[id] = c
+            self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
+        asynckivy.start(build_page())
 
     def got_db_data(self):
         """
         used if rl data is already stored in db.
         """
-
-        def _do_readinglist():
+        async def _do_readinglist():
             self.new_readinglist = ComicReadingList(
                 name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
+            await asynckivy.sleep(0)
             self.so = self.new_readinglist.sw_syn_this_active
 
             #self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
@@ -486,45 +500,61 @@ class ServerReadingListsScreen(Screen):
                 self.prev_button.page_num = ''
             self.build_page(page.object_list)
             self.list_loaded = True
-        Clock.schedule_once(lambda dt: _do_readinglist(), 0)
-
+        #Clock.schedule_once(lambda dt: _do_readinglist(), 0)
+        asynckivy.start(_do_readinglist())
         # self.bind(new_readinglist=self.setter('sync_bool'))
         # self.max_books_page = int(self.app.config.get(
         #    'General', 'max_books_page'))
 
     def got_json(self, req, results):
-        self.new_readinglist = ComicReadingList(
-            name=self.readinglist_name, data=results, slug=self.readinglist_Id)
-        for item in self.new_readinglist.comic_json:
-            comic_index = self.new_readinglist.comic_json.index(item)
-            new_comic = ComicBook(
-                item, readlist_obj=self.new_readinglist, comic_index=comic_index)
-            self.new_readinglist.add_comic(new_comic)
-        self.setup_options()
-        orphans = self.max_books_page - 1
-        new_readinglist_reversed = self.new_readinglist.comics[::-1]
-        self.paginator_obj = Paginator(
-            new_readinglist_reversed, self.max_books_page)
-        page = self.paginator_obj.page(self.page_number)
-        self.current_page = page
-        if page.has_next():
-            self.next_button.opacity = 1
-            self.next_button.disabled = False
-            self.next_button.page_num = page.next_page_number()
-        else:
-            self.next_button.opacity = 0
-            self.next_button.disabled = True
-            self.next_button.page_num = ''
-        if page.has_previous():
-            self.prev_button.opacity = 1
-            self.prev_button.disabled = False
-            self.prev_button.page_num = page.previous_page_number()
-        else:
-            self.prev_button.opacity = 0
-            self.prev_button.disabled = True
-            self.prev_button.page_num = ''
-        self.build_page(page.object_list)
-        self.list_loaded = True
+        async def got_json():
+            self.new_readinglist = ComicReadingList(
+                name=self.readinglist_name, data=results, slug=self.readinglist_Id)
+            for item in self.new_readinglist.comic_json:
+                comic_index = self.new_readinglist.comic_json.index(item)
+                new_comic = ComicBook(
+                    item, readlist_obj=self.new_readinglist, comic_index=comic_index)
+                self.new_readinglist.add_comic(new_comic)
+            self.setup_options()
+            orphans = self.max_books_page - 1
+            new_readinglist_reversed = self.new_readinglist.comics[::-1]
+            self.paginator_obj = Paginator(
+                new_readinglist_reversed, self.max_books_page)
+            page = self.paginator_obj.page(self.page_number)
+            self.current_page = page
+            if page.has_next():
+                self.next_button.opacity = 1
+                self.next_button.disabled = False
+                self.next_button.page_num = page.next_page_number()
+            else:
+                self.next_button.opacity = 0
+                self.next_button.disabled = True
+                self.next_button.page_num = ''
+            if page.has_previous():
+                self.prev_button.opacity = 1
+                self.prev_button.disabled = False
+                self.prev_button.page_num = page.previous_page_number()
+            else:
+                self.prev_button.opacity = 0
+                self.prev_button.disabled = True
+                self.prev_button.page_num = ''
+            self.build_page(page.object_list)
+            self.list_loaded = True
+        asynckivy.start(got_json())
+
+    def show_please_wait_dialog(self):
+        pass
+        #toast('Reading List Loading')
+        # def __callback_for_please_wait_dialog(*args):
+        #     toast('loading Done')
+        # self.please_wait_dialog = MDDialog(
+        #     title="Loading Please Stand By",
+        #     size_hint=(0.8, 0.4),
+        #     text_button_ok="Ok",
+        #     text=f"Your ReadingList is opening",
+        #     events_callback=__callback_for_please_wait_dialog,
+        # )
+        # self.please_wait_dialog.open()
 
     def setup_options(self):
         self.sync_options = SyncOptionsPopup(
@@ -534,7 +564,8 @@ class ServerReadingListsScreen(Screen):
             cb_only_read_active=self.new_readinglist.cb_only_read_active,
             cb_keep_last_read_active=self.new_readinglist.cb_keep_last_read_active,
             cb_optimize_size_active=self.new_readinglist.cb_optimize_size_active,
-            sw_syn_this_active=bool(self.new_readinglist.sw_syn_this_active),
+            sw_syn_this_active=bool(
+                self.new_readinglist.sw_syn_this_active),
         )
         self.sync_options.ids.limit_num.bind(
             on_text_validate=self.sync_options.check_input,

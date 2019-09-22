@@ -143,21 +143,22 @@ class ServerListsScreen(Screen):
         self.my_tree.bind(on_node_expand=self.node_expand)
         self.my_tree.bind(on_node_collapse=self.node_collapse)
         for item in result:
-            if item['Type'] == "ComicLibraryListItem" or\
-                    item['Type'] == "ComicSmartListItem":
-                new_node = self.my_tree.add_node(TreeViewItem(
-                    text=item['Name'], color=(
-                        0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']))
-                new_node.bind(on_touch_down=self.open_readinglist)
-            elif item['Type'] == "ComicListItemFolder":
-                parent = self.my_tree.add_node(
-                    TreeViewFolder(text=item['Name'], color=(
-                        0.9568627450980393, 0.2627450980392157,
-                        0.21176470588235294, 1), id=item['Id']))
-                parent.bind(on_touch_down=self.do_expand)
-                self.set_files(parent, item['Lists'])
-        self.lists_loaded = True
+            if item['Name'] != 'Library':
+                if item['Type'] == "ComicLibraryListItem" or\
+                        item['Type'] == "ComicSmartListItem":
+                    new_node = self.my_tree.add_node(TreeViewItem(
+                        text=item['Name'], color=(
+                            0.9568627450980393, 0.2627450980392157,
+                            0.21176470588235294, 1), id=item['Id']))
+                    new_node.bind(on_touch_down=self.open_readinglist)
+                elif item['Type'] == "ComicListItemFolder":
+                    parent = self.my_tree.add_node(
+                        TreeViewFolder(text=item['Name'], color=(
+                            0.9568627450980393, 0.2627450980392157,
+                            0.21176470588235294, 1), id=item['Id']))
+                    parent.bind(on_touch_down=self.do_expand)
+                    self.set_files(parent, item['Lists'])
+            self.lists_loaded = True
 
     def set_files(self, parent, child):
         for item in child:

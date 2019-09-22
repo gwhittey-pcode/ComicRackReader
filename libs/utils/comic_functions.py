@@ -12,6 +12,9 @@ import json
 from kivy.app import App
 from pathlib import Path
 from PIL import Image
+import asyncio
+from kivymd.utils import asynckivy
+from libs.utils.comic_server_conn import ComicServerConn
 
 
 def convert_comicapi_to_json(comic_path):
@@ -87,3 +90,19 @@ def getComicMetadata(path):
                 os.path.getmtime(ca.path))
             return md
     return None
+
+
+async def save_thumb(comic_id, c_image_source):
+    def got_thumb(results):
+        pass
+    fetch_data = ComicServerConn()
+    app = App.get_running_app()
+    id_folder = app.store_dir
+    my_thumb_dir = Path(os.path.join(id_folder, 'comic_thumbs'))
+
+    if not my_thumb_dir.is_dir():
+        os.makedirs(my_thumb_dir)
+    file_name = f'{comic_id}.jpg'
+    t_file = os.path.join(my_thumb_dir, file_name)
+    fetch_data.get_server_file_download(c_image_source, callback=lambda req, results: got_thumb(
+        results), file_path=os.path.join(my_thumb_dir, t_file))
