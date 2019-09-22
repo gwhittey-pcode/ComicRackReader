@@ -257,8 +257,10 @@ class ComicReadingList(EventDispatcher):
         except peewee.OperationalError:
             pass
 
-    def do_db_refresh(self):
+    def do_db_refresh(self, screen=None):
         def __finish_toast(dt):
+            app = App.get_running_app()
+            #app.current = screen
             toast('DataBase Refresh Complete')
 
         def __got_readlist_data(results):
@@ -296,6 +298,7 @@ class ComicReadingList(EventDispatcher):
                                                     server_comic[key])
                                             db_item.save()
                                             setattr(self, key, db_item)
+
             Clock.schedule_once(__finish_toast, 3)
 
         self.fetch_data = ComicServerConn()

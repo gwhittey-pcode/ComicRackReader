@@ -17,7 +17,7 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
-    BooleanProperty, OptionProperty, DictProperty,ListProperty
+    BooleanProperty, OptionProperty, DictProperty, ListProperty
 from kivy.uix.image import AsyncImage
 from kivy.uix.modalview import ModalView
 from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
@@ -60,7 +60,6 @@ import ntpath
 import re
 
 
-
 class ReadingListComicImage(ComicTileLabel):
     my_clock = ObjectProperty()
     do_action = StringProperty()
@@ -77,9 +76,11 @@ class ReadingListComicImage(ComicTileLabel):
     UserCurrentPage = NumericProperty()
     percent_read = NumericProperty()
     view_mode = StringProperty('Server')
-    def __init__(self,comic_obj=None, **kwargs):
+
+    def __init__(self, comic_obj=None, **kwargs):
         super(ReadingListComicImage, self).__init__(**kwargs)
-        list_menu_items = ['Open This Comic', 'Mark as Read', 'Mark as UnRead','Download Comic']
+        list_menu_items = ['Open This Comic',
+                           'Mark as Read', 'Mark as UnRead', 'Download Comic']
         self.menu_items = []
         for item in list_menu_items:
             a_menu_item = {'viewclass': 'MDMenuItem',
@@ -90,23 +91,26 @@ class ReadingListComicImage(ComicTileLabel):
         self.comic_obj = comic_obj
         self.UserCurrentPage = comic_obj.UserCurrentPage
         self.UserLastPageRead = comic_obj.UserLastPageRead
-        if self.comic_obj.local_file !='':self.has_localfile = True
+        if self.comic_obj.local_file != '':
+            self.has_localfile = True
         if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount-1:
             #self.img_color = (.89, .15, .21, 5)
-            self.is_read=True
+            self.is_read = True
             #txt_color = get_hex_from_color((.89, .15, .21, 1))
             txt_color = get_hex_from_color((1, 1, 1, 1))
         else:
             txt_color = get_hex_from_color((1, 1, 1, 1))
-            self.is_read=False
+            self.is_read = False
         strtxt = f"{self.comic_obj.Series} #{self.comic_obj.Number}"
         self.text = f'[color={txt_color}]{strtxt}[/color]'
         self._comic_object = self.comic_obj
         if comic_obj.UserLastPageRead == 0:
             self.percent_read = 0
         else:
-            self.percent_read = round(comic_obj.UserLastPageRead/(comic_obj.PageCount-1)*100)
-        self.page_count_text = f'{self.percent_read}%' 
+            self.percent_read = round(
+                comic_obj.UserLastPageRead/(comic_obj.PageCount-1)*100)
+        self.page_count_text = f'{self.percent_read}%'
+
     def callback_for_menu_items(self, *args):
         def __updated_progress(results, state):
             Logger.info(results)
@@ -255,8 +259,8 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
             'server_readinglists_screen').open_sync_options()
 
     def do_data_refresh(self, *args):
-        self.app.manager.get_screen(
-            'server_readinglists_screen').new_readinglist.do_db_refresh()
+        the_screen = self.app.manager.get_screen('server_readinglists_screen')
+        the_screen.new_readinglist.do_db_refresh(screen=the_screen)
 
 
 class SynLimitButton(MDRaisedButton):
@@ -445,7 +449,6 @@ class ServerReadingListsScreen(Screen):
             grid.cols = (Window.width-10)//self.comic_thumb_width
             self.dynamic_ids[id] = c
         self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
-        
 
     def got_db_data(self):
         """
