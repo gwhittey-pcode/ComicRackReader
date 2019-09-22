@@ -76,6 +76,7 @@ class ReadingListComicImage(ComicTileLabel):
     UserLastPageRead = NumericProperty()
     UserCurrentPage = NumericProperty()
     percent_read = NumericProperty()
+    view_mode = StringProperty('Server')
     def __init__(self,comic_obj=None, **kwargs):
         super(ReadingListComicImage, self).__init__(**kwargs)
         list_menu_items = ['Open This Comic', 'Mark as Read', 'Mark as UnRead','Download Comic']
@@ -89,7 +90,7 @@ class ReadingListComicImage(ComicTileLabel):
         self.comic_obj = comic_obj
         self.UserCurrentPage = comic_obj.UserCurrentPage
         self.UserLastPageRead = comic_obj.UserLastPageRead
-        if self.comic_obj !='None':self.has_localfile = True
+        if self.comic_obj.local_file !='':self.has_localfile = True
         if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount-1:
             #self.img_color = (.89, .15, .21, 5)
             self.is_read=True
@@ -126,16 +127,7 @@ class ReadingListComicImage(ComicTileLabel):
         action = args[0].replace(
             '[color=#000000]', "").replace('[/color]', "")
         if action == "Open This Comic":
-            new_screen_name = str(self.comic_obj.Id)
-            if new_screen_name not in self.app.manager.screen_names:
-                new_screen = ServerComicBookScreen(
-                    readinglist_obj=self.readinglist_obj,
-                    comic_obj=self.comic_obj,
-                    paginator_obj=self.paginator_obj,
-                    pag_pagenum=self.pag_pagenum,
-                    name=new_screen_name)
-                self.app.manager.add_widget(new_screen)
-                self.app.manager.current = new_screen_name
+            self.open_comic()
         elif action == 'Mark as Read':
             server_con = ComicServerConn()
             update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Progress'
@@ -172,7 +164,7 @@ class ReadingListComicImage(ComicTileLabel):
                 comic_obj=self.comic_obj,
                 paginator_obj=self.paginator_obj,
                 pag_pagenum=self.pag_pagenum,
-                name=new_screen_name, last_load=0)
+                name=new_screen_name, last_load=0, view_mode=self.view_mode)
             self.app.manager.add_widget(new_screen)
             self.app.manager.current = new_screen_name
         else:
@@ -252,7 +244,6 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
         Window.remove_widget(self.tooltip)
 
     def display_tooltip(self, *args):
-        print('display_tooltip')
         Window.add_widget(self.tooltip)
 
     def do_sync_rf(self, *args):
@@ -444,17 +435,9 @@ class ServerReadingListsScreen(Screen):
             x = self.comic_thumb_width
             y = self.comic_thumb_height
             thumb_size = f'height={y}&width={x}'
-            if self.mode == 'From Server':
-                part_url = f'/Comics/{comic.Id}/Pages/0?'
-                part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-                c_image_source = f"{self.api_url}{part_url}{part_api}"
-            else:
-                import os
-                id_folder = os.path.join(self.app.sync_folder, self.new_readinglist.slug)
-                my_thumb_dir = os.path.join(id_folder, 'thumb')
-                thumb_name = f'{comic.Id}.jpg'
-                t_file = os.path.join(my_thumb_dir, thumb_name)
-                c_image_source = t_file
+            part_url = f'/Comics/{comic.Id}/Pages/0?'
+            part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+            c_image_source = f"{self.api_url}{part_url}{part_api}"
             c.source = c_image_source
             c.PageCount = comic.PageCount
             c.pag_pagenum = self.current_page.number

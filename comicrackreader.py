@@ -112,15 +112,11 @@ class ComicRackReader(App):
         config.adddefaultsection('Saved')
         config.setdefault('Language', 'language', 'en')
 
-        config.setdefault('Saved', 'last_server_comic_id', '')
-        config.setdefault('Saved', 'last_server_reading_list_id', '')
-        config.setdefault('Saved', 'last_server_reading_list_name', '')
-        config.setdefault('Saved', 'last_server_pag_pagnum', '')
-
-        config.setdefault('Saved', 'last_file_comic_id', '')
-        config.setdefault('Saved', 'last_file_reading_list_id', '')
-        config.setdefault('Saved', 'last_file_reading_list_name', '')
-        config.setdefault('Saved', 'last_file_pag_pagnum', '')
+        config.setdefault('Saved', 'last_comic_id', '')
+        config.setdefault('Saved', 'last_comic_type', '')
+        config.setdefault('Saved', 'last_reading_list_id', '')
+        config.setdefault('Saved', 'last_reading_list_name', '')
+        config.setdefault('Saved', 'last_pag_pagnum', '')
 
         config.setdefaults('General', {
             'base_url':          'http://',
@@ -189,6 +185,7 @@ class ComicRackReader(App):
         if not Path(self.store_dir).is_dir():
             os.makedirs(self.store_dir)
         self.base_url = self.config.get('General', 'base_url').rstrip('\\')
+        print(f'self.base_url:{self.base_url}')
         self.api_key = self.config.get('General', 'api_key')
         self.username = self.config.get('General', 'username')
         self.password = self.config.get('General', 'password')
@@ -499,7 +496,6 @@ class ComicRackReader(App):
         has_cb_files = False
         self.exit_manager()
         if os.path.isfile(path):
-
             ext = os.path.splitext(path)[-1].lower()
             if ext in (".cbz", ".cbr", ".cb7", ".cbp"):
                 has_cb_files = True
@@ -507,13 +503,12 @@ class ComicRackReader(App):
                 comic_data = convert_comicapi_to_json(path)
                 data["items"].append(comic_data)
                 new_rl = ComicReadingList(
-                    name='FileLoad', data=data, slug='FileOpen')
+                    name='Single_FileLoad', data=data, slug='FileOpen')
                 new_comic = ComicBook(data['items'][0], mode='FileOpen')
                 new_rl.add_comic(new_comic)
             else:
                 pass
         elif os.path.isdir(path):
-
             if os.path.isdir(path):
                 onlyfiles = [f for f in os.listdir(
                     path) if os.path.isfile(os.path.join(path, f))]
@@ -553,6 +548,7 @@ class ComicRackReader(App):
             toast(f'Opening {new_rl.comics[0].__str__}')
         else:
             toast('A vaild ComicBook File was not found')
+        self.md_manager = None
 
     def exit_manager(self, *args):
         """Called when the user reaches the root of the directory tree."""

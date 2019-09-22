@@ -61,6 +61,7 @@ class TreeViewItem(OneLineIconListItem, TreeViewNode):
     text = StringProperty()
     color = ListProperty([0.4, 0.4, 0.4, 1])
     icon = StringProperty('view-list')
+    rl_slug = StringProperty()
 
     def __init__(self, **kwargs):
         super(TreeViewItem, self).__init__(**kwargs)
@@ -112,7 +113,7 @@ class ServerListsScreen(Screen):
         toast(args[0])
 
     def open_readinglist(self, instance, node):
-        self.app.manager.current = 'server_readinglists_screen'
+
         server_readinglists_screen = self.app.manager.get_screen(
             'server_readinglists_screen')
         server_readinglists_screen.setup_screen()
@@ -129,8 +130,10 @@ class ServerListsScreen(Screen):
                 f'{readinglist_name} not in Database getting info from server')
             set_mode = 'From Server'
         # set_mode = 'From Server'
+
         server_readinglists_screen.collect_readinglist_data(
             readinglist_name, readinglist_Id, mode=set_mode)
+        self.app.manager.current = 'server_readinglists_screen'
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()

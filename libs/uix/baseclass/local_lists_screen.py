@@ -15,7 +15,7 @@ name:local_lists_screen
 from kivy.uix.screenmanager import Screen
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty, BooleanProperty, StringProperty, ListProperty
+from kivy.properties import ObjectProperty, BooleanProperty, StringProperty, ListProperty, DictProperty
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.list import ILeftBodyTouch, ILeftBody
 from kivymd.uix.selectioncontrol import MDCheckbox
@@ -70,6 +70,8 @@ class TreeViewItem(OneLineIconListItem, TreeViewNode):
 class LocalListsScreen(Screen):
     base_url = StringProperty()
     api_url = StringProperty()
+    node_list = ListProperty()
+    my_tree = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(LocalListsScreen, self).__init__(**kwargs)
@@ -88,8 +90,11 @@ class LocalListsScreen(Screen):
     def on_enter(self, *args):
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
-        if self.lists_loaded is False:
-            self.get_comicrack_list()
+        self.my_tree = self.ids.mytv
+        if self.node_list:
+            for node in self.node_list:
+                self.my_tree.remove_node(node)
+        self.get_comicrack_list()
         self.app.set_screen('ComicRack Lists')
 
     def on_leave(self):
@@ -97,9 +102,6 @@ class LocalListsScreen(Screen):
 
     def get_comicrack_list(self):
         query = ReadingList.select().where(ReadingList.sw_syn_this_active == True)
-        self.ids.mytv.clear_widgets()
-        self.my_tree = self.ids.mytv
-        self.my_tree.clear_widgets()
         self.my_tree.root_options = {'text': 'Synced ReadingLists',
                                      'color': (0, 0, 0, 1), 'font_size': dp(18)
                                      }
@@ -110,9 +112,11 @@ class LocalListsScreen(Screen):
             new_node = self.my_tree.add_node(TreeViewItem(
                 text=item.name, color=(
                     0.9568627450980393, 0.2627450980392157,
-                    0.21176470588235294, 1), id=item.slug))
+                    0.21176470588235294, 1)))
+            new_node.rl_slug = item.slug
             new_node.bind(on_touch_down=self.open_readinglist)
-        self.lists_loaded = True
+            self.node_list.append(new_node)
+        self.lists_loaded = False
 
     def node_expand(self, instance, node):
         node.icon = 'folder-open'
@@ -127,14 +131,14 @@ class LocalListsScreen(Screen):
         toast(args[0])
 
     def open_readinglist(self, instance, node):
-        self.app.manager.current = 'server_readinglists_screen'
-        server_readinglists_screen = self.app.manager.get_screen(
-            'server_readinglists_screen')
-        server_readinglists_screen.setup_screen()
-        server_readinglists_screen.page_number = 1
-        readinglist_Id = instance.id
+        self.app.manager.current = 'local_readinglists_screen'
+        local_readinglists_screen = self.app.manager.get_screen(
+            'local_readinglists_screen')
+        local_readinglists_screen.setup_screen()
+        local_readinglists_screen.page_number = 1
+        readinglist_Id = instance.rl_slug
         readinglist_name = (instance.text).split(' : ')[0]
-        server_readinglists_screen.list_loaded = False
+        local_readinglists_screen.list_loaded = False
         query = ReadingList.select().where(ReadingList.slug == readinglist_Id)
         if query.exists():
             Logger.info(f'{readinglist_name} already in Database')
@@ -144,5 +148,5 @@ class LocalListsScreen(Screen):
                 f'{readinglist_name} not in Database getting info from server')
             set_mode = 'From Server'
         # set_mode = 'From Server'
-        server_readinglists_screen.collect_readinglist_data(
+        local_readinglists_screen.collect_readinglist_data(
             readinglist_name, readinglist_Id, mode=set_mode)

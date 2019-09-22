@@ -73,7 +73,7 @@ class ComicBook(EventDispatcher):
     Volume = NumericProperty()
     readlist_obj = ObjectProperty()
     local_file = StringProperty('None')
-    is_sync = BooleanProperty()
+    is_sync = BooleanProperty(False)
     data = DictProperty()
 
     def __init__(self, data=None, readlist_obj=None, comic_Id='',
@@ -144,7 +144,7 @@ class ComicBook(EventDispatcher):
             self.name = self.__str__
             self.date = f"{db_item.Month}/{db_item.Year}"
             self.slug = str(self.Id)
-            self.set_is_sync
+            self.set_is_sync()
 
             self.comic_index = db_item.comic_index.select(
                 ReadingList.slug == self.readlist_obj.slug)
@@ -193,10 +193,12 @@ class ComicReadingList(EventDispatcher):
             self.data = pickle.loads(self.pickled_data)
             self.comic_json = self.data["items"]
             if mode != 'FileOpen':
-                self.totalCount = self.data["totalCount"]
+                if name == 'Single_FileLoad':
+                    self.totalCount = 0
+                else:
+                    self.totalCount = self.data["totalCount"]
         if mode != 'FileOpen':
-            pass
-            self.get_or_create_db_item()
+            self.get_or_create_db_item(mode=mode)
 
     def add_comic(self, comic, index=0):
         '''
@@ -204,7 +206,7 @@ class ComicReadingList(EventDispatcher):
         '''
         self.comics.insert(0, comic)
 
-    def get_or_create_db_item(self):
+    def get_or_create_db_item(self, mode):
         tmp_defaults = {}
         try:
             for key in READINGLIST_DB_KEYS:
@@ -220,7 +222,8 @@ class ComicReadingList(EventDispatcher):
                 for key in READINGLIST_DB_KEYS:
                     setattr(self, key, getattr(db_item, key))
                 if created is True:
-                    if len(db_item.comics) == len(self.comic_json) and len(self.comic_json) != 0:
+                    len_dbcomics = len(db_item.comics)
+                    if len_dbcomics == len(self.comic_json) and len(self.comic_json) != 0:
                         self.comic_db_in = True
                         self.comics = self.db.comics.order_by(
                             -Comic.comic_index.index)
@@ -228,8 +231,13 @@ class ComicReadingList(EventDispatcher):
                     self.comic_db_in = True
                     comicindex_db = ComicIndex.get(
                         ComicIndex.readinglist == self.slug)
-                    list_comics = self.db.comics.order_by(
-                        comicindex_db.index)
+                    if mode == "local_file":
+                        list_comics = self.db.comics.where(comicindex_db.is_sync == True, Comic.local_file != '').order_by(
+                            comicindex_db.index)
+                        print(f'len:{len(list_comics)}')
+                    else:
+                        list_comics = self.db.comics.order_by(
+                            comicindex_db.index)
                     for comic in list_comics:
                         new_comic = ComicBook(
                             comic_Id=comic.Id, readlist_obj=self, mode='db_data',)
@@ -300,16 +308,13 @@ class ComicReadingList(EventDispatcher):
             results: __got_readlist_data(results))
 
     def get_last_comic_read(self):
-
         last_read_comic = 0
         for comic in self.comics:
             if comic.UserLastPageRead == comic.PageCount-1 and comic.PageCount > 1:
                 last_read_comic = self.comics.index(comic)
-                print(comic.Id)
         return last_read_comic
 
     def do_sync(self):
-
         self.num_file_done = 0
         self.sync_range = 0
         self.fetch_data = ComicServerConn()
@@ -319,8 +324,9 @@ class ComicReadingList(EventDispatcher):
             self.sync_range = int(self.last_comic_read) + int(self.limit_num)
         else:
             self.sync_range = len(self.comics)
+        # if self.cb_only_read_active:
+        #    self.do_purge()
         db_item = ReadingList.get(ReadingList.slug == self.slug)
-
         for key in READINGLIST_SETTINGS_KEYS:
             v = getattr(db_item, key)
             globals()['%s' % key] = v
@@ -393,7 +399,6 @@ class ComicReadingList(EventDispatcher):
 
     def sync_readinglist(self):
         list_comics = self.comics
-
         sync_num_comics = list_comics[self.last_comic_read: self.sync_range]
         app = App.get_running_app()
         app.delayed_work(

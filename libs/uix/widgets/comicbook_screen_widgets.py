@@ -588,6 +588,8 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
         if new_screen_name not in app.manager.screen_names:
             if self.mode == 'FileOpen':
                 view_mode = 'FileOpen'
+            elif self.mode == 'Sync':
+                view_mode = 'Sync'
             else:
                 view_mode = "Server"
             new_screen = ServerComicBookScreen(

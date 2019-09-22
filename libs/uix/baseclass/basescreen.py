@@ -37,6 +37,7 @@ from kivymd.uix.label import MDLabel
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from libs.uix.baseclass.server_readinglists_screen import ReadingListComicImage
+from libs.uix.baseclass.local_readinglists_screen import LocalReadingListsScreen
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 from libs.utils.comic_functions import convert_comicapi_to_json
 from libs.utils.paginator import Paginator
@@ -112,9 +113,9 @@ class BaseScreen(Screen):
         else:
 
             tmp_readinglist_name = self.app.config.get(
-                'Saved', 'last_server_reading_list_name')
+                'Saved', 'last_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
-                'Saved', 'last_server_reading_list_id')
+                'Saved', 'last_reading_list_id')
             if tmp_readinglist_Id == '':
                 return
             else:
@@ -131,9 +132,9 @@ class BaseScreen(Screen):
             self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
             self.popup.dismiss()
             tmp_readinglist_name = self.app.config.get(
-                'Saved', 'last_server_reading_list_name')
+                'Saved', 'last_reading_list_name')
             tmp_readinglist_Id = self.app.config.get(
-                'Saved', 'last_server_reading_list_id')
+                'Saved', 'last_reading_list_id')
             if tmp_readinglist_Id == '':
                 return
             else:
@@ -146,39 +147,30 @@ class BaseScreen(Screen):
         self.base_url = url.strip()
         self.username = user
         self.password = pwd
-        req_url = f"{self.app.base_url}auth"
+        req_url = f"{self.app.base_url}/auth"
         self.fetch_data.get_api_key(req_url, user, pwd, callback=lambda req,
                                     results: got_api(results))
 
     def build_last_comic_section(self, readinglist_name, readinglist_Id):
-
-        self.readinglist_name = readinglist_name
-        # self.app.set_screen(self.readinglist_name + ' Page 1')
-        self.reading_list_title = self.readinglist_name + ' Page 1'
-        self.readinglist_Id = readinglist_Id
-        self.fetch_data = ComicServerConn()
-        lsit_count_url = f'{self.app.api_url}/Lists/{readinglist_Id}/Comics/'
-        # self.fetch_data.get_list_count(lsit_count_url,self)
-
-        self.fetch_data.get_server_data_callback(
-            lsit_count_url, callback=lambda req,
-            results: got_readlist_data(results))
-
-        def got_readlist_data(results):
-
-            tmp_last_server_comic_id = self.app.config.get(
-                'Saved', 'last_server_comic_id')
+        def __got_readlist_data(results):
+            tmp_last_comic_id = self.app.config.get(
+                'Saved', 'last_comic_id')
+            tmp_last_comic_type = self.app.config.get(
+                'Saved', 'last_comic_type')
             tmp_last_pag_pagnum = int(self.app.config.get(
-                'Saved', 'last_server_pag_pagnum'))
-            if tmp_last_server_comic_id == '':
+                'Saved', 'last_pag_pagnum'))
+            if tmp_last_comic_id == '':
                 return
             else:
                 query = ReadingList.select().where(ReadingList.slug == readinglist_Id)
                 if query.exists():
                     Logger.info(f'{readinglist_name} already in Database')
                     set_mode = 'From DataBase'
+                    mode = ''
+                    if tmp_last_comic_type == 'local_file':
+                        mode = 'local_file'
                     self.new_readinglist = ComicReadingList(
-                        name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
+                        name=self.readinglist_name, data='db_data', slug=self.readinglist_Id, mode=mode)
 
                     # self.new_readinglist.comics_write()
                     max_books_page = int(self.app.config.get(
@@ -190,27 +182,34 @@ class BaseScreen(Screen):
                     for x in range(1, paginator_obj.num_pages()):
                         this_page = paginator_obj.page(x)
                         for comic in this_page.object_list:
-                            if tmp_last_server_comic_id == comic.Id:
+                            if tmp_last_comic_id == comic.Id:
                                 tmp_last_pag_pagnum = this_page.number
-                    server_readinglists_screen = self.app.manager.get_screen(
-                        'server_readinglists_screen')
-                    server_readinglists_screen.list_loaded = False
-                    server_readinglists_screen.setup_screen()
+                    if tmp_last_comic_type == 'local_file':
+                        x_readinglists_screen = self.app.manager.get_screen(
+                            'local_readinglists_screen')
+                    else:
+                        x_readinglists_screen = self.app.manager.get_screen(
+                            'server_readinglists_screen')
+                    x_readinglists_screen.list_loaded = False
+                    x_readinglists_screen.setup_screen()
                     page = paginator_obj.page(tmp_last_pag_pagnum)
-                    server_readinglists_screen.page_number = tmp_last_pag_pagnum
-                    server_readinglists_screen.collect_readinglist_data(
+                    x_readinglists_screen.page_number = tmp_last_pag_pagnum
+                    x_readinglists_screen.collect_readinglist_data(
                         readinglist_name, readinglist_Id, mode=set_mode)
+
                     if self.open_last_comic_startup == 1:
                         for comic in self.new_readinglist.comics:
-                            if comic.slug == tmp_last_server_comic_id:
-                                new_screen_name = str(tmp_last_server_comic_id)
+                            if comic.slug == tmp_last_comic_id:
+                                new_screen_name = str(tmp_last_comic_id)
                                 if new_screen_name not in self.app.manager.screen_names:
+                                    if tmp_last_comic_type == 'local_file':
+                                        view_mode = 'Sync'
                                     new_screen = ServerComicBookScreen(
                                         readinglist_obj=self.new_readinglist,
                                         comic_obj=comic,
                                         paginator_obj=paginator_obj,
                                         pag_pagenum=tmp_last_pag_pagnum,
-                                        name=new_screen_name, last_load=0)
+                                        name=new_screen_name, last_load=0, view_mode=view_mode)
                                     self.app.manager.add_widget(new_screen)
                                     self.app.manager.current = new_screen_name
                                 else:
@@ -220,20 +219,34 @@ class BaseScreen(Screen):
                         grid.cols = 1
                         grid.clear_widgets()
                         for comic in self.new_readinglist.comics:
-                            if comic.slug == tmp_last_server_comic_id:
+                            if comic.slug == tmp_last_comic_id:
                                 c = ReadingListComicImage(comic_obj=comic)
                                 c.readinglist_obj = self.new_readinglist
                                 c.paginator_obj = paginator_obj
                                 x = self.app.comic_thumb_width
                                 y = self.app.comic_thumb_height
                                 thumb_size = f'height={y}&width={x}'
-                                part_url = f'/Comics/{comic.Id}/Pages/0?'
-                                part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-                                c_image_source = f"{self.app.api_url}{part_url}{part_api}"
+                                if tmp_last_comic_type == 'local_file':
+                                    if comic.local_file == "":
+                                        return
+                                    import os
+                                    id_folder = os.path.join(
+                                        self.app.sync_folder, self.new_readinglist.slug)
+                                    my_thumb_dir = os.path.join(
+                                        id_folder, 'thumb')
+                                    thumb_name = f'{comic.Id}.jpg'
+                                    t_file = os.path.join(
+                                        my_thumb_dir, thumb_name)
+                                    c_image_source = t_file
+                                else:
+                                    part_url = f'/Comics/{comic.Id}/Pages/0?'
+                                    part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+                                    c_image_source = f"{self.app.api_url}{part_url}{part_api}"
                                 c.source = source = c_image_source
                                 c.PageCount = comic.PageCount
                                 c.pag_pagenum = tmp_last_pag_pagnum
-
+                                if tmp_last_comic_type == 'local_file':
+                                    c.view_mode = 'Sync'
                                 strtxt = f"{comic.Series} #{comic.Number}"
                                 tmp_color = get_hex_from_color((1, 1, 1, 1))
                                 c.text = f'[color={tmp_color}]{strtxt}[/color]'
@@ -247,6 +260,23 @@ class BaseScreen(Screen):
 
                     set_mode = 'From Server'
                 # set_mode = 'From Server'
+        self.readinglist_name = readinglist_name
+        # self.app.set_screen(self.readinglist_name + ' Page 1')
+        self.reading_list_title = self.readinglist_name + ' Page 1'
+        self.readinglist_Id = readinglist_Id
+
+        # self.fetch_data.get_list_count(lsit_count_url,self)
+        tmp_last_comic_type = self.app.config.get(
+            'Saved', 'last_comic_type')
+        if tmp_last_comic_type == 'local_file':
+            Clock.schedule_once(
+                lambda dt: __got_readlist_data('none'), 0.15)
+        else:
+            self.fetch_data = ComicServerConn()
+            lsit_count_url = f'{self.app.api_url}/Lists/{readinglist_Id}/Comics/'
+            self.fetch_data.get_server_data_callback(
+                lsit_count_url, callback=lambda req,
+                results: __got_readlist_data(results))
 
     def update_leaf(self):
         Window.fullscreen = 'auto'

@@ -18,6 +18,7 @@
 #:import ServerListsScreen libs.uix.baseclass.server_lists_screen.ServerListsScreen
 #:import SyncOptions libs.uix.baseclass.sync_options_screen.SyncOptions
 #:import LocalListsScreen libs.uix.baseclass.local_lists_screen.LocalListsScreen
+#:import LocalReadingListsScreen libs.uix.baseclass.local_readinglists_screen.LocalReadingListsScreen
 <StartScreen>
     name:'startscreen'
     orientation: 'vertical'
@@ -56,5 +57,8 @@
                 
             LocalListsScreen:
                 id:local_lists_screen
+
+            LocalReadingListsScreen:
+                id:local_readinglists_screen
 
 
