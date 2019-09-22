@@ -233,14 +233,16 @@ class ServerComicBookScreen(Screen):
                 self.ids.comic_book_carousel.load_slide(slide)
 
     def slide_changed(self, index):
+        def __update_page(key_val=None):
+            db_item = Comic.get(Comic.Id == self.comic_obj.Id)
+            for key, value in key_val.items():
+                setattr(db_item, key, value)
+                setattr(self.comic_obj, key, value)
+            db_item.save()
         if self.view_mode == 'FileOpen' or (self.view_mode == 'Sync' and self.comic_obj.is_sync):
+
             if index is not None:
-                def __update_page(key_val=None):
-                    db_item = Comic.get(Comic.Id == self.comic_obj.Id)
-                    for key, value in key_val.items():
-                        setattr(db_item, key, value)
-                        setattr(self.comic_obj, key, value)
-                    db_item.save()
+
                 comic_book_carousel = self.ids.comic_book_carousel
                 current_slide = comic_book_carousel.current_slide
                 current_page = comic_book_carousel.current_slide.comic_page
@@ -277,6 +279,16 @@ class ServerComicBookScreen(Screen):
                 prev_id = f'comic_scatter{current_page-1}'
                 next_id = f'comic_scatter{current_page+1}'
                 update_url = f'{self.api_url}/Comics/{comic_Id}/Progress'
+                if self.comic_obj.is_sync:
+                    if current_page > self.comic_obj.UserLastPageRead:
+                        key_val = {
+                            'UserLastPageRead': current_page,
+                            'UserCurrentPage': current_page
+                        }
+                    else:
+                        key_val = {'UserCurrentPage': current_page}
+                    Clock.schedule_once(
+                        lambda dt, key_value={}: __update_page(key_val=key_val), 0.15)
                 self.fetch_data.update_progress(update_url, current_page,
                                                 callback=lambda req, results:
                                                 updated_progress(results))
@@ -1017,7 +1029,7 @@ class OptionToolBar(MDToolbar):
             ['server',
                 lambda x: app.switch_server_lists_screen()],
             ['view-list',
-                lambda x: root.option_bar_action('server_readinglists_screen')],
+                lambda x: app.switch_readinglists_screen],
             ['close-box-outline', lambda x: app.stop()]
         ]
 

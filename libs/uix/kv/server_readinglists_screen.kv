@@ -96,6 +96,21 @@
             text_color: app.theme_cls.primary_color
             font_size: dp(35)
             on_release:self.do_data_refresh()
+        SyncButtonIcon:
+            #font_style: 'Icon'
+            id:sync_db
+            icon_name: 'refresh'
+            tooltip_text:'Refresh List'
+            size_hint: None,None
+            size:dp(50),dp(50)
+            padding: dp(10), dp(10)
+            center_x:main_stack.right - (self.width)
+            center_y:root.top - (self.height/2)
+            text: md_icons.get(self.icon_name) 
+            theme_text_color: 'Custom'
+            text_color: app.theme_cls.primary_color
+            font_size: dp(35)
+            on_release:root.refresh_callback()
         MDFlatButton:
             id:spacer
             width: dp(10)
@@ -107,6 +122,7 @@
             do_scroll_x: False
             id: main_scroll
             padding: dp(10), dp(10)
+            refresh_callback: self.refresh_callback
             GridLayout:
                 id: main_grid
                 row_force_default: True

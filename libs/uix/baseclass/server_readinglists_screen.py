@@ -21,6 +21,7 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
 from kivy.uix.image import AsyncImage
 from kivy.uix.modalview import ModalView
 from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
+from peewee import ProgrammingError, OperationalError, DataError
 from kivymd.uix.list import (
     ILeftBody,
     ILeftBodyTouch,
@@ -45,6 +46,7 @@ from libs.utils.paginator import Paginator
 from kivymd.uix.menu import MDDropdownMenu, MDMenuItem
 from kivymd.uix.dialog import MDDialog
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from libs.utils.db_functions import Comic, ReadingList
 from libs.utils.comic_functions import save_thumb
 from kivy.clock import Clock
 from functools import partial
@@ -118,13 +120,14 @@ class ReadingListComicImage(ComicTileLabel):
             Logger.info(results)
             tmp_txt = self.text
             if state == 'Unread':
-                self.img_color = (1, 1, 1, 1)
+                #self.img_color = (1, 1, 1, 1)
                 self.is_read = False
                 self.page_count_text = '0%'
                 self.comic_obj.UserLastPage = 0
                 self.comic_obj.UserCurrentPage = 0
+                self.comic_obj.update()
             elif state == 'Read':
-                self.img_color = (.89, .15, .21, 5)
+                #self.img_color = (.89, .15, .21, 5)
                 self.is_read = True
                 self.page_count_text = '100%'
                 the_page = self.comic_obj.PageCount
@@ -135,18 +138,40 @@ class ReadingListComicImage(ComicTileLabel):
         if action == "Open This Comic":
             self.open_comic()
         elif action == 'Mark as Read':
+            try:
+                db_comic = Comic.get(Comic.Id == self.comic_obj.Id)
+                if db_comic:
+                    db_comic.UserLastPageRead = self.comic_obj.PageCount-1
+                    db_comic.UserCurrentPage = self.comic_obj.PageCount-1
+                    db_comic.save()
+                    self.comic_obj.UserLastPageRead = self.comic_obj.PageCount-1
+                    self.comic_obj.UserCurrentPage = self.comic_obj.PageCount-1
+
+            except (ProgrammingError, OperationalError, DataError) as e:
+                Logger.error(f'Mar as unRead DB: {e}')
             server_con = ComicServerConn()
             update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Progress'
-            server_con.update_progress(update_url, self.comic_obj.PageCount-1,
-                                       callback=lambda req, results:
-                                       __updated_progress(results, 'Read'))
+            server_con.update_progress(
+                update_url, self.comic_obj.PageCount-1,
+                callback=lambda req, results: __updated_progress(results, 'Read'))
 
         elif action == 'Mark as UnRead':
+            try:
+                db_comic = Comic.get(Comic.Id == self.comic_obj.Id)
+                if db_comic:
+                    db_comic.UserLastPageRead = 0
+                    db_comic.UserCurrentPage = 0
+                    db_comic.save()
+                    self.comic_obj.UserLastPageRead = 0
+                    self.comic_obj.UserCurrentPage = 0
+            except (ProgrammingError, OperationalError, DataError) as e:
+                Logger.error(f'Mar as unRead DB: {e}')
             server_con = ComicServerConn()
             update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Mark_Unread'
-            server_con.update_progress(update_url, 0,
-                                       callback=lambda req, results:
-                                       __updated_progress(results, 'Unread'))
+            server_con.update_progress(
+                update_url, 0,
+                callback=lambda req, results:
+                __updated_progress(results, 'Unread'))
 
     def on_press(self):
         callback = partial(self.menu)
@@ -390,18 +415,20 @@ class ServerReadingListsScreen(Screen):
                 c.cols = (Window.width-10)//self.comic_thumb_width
 
     def collect_readinglist_data(self, readinglist_name, readinglist_Id, mode='From Server'):
-        self.readinglist_name = readinglist_name
-        self.app.set_screen(self.readinglist_name + ' Page 1')
-        self.reading_list_title = self.readinglist_name + ' Page 1'
-        self.readinglist_Id = readinglist_Id
-        self.mode = mode
-        if self.mode == 'From Server':
-            self.fetch_data = ComicServerConn()
-            lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
-            # self.fetch_data.get_list_count(lsit_count_url,self)
-            self.fetch_data.get_server_data(lsit_count_url, self)
-        elif self.mode == 'From DataBase':
-            self.got_db_data()
+        async def collect_readinglist_data():
+            self.readinglist_name = readinglist_name
+            self.app.set_screen(self.readinglist_name + ' Page 1')
+            self.reading_list_title = self.readinglist_name + ' Page 1'
+            self.readinglist_Id = readinglist_Id
+            self.mode = mode
+            if self.mode == 'From Server':
+                self.fetch_data = ComicServerConn()
+                lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
+                # self.fetch_data.get_list_count(lsit_count_url,self)
+                self.fetch_data.get_server_data(lsit_count_url, self)
+            elif self.mode == 'From DataBase':
+                self.got_db_data()
+        asynckivy.start(collect_readinglist_data())
 
     def get_page(self, instance):
         page_num = instance.page_num
@@ -426,8 +453,6 @@ class ServerReadingListsScreen(Screen):
             self.prev_button.disabled = True
             self.prev_button.page_num = ''
         self.build_page(page.object_list)
-
-        
 
     def build_page(self, object_lsit):
         async def build_page():
@@ -463,6 +488,19 @@ class ServerReadingListsScreen(Screen):
                 self.dynamic_ids[id] = c
             self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
         asynckivy.start(build_page())
+
+    def refresh_callback(self, *args):
+        '''A method that updates the state of reading list'''
+        def refresh_callback(interval):
+            self.ids.main_grid.clear_widgets()
+            page_num = self.current_page.number
+            page = self.paginator_obj.page(page_num)
+            self.collect_readinglist_data(
+                self.readinglist_name, self.readinglist_Id, mode='From DataBase')
+#            self.build_page(page.object_list)
+            self.ids.main_scroll.refresh_done()
+            self.tick = 0
+        Clock.schedule_once(refresh_callback, 1)
 
     def got_db_data(self):
         """

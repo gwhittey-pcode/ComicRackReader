@@ -149,6 +149,10 @@ class ComicBook(EventDispatcher):
             self.comic_index = db_item.comic_index.select(
                 ReadingList.slug == self.readlist_obj.slug)
 
+    def update(self, key_list=()):
+        for key, value in key_list:
+            print(f'key:{key}\nval:{value}')
+
     def callback(self, store, key, result):
         pass
 
@@ -263,7 +267,8 @@ class ComicReadingList(EventDispatcher):
     def do_db_refresh(self, screen=None):
         def __finish_toast(dt):
             app = App.get_running_app()
-            #app.current = screen
+            screen = app.manager.get_screen('server_readinglists_screen')
+            screen.refresh_callback()
             toast('DataBase Refresh Complete')
 
         def __got_readlist_data(results):
