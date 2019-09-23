@@ -28,7 +28,8 @@ READINGLIST_DB_KEYS = [
     'cb_keep_last_read_active',
     'cb_optimize_size_active',
     'sw_syn_this_active',
-    'last_sync_num',
+    'start_last_sync_num',
+    'end_last_sync_num',
     'totalCount',
     'data',
 
@@ -50,6 +51,18 @@ COMIC_DB_KEYS = [
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
     'Summary',  'FilePath', 'local_file', 'data',
 ]
+
+
+def get_size(start_path='.'):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
 
 
 class ComicBook(EventDispatcher):
@@ -187,7 +200,8 @@ class ComicReadingList(EventDispatcher):
     db = ObjectProperty()
     comics_loaded = ObjectProperty(False)
     last_comic_read = NumericProperty()
-    last_sync_num = NumericProperty()
+    start_last_sync_num = NumericProperty(0)
+    end_last_sync_num = NumericProperty(0)
     totalCount = NumericProperty()
     pickled_data = ObjectProperty()
 
@@ -326,6 +340,7 @@ class ComicReadingList(EventDispatcher):
         return last_read_comic
 
     def do_sync(self):
+
         self.num_file_done = 0
         self.sync_range = 0
         self.fetch_data = ComicServerConn()
@@ -341,6 +356,11 @@ class ComicReadingList(EventDispatcher):
         for key in READINGLIST_SETTINGS_KEYS:
             v = getattr(db_item, key)
             globals()['%s' % key] = v
+        app = App.get_running_app()
+        id_folder = os.path.join(app.sync_folder, self.slug)
+        my_comic_dir = Path(os.path.join(id_folder, 'comics'))
+        if os.path.isdir(my_comic_dir):
+            print(f'{get_size(my_comic_dir)/1000000} MB')
         self.sync_readinglist()
 
     def download_file(self, comic):
@@ -378,6 +398,7 @@ class ComicReadingList(EventDispatcher):
             sync_url = f'{app.api_url}/Comics/{comic.Id}/File/'
         elif self.cb_optimize_size_active is True:
             sync_url = f'{app.api_url}/Comics/{comic.Id}/Sync/'
+        print(f'sync_url:{sync_url}')
         app = App.get_running_app()
         id_folder = os.path.join(app.sync_folder, self.slug)
         self.my_comic_dir = Path(os.path.join(id_folder, 'comics'))

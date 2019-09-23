@@ -61,7 +61,8 @@ class ReadingList(BaseModel):
     cb_keep_last_read_active = BooleanField(null=True)
     cb_optimize_size_active = BooleanField(null=True)
     sw_syn_this_active = BooleanField(null=True)
-    last_sync_num = IntegerField(null=True)
+    start_last_sync_num = IntegerField(default=0)
+    end_last_sync_num = IntegerField(default=0)
     totalCount = IntegerField()
 
 
