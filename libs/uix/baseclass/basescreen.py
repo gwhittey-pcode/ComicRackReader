@@ -9,24 +9,26 @@
 # LICENSE: MIT
 
 
-from kivy.uix.screenmanager import Screen
+import inspect
+
 from kivy.app import App
-from kivy.logger import Logger
 from kivy.clock import Clock
-from kivy.properties import StringProperty, ConfigParserProperty
-from libs.utils.comic_server_conn import ComicServerConn
-from kivymd.utils import asynckivy
 from kivy.core.window import Window
+from kivy.logger import Logger
+from kivy.metrics import dp
+from kivy.properties import ConfigParserProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
+from kivy.utils import get_hex_from_color
+from kivymd.utils import asynckivy
+
+from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 from libs.uix.baseclass.server_readinglists_screen import ReadingListComicImage
 from libs.utils.comic_json_to_class import ComicReadingList
-from libs.utils.paginator import Paginator
-from kivy.utils import get_hex_from_color
-from kivy.metrics import dp
-from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.db_functions import ReadingList
-import inspect
+from libs.utils.paginator import Paginator
 
 
 class LoginPopupContent(BoxLayout):
@@ -280,7 +282,7 @@ class BaseScreen(Screen):
                 lambda dt: __got_readlist_data('none'), 0.15)
         else:
             self.fetch_data = ComicServerConn()
-            lsit_count_url = f'{self.app.api_url}/Lists/{readinglist_Id}/Comics/'# noqa
+            lsit_count_url = f'{self.app.api_url}/Lists/{readinglist_Id}/Comics/'  # noqa
             self.fetch_data.get_server_data_callback(
                 lsit_count_url, callback=lambda req,
                 results: __got_readlist_data(results))

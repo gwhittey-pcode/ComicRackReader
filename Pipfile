@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 autopep8 = "*"
+flake8 = "*"
 
 [packages]
 cython = "==0.29.10"
@@ -13,7 +14,6 @@ peewee = "*"
 natsort = "*"
 pillow = "*"
 kivymd = {git = "https://github.com/HeaTTheatR/KivyMD.git"}
-
 
 [requires]
 python_version = "3.7"

@@ -589,7 +589,7 @@ class ServerReadingListsScreen(Screen):
             size_hint=(0.8, 0.4),
             text_button_ok="Ok",
             text=f"No ReadingList loaded.",
-            #events_callback=__callback_for_please_wait_dialog,
+            events_callback=__callback_for_please_wait_dialog,
         )
         self.please_wait_dialog.open()
 

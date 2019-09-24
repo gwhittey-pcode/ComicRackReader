@@ -12,54 +12,51 @@ name:local_readinglists_screen
 
 """
 
-from kivy.core.window import Window
+import ntpath
+import re
+from functools import partial
 
-from kivy.uix.screenmanager import Screen
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
-    BooleanProperty, OptionProperty, DictProperty, ListProperty
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.graphics import BorderImage
+from kivy.logger import Logger
+from kivy.metrics import dp
+from kivy.properties import (BooleanProperty, DictProperty, ListProperty,
+                             NumericProperty, ObjectProperty, OptionProperty,
+                             StringProperty)
+from kivy.uix.button import ButtonBehavior
 from kivy.uix.image import AsyncImage
-from kivy.uix.modalview import ModalView
-from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
-from kivymd.uix.list import (
-    ILeftBody,
-    ILeftBodyTouch,
-    IRightBodyTouch,
-    OneLineIconListItem,
-    OneLineAvatarIconListItem,
-)
 from kivy.uix.label import Label
+from kivy.uix.modalview import ModalView
+from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
+from kivy.utils import get_hex_from_color
+from kivymd.icon_definitions import md_icons
+from kivymd.theming import ThemableBehavior
+from kivymd.toast.kivytoast.kivytoast import toast
+from kivymd.uix.button import (MDFillRoundFlatIconButton, MDIconButton,
+                               MDRaisedButton)
+from kivymd.uix.dialog import BaseDialog
+from kivymd.uix.imagelist import SmartTile, SmartTileWithLabel
+from kivymd.uix.label import MDIcon, MDLabel
+from kivymd.uix.list import (ILeftBody, ILeftBodyTouch, IRightBodyTouch,
+                             OneLineAvatarIconListItem, OneLineIconListItem)
+from kivymd.uix.menu import MDDropdownMenu, MDMenuItem
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.textfield import MDTextFieldRound, FixedHintTextInput
+from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
+
+from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from libs.uix.baseclass.server_readinglists_screen import (
+    ReadingListComicImage, SyncOptionsPopup)
+from libs.uix.widgets.myimagelist import ComicTileLabel
+from libs.utils.comic_json_to_class import ComicBook, ComicReadingList
+from libs.utils.comic_server_conn import ComicServerConn
+from libs.utils.comicapi.comicarchive import ComicArchive
+from libs.utils.paginator import Paginator
 
 # from libs.utils.server_sync import  SyncReadingListObject
 
-from kivymd.uix.button import MDRaisedButton
-from kivymd.uix.button import MDFillRoundFlatIconButton, MDIconButton
-from kivymd.uix.dialog import BaseDialog
-from kivymd.uix.label import MDLabel, MDIcon
-from kivymd.toast.kivytoast.kivytoast import toast
-from kivymd.theming import ThemableBehavior
-from kivymd.icon_definitions import md_icons
-from libs.utils.paginator import Paginator
-from kivymd.uix.menu import MDDropdownMenu, MDMenuItem
-from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
-from kivy.clock import Clock
-from functools import partial
-from kivy.utils import get_hex_from_color
-from kivy.metrics import dp
-from libs.uix.baseclass.server_readinglists_screen import (
-    ReadingListComicImage, SyncOptionsPopup)
-from libs.utils.comicapi.comicarchive import ComicArchive
-from libs.utils.comic_server_conn import ComicServerConn
-from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
-from libs.uix.widgets.myimagelist import ComicTileLabel
-from kivy.graphics import BorderImage
-from kivy.uix.button import ButtonBehavior
-from kivy.uix.popup import Popup
-from kivy.logger import Logger
-import ntpath
-import re
 
 
 class LocalReadingListsScreen(Screen):

@@ -12,29 +12,29 @@ name:local_lists_screen
 
 """
 
-from kivy.uix.screenmanager import Screen
-from libs.utils.comic_server_conn import ComicServerConn
-from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty, BooleanProperty, StringProperty, ListProperty, DictProperty
-from kivymd.uix.button import MDIconButton
-from kivymd.uix.list import ILeftBodyTouch, ILeftBody
-from kivymd.uix.selectioncontrol import MDCheckbox
-from kivy.uix.image import Image
-from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.app import App
-from kivymd.uix.dialog import MDDialog
-from kivy.logger import Logger
 from kivy.clock import Clock
-from libs.utils.db_functions import ReadingList
-from kivymd.uix.list import (
-    ILeftBody,
-    ILeftBodyTouch,
-    IRightBodyTouch,
-    OneLineIconListItem,
-    OneLineAvatarIconListItem,
-)
-from kivymd.toast.kivytoast import toast
+from kivy.logger import Logger
 from kivy.metrics import dp
+from kivy.properties import (
+    BooleanProperty,
+    DictProperty,
+    ListProperty,
+    ObjectProperty,
+    StringProperty)
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
+from kivy.uix.screenmanager import Screen
+from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
+from kivymd.toast.kivytoast import toast
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.list import (ILeftBody, ILeftBodyTouch, IRightBodyTouch,
+                             OneLineAvatarIconListItem, OneLineIconListItem)
+from kivymd.uix.selectioncontrol import MDCheckbox
+
+from libs.utils.comic_server_conn import ComicServerConn
+from libs.utils.db_functions import ReadingList
 
 
 class MyTv(TreeView):
@@ -101,7 +101,7 @@ class LocalListsScreen(Screen):
         self.app.list_previous_screens.append(self.name)
 
     def get_comicrack_list(self):
-        query = ReadingList.select().where(ReadingList.sw_syn_this_active == True)
+        query = ReadingList.select().where(ReadingList.sw_syn_this_active == True)  # noqa
         self.my_tree.root_options = {'text': 'Synced ReadingLists',
                                      'color': (0, 0, 0, 1), 'font_size': dp(18)
                                      }

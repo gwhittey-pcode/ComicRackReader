@@ -1,14 +1,15 @@
-from kivy.uix.screenmanager import Screen
-from libs.utils.comic_server_conn import ComicServerConn
-from kivy.uix.image import Image
+from functools import partial
 
 from kivy.app import App
-from kivy.core.window import Window
-from kivymd.uix.imagelist import SmartTileWithLabel
-from kivymd.uix.button import MDRaisedButton
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.clock import Clock
-from functools import partial
+from kivy.core.window import Window
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty
+from kivy.uix.image import Image
+from kivy.uix.screenmanager import Screen
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.imagelist import SmartTileWithLabel
+
+from libs.utils.comic_server_conn import ComicServerConn
 
 
 class MySmartTileWithLabel(SmartTileWithLabel):
