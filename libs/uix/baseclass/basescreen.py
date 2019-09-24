@@ -8,50 +8,24 @@
 #
 # LICENSE: MIT
 
-"""
-TODO: add in button for link to ReadingList page - only shows if last_comic_read is set
-FIXME: fix so actionbar buttons only show when page has item loaded
 
-"""
-import os
-import asyncio
-from datetime import datetime, timedelta, date
 from kivy.uix.screenmanager import Screen
-from kivy.network.urlrequest import UrlRequest
 from kivy.app import App
 from kivy.logger import Logger
-import json
 from kivy.clock import Clock
-from kivymd.uix.filemanager import MDFileManager
-from base64 import b64encode
-from kivy.uix.button import Button
-from kivy.properties import StringProperty, ConfigParserProperty, ObjectProperty
-import urllib.parse
+from kivy.properties import StringProperty, ConfigParserProperty
 from libs.utils.comic_server_conn import ComicServerConn
-from kivymd.uix.accordionlistitem import MDAccordionListItem
 from kivymd.utils import asynckivy
-from kivy.uix.modalview import ModalView
-from kivymd.uix.list import OneLineIconListItem, OneLineAvatarListItem, ILeftBodyTouch, ILeftBody
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivymd.uix.button import MDIconButton
-from kivymd.uix.label import MDLabel
-from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from libs.uix.baseclass.server_readinglists_screen import ReadingListComicImage
-from libs.uix.baseclass.local_readinglists_screen import LocalReadingListsScreen
-from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
-from libs.utils.comic_functions import convert_comicapi_to_json
+from libs.utils.comic_json_to_class import ComicReadingList
 from libs.utils.paginator import Paginator
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
-from kivymd.toast.kivytoast import toast
-from kivy.logger import Logger
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
-from kivymd.uix.filemanager import MDFileManager
-from PIL import Image
-from libs.utils.db_functions import ReadingList, Comic, ComicIndex
-from kivymd.uix.dialog import MDDialog
+from libs.utils.db_functions import ReadingList
 import inspect
 
 
@@ -100,7 +74,7 @@ class BaseScreen(Screen):
 
     def update_settings(self, *args):
         print(f'This is running : {self.username}')
-        #self.username = self.app.username
+        # self.username = self.app.username
 
     def on_pre_enter(self, *args):
         self.check_login()
@@ -109,7 +83,9 @@ class BaseScreen(Screen):
         # see if user has a api key stored from server
         if self.api_key == '':
 
-            self.myLoginPop.ids.info.text = '[color=#FF0000]No API key stored login to get one[/color]'
+            self.myLoginPop.ids.info.text = '[color=#FF0000]\
+                No API key stored login to get one\
+                    [/color]'
             # self.open_popup()
             # self.fetch_data.get_api_key(req_url,self.username,self.password,self)
         else:
@@ -126,7 +102,13 @@ class BaseScreen(Screen):
                     tmp_readinglist_name, tmp_readinglist_Id))
 
     # get api key from server and store it in settings.
-    def open_comic(self, tmp_last_comic_id='', tmp_last_comic_type='', paginator_obj=None, comic=None, tmp_last_pag_pagnum=None):
+    def open_comic(
+        self,
+        tmp_last_comic_id='',
+        tmp_last_comic_type='',
+        paginator_obj=None, comic=None,
+        tmp_last_pag_pagnum=None
+    ):
         new_screen_name = str(tmp_last_comic_id)
         if new_screen_name not in self.app.manager.screen_names:
             if tmp_last_comic_type == 'local_file':
@@ -152,7 +134,9 @@ class BaseScreen(Screen):
             self.app.config.set('General', 'api_key', api_key)
             self.app.config.write()
             self.api_key = api_key
-            self.myLoginPop.ids.info.text = "[color=#008000]Login Sucessful API key saved[/color]"
+            self.myLoginPop.ids.info.text = "[color=#008000]\
+                                            Login Sucessful API key saved\
+                                                [/color]"
             self.popup.dismiss()
             tmp_readinglist_name = self.app.config.get(
                 'Saved', 'last_reading_list_name')
@@ -186,7 +170,6 @@ class BaseScreen(Screen):
                         'server_readinglists_screen')
                 x_readinglists_screen.list_loaded = False
                 x_readinglists_screen.setup_screen()
-                page = paginator_obj.page(tmp_last_pag_pagnum)
                 x_readinglists_screen.page_number = tmp_last_pag_pagnum
                 x_readinglists_screen.collect_readinglist_data(
                     readinglist_name, readinglist_Id, mode=set_mode)
@@ -199,7 +182,8 @@ class BaseScreen(Screen):
             if tmp_last_comic_id == '':
                 return
             else:
-                query = ReadingList.select().where(ReadingList.slug == readinglist_Id)
+                query = ReadingList.select().where(
+                    ReadingList.slug == readinglist_Id)
                 if query.exists():
                     Logger.info(f'{readinglist_name} already in Database')
                     set_mode = 'From DataBase'
@@ -207,12 +191,12 @@ class BaseScreen(Screen):
                     if tmp_last_comic_type == 'local_file':
                         mode = 'local_file'
                     self.new_readinglist = ComicReadingList(
-                        name=self.readinglist_name, data='db_data', slug=self.readinglist_Id, mode=mode)
+                        name=self.readinglist_name, data='db_data',
+                        slug=self.readinglist_Id, mode=mode)
 
                     # self.new_readinglist.comics_write()
                     max_books_page = int(self.app.config.get(
                         'General', 'max_books_page'))
-                    orphans = max_books_page - 1
                     new_readinglist_reversed = self.new_readinglist.comics
                     paginator_obj = Paginator(
                         new_readinglist_reversed, max_books_page)
@@ -223,61 +207,21 @@ class BaseScreen(Screen):
                                 tmp_last_pag_pagnum = this_page.number
                     asynckivy.start(__load_readinglist_scree(
                         paginator_obj=paginator_obj))
-                    if self.open_last_comic_startup == 1 and not self.app.app_started:
+                    if self.open_last_comic_startup == 1\
+                            and not self.app.app_started:
                         for comic in self.new_readinglist.comics:
                             if comic.slug == tmp_last_comic_id:
 
-                                self.open_comic(tmp_last_comic_id=tmp_last_comic_id, tmp_last_comic_type=tmp_last_comic_type,
-                                                paginator_obj=paginator_obj, comic=comic, tmp_last_pag_pagnum=tmp_last_pag_pagnum)
+                                self.open_comic(
+                                    tmp_last_comic_id=tmp_last_comic_id,
+                                    tmp_last_comic_type=tmp_last_comic_type,
+                                    paginator_obj=paginator_obj,
+                                    comic=comic,
+                                    tmp_last_pag_pagnum=tmp_last_pag_pagnum)
                     else:
                         grid = self.ids["main_grid"]
                         grid.cols = 1
                         grid.clear_widgets()
-#                         db_comic = Comic.get(Comic.Id == tmp_last_comic_id)
-#                         cx = ReadingListComicImage(comic_obj=comic)
-#                         cx.readinglist_obj = self.new_readinglist
-#                         cx.paginator_obj = paginator_obj
-#                         x = self.app.comic_thumb_width
-#                         y = self.app.comic_thumb_height
-#                         thumb_size = f'height={y}&width={x}'
-#                         if tmp_last_comic_type == 'local_file':
-#                             if comic.local_file == "":
-#                                 return
-#                             id_folder = os.path.join(
-#                                 self.app.sync_folder, self.new_readinglist.slug)
-#                             my_thumb_dir = os.path.join(
-#                                 id_folder, 'thumb')
-#                             thumb_name = f'{comic.Id}.jpg'
-#                             t_file = os.path.join(
-#                                 my_thumb_dir, thumb_name)
-#                             c_image_source = t_file
-#                         else:
-#                             thumb_filename = f'{db_comic.Id}.jpg'
-#                             id_folder = self.app.store_dir
-#                             my_thumb_dir = os.path.join(
-#                                 id_folder, 'comic_thumbs')
-#                             t_file = os.path.join(my_thumb_dir, thumb_filename)
-#                             if os.path.isfile(t_file):
-#                                 c_image_source = t_file
-#                             else:
-#                                 part_url = f'/Comics/{db_comic.Id}/Pages/0?'
-#                                 part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-#                                 c_image_source = f"{self.app.api_url}{part_url}{part_api}"
-#                         cx.source = c_image_source
-#                         cx.PageCount = db_comic.PageCount
-#                         cx.pag_pagenum = tmp_last_pag_pagnum
-#                         if tmp_last_comic_type == 'local_file':
-#                             cx.view_mode = 'Sync'
-#                         strtxt = f"{db_comic.Series} #{db_comic.Number}"
-#                         tmp_color = get_hex_from_color((1, 1, 1, 1))
-#                         cx.text = f'[color={tmp_color}]{strtxt}[/color]'
-#                         cx.pag_pagenum = tmp_last_pag_pagnum
-#                         cx.PageCount = comic.PageCount
-# #                        c.text_color = self.app.theme_cls.secondary_color
-#                         grid.add_widget(cx)
-#                         tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
-#                         self.ids.last_comic_label.text = tmp_txt
-#                         self.app.app_started = True
                         for comic in self.new_readinglist.comics:
                             if comic.slug == tmp_last_comic_id:
                                 c = ReadingListComicImage(comic_obj=comic)
@@ -285,13 +229,13 @@ class BaseScreen(Screen):
                                 c.paginator_obj = paginator_obj
                                 x = self.app.comic_thumb_width
                                 y = self.app.comic_thumb_height
-                                thumb_size = f'height={y}&width={x}'
                                 if tmp_last_comic_type == 'local_file':
                                     if comic.local_file == "":
                                         return
                                     import os
                                     id_folder = os.path.join(
-                                        self.app.sync_folder, self.new_readinglist.slug)
+                                        self.app.sync_folder,
+                                        self.new_readinglist.slug)
                                     my_thumb_dir = os.path.join(
                                         id_folder, 'thumb')
                                     thumb_name = f'{comic.Id}.jpg'
@@ -300,9 +244,11 @@ class BaseScreen(Screen):
                                     c_image_source = t_file
                                 else:
                                     part_url = f'/Comics/{comic.Id}/Pages/0?'
-                                    part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
-                                    c_image_source = f"{self.app.api_url}{part_url}{part_api}"
-                                c.source = source = c_image_source
+                                    part_api = f'&apiKey={self.api_key}\
+                                        &height={round(dp(y))}'
+                                    c_image_source = f"{self.app.api_url}\
+                                                        {part_url}{part_api}"
+                                c.source = c_image_source
                                 c.PageCount = comic.PageCount
                                 c.pag_pagenum = tmp_last_pag_pagnum
                                 if tmp_last_comic_type == 'local_file':
@@ -310,13 +256,14 @@ class BaseScreen(Screen):
                                 strtxt = f"{comic.Series} #{comic.Number}"
                                 tmp_color = get_hex_from_color((1, 1, 1, 1))
                                 c.text = f'[color={tmp_color}]{strtxt}[/color]'
-        #                        c.text_color = self.app.theme_cls.secondary_color
                                 grid.add_widget(c)
-                                tmp_txt = f'Last Comic Load from {self.new_readinglist.name}'
+                                tmp_txt = f'Last Comic Load from \
+                                        {self.new_readinglist.name}'
                                 self.ids.last_comic_label.text = tmp_txt
                 else:
                     Logger.info(
-                        f'{readinglist_name} not in Database This could be a problems')
+                        f'{readinglist_name} \
+                            not in Database This could be a problems')
 
                     set_mode = 'From Server'
                 # set_mode = 'From Server'
@@ -333,7 +280,7 @@ class BaseScreen(Screen):
                 lambda dt: __got_readlist_data('none'), 0.15)
         else:
             self.fetch_data = ComicServerConn()
-            lsit_count_url = f'{self.app.api_url}/Lists/{readinglist_Id}/Comics/'
+            lsit_count_url = f'{self.app.api_url}/Lists/{readinglist_Id}/Comics/'# noqa
             self.fetch_data.get_server_data_callback(
                 lsit_count_url, callback=lambda req,
                 results: __got_readlist_data(results))

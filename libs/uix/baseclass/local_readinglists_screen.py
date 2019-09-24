@@ -32,7 +32,7 @@ from kivy.uix.label import Label
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import MDTextFieldRound, FixedHintTextInput
 
-#from libs.utils.server_sync import  SyncReadingListObject
+# from libs.utils.server_sync import  SyncReadingListObject
 
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.button import MDFillRoundFlatIconButton, MDIconButton
@@ -48,7 +48,8 @@ from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_hex_from_color
 from kivy.metrics import dp
-from libs.uix.baseclass.server_readinglists_screen import ReadingListComicImage, SyncOptionsPopup
+from libs.uix.baseclass.server_readinglists_screen import (
+    ReadingListComicImage, SyncOptionsPopup)
 from libs.utils.comicapi.comicarchive import ComicArchive
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
@@ -128,7 +129,8 @@ class LocalReadingListsScreen(Screen):
                 c = val
                 c.cols = (Window.width-10)//self.comic_thumb_width
 
-    def collect_readinglist_data(self, readinglist_name, readinglist_Id, mode='From DataBase'):
+    def collect_readinglist_data(self, readinglist_name, readinglist_Id,
+                                 mode='From DataBase'):
         self.readinglist_name = readinglist_name
 
         self.reading_list_title = self.readinglist_name + ' Page 1'
@@ -203,7 +205,8 @@ class LocalReadingListsScreen(Screen):
                 self.dynamic_ids[id] = c
             else:
                 pass
-        self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
+        self.ids.page_count.text = f'Page #\n{self.current_page.number} of \
+            {self.paginator_obj.num_pages()}'
 
     def got_db_data(self):
         """
@@ -212,10 +215,9 @@ class LocalReadingListsScreen(Screen):
 
         def _do_readinglist():
             self.new_readinglist = ComicReadingList(
-                name=self.readinglist_name, data='db_data', slug=self.readinglist_Id, mode='local_file')
+                name=self.readinglist_name, data='db_data',
+                slug=self.readinglist_Id, mode='local_file')
             self.so = self.new_readinglist.sw_syn_this_active
-
-            #self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
             self.setup_options()
             orphans = self.max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics
@@ -253,7 +255,8 @@ class LocalReadingListsScreen(Screen):
         for item in self.new_readinglist.comic_json:
             comic_index = self.new_readinglist.comic_json.index(item)
             new_comic = ComicBook(
-                item, readlist_obj=self.new_readinglist, comic_index=comic_index)
+                item, readlist_obj=self.new_readinglist,
+                comic_index=comic_index)
             self.new_readinglist.add_comic(new_comic)
         self.setup_options()
         orphans = self.max_books_page - 1
@@ -282,14 +285,15 @@ class LocalReadingListsScreen(Screen):
         self.list_loaded = True
 
     def setup_options(self):
+        s_r_l = self.new_readinglist
         self.sync_options = SyncOptionsPopup(
             size_hint=(.76, .76),
-            cb_limit_active=self.new_readinglist.cb_limit_active,
-            limit_num_text=str(self.new_readinglist.limit_num),
-            cb_only_read_active=self.new_readinglist.cb_only_read_active,
-            cb_keep_last_read_active=self.new_readinglist.cb_keep_last_read_active,
-            cb_optimize_size_active=self.new_readinglist.cb_optimize_size_active,
-            sw_syn_this_active=bool(self.new_readinglist.sw_syn_this_active),
+            cb_limit_active=s_r_l.cb_limit_active,
+            limit_num_text=str(s_r_l.limit_num),
+            cb_only_read_active=s_r_l.cb_only_read_active,
+            cb_keep_last_read_active=s_r_l.cb_keep_last_read_active,
+            cb_optimize_size_active=s_r_l.cb_optimize_size_active,
+            sw_syn_this_active=bool(s_r_l.sw_syn_this_active),
         )
         self.sync_options.ids.limit_num.bind(
             on_text_validate=self.sync_options.check_input,

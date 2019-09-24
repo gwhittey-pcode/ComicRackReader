@@ -75,7 +75,7 @@ def get_file_page_size(file):
 def getComicMetadata(path):
     """Returns comicarchinve info from comicapi """
     # TODO: Need to fix the default image path
-    ca = ComicArchive(path, default_image_path=None)
+    ca = ComicArchive(path)
     if ca.seemsToBeAComicArchive():
         if ca.hasMetadata(MetaDataStyle.CIX):
             style = MetaDataStyle.CIX

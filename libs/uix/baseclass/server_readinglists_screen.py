@@ -404,7 +404,8 @@ class ServerReadingListsScreen(Screen):
         return super().on_leave(*args)
 
     def on_enter(self, *args):
-        self.show_please_wait_dialog()
+        if self.list_loaded is False:
+            self.show_please_wait_dialog()
 
     def my_width_callback(self, obj, value):
         win_x = (Window.width-30)//self.comic_thumb_width
@@ -581,18 +582,16 @@ class ServerReadingListsScreen(Screen):
         asynckivy.start(got_json())
 
     def show_please_wait_dialog(self):
-        pass
-        #toast('Reading List Loading')
-        # def __callback_for_please_wait_dialog(*args):
-        #     toast('loading Done')
-        # self.please_wait_dialog = MDDialog(
-        #     title="Loading Please Stand By",
-        #     size_hint=(0.8, 0.4),
-        #     text_button_ok="Ok",
-        #     text=f"Your ReadingList is opening",
-        #     events_callback=__callback_for_please_wait_dialog,
-        # )
-        # self.please_wait_dialog.open()
+        def __callback_for_please_wait_dialog(*args):
+            pass
+        self.please_wait_dialog = MDDialog(
+            title="No ReadingList loaded.",
+            size_hint=(0.8, 0.4),
+            text_button_ok="Ok",
+            text=f"No ReadingList loaded.",
+            #events_callback=__callback_for_please_wait_dialog,
+        )
+        self.please_wait_dialog.open()
 
     def setup_options(self):
         self.sync_options = SyncOptionsPopup(
