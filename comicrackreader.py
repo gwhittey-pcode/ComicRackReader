@@ -440,8 +440,10 @@ class ComicRackReader(App):
         screen = self.manager.get_screen(
             'server_readinglists_screen')
         self.set_screen(screen.reading_list_title)
-        if self.manager.current_screen.name not in  self.LIST_SCREENS : 
+        if self.manager.current_screen.name not in self.LIST_SCREENS and\
+                screen.list_loaded:
             screen.refresh_callback()
+            
         self.manager.current = 'server_readinglists_screen'
 
     def switch_base_screen(self):

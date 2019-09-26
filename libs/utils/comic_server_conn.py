@@ -135,15 +135,19 @@ class ComicServerConn(EventDispatcher):
         return result['results']
 
     def got_error(self, req, results):
+        Logger.critical('----got_error--')
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
 
     def got_time_out(self, req, results):
+        Logger.critical('----got_time_out--')
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
 
     def got_failure(self, req, results):
+        Logger.critical('----got_failure--')
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
-
+        
     def got_redirect(self, req, results):
+        Logger.critical('----got_redirect--')
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
 
 
