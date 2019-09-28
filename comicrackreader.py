@@ -69,6 +69,7 @@ class ComicRackReader(App):
     open_last_comic_startup = NumericProperty()
     how_to_open_comic = StringProperty()
     app_started = BooleanProperty(False)
+    open_comic_screen = StringProperty()
 
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
@@ -99,7 +100,7 @@ class ComicRackReader(App):
         self.base_url = ''
         self.settings_cls = MySettings
         self.md_manager = None
-
+        self.open_comic_screen = ''
     # def get_application_config(self):
     #     return super(ComicRackReader, self).get_application_config(
     #         '{}/%(appname)s.ini'.format(self.directory))
@@ -236,9 +237,13 @@ class ComicRackReader(App):
         ]
         # right side Action bar Icons
         action_bar.right_action_items = [
+            
             ['file-cabinet', lambda x: self.file_manager_open()],
             ['server', lambda x: self.switch_server_lists_screen()],
             ['view-list', lambda x: self.switch_readinglists_screen()],
+            ['folder-sync', lambda x: self.switch_local_lists_screen()],
+            ['playlist-check', lambda x: self.switch_local_readinglists_screen()],
+            ['book-open-page-variant', lambda x: self.switch_comic_reader()],
             ['close-box-outline', lambda x: self.stop()]
         ]
 
@@ -410,18 +415,21 @@ class ComicRackReader(App):
             screen.refresh_callback()
         self.manager.current = 'server_readinglists_screen'
 
+    def switch_local_readinglists_screen(self):
+        screen = self.manager.get_screen(
+            'local_readinglists_screen')
+        self.set_screen(screen.reading_list_title)
+        self.manager.current = 'local_readinglists_screen'
+    
+    def switch_comic_reader(self):
+        if self.manager.has_screen(str(self.open_comic_screen)):
+            self.manager.current = str(self.open_comic_screen)
+        else:
+            toast('No ComicBook Open')
+
     def switch_base_screen(self):
         self.set_screen("ComicRackReader Home Screen")
-
         self.manager.current = 'base'
-
-    def switch_sync_control(self):
-        self.set_screen("Sync Options")
-        self.manager.current = 'sync_options_screen'
-
-    def switch_open_file_screen(self):
-        self.set_screen("Open File")
-        self.manager.current = 'open_file_screen'
 
     def switch_local_lists_screen(self):
         self.set_screen("Local Sync Comics")
