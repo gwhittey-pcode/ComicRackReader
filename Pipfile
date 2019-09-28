@@ -4,8 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-autopep8 = "*"
 flake8 = "*"
+black = "*"
 
 [packages]
 cython = "==0.29.10"
@@ -20,3 +20,6 @@ python_version = "3.7"
 
 [scripts]
 main = "python main.py -m inspector"
+
+[pipenv]
+allow_prereleases = true

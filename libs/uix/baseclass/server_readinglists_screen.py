@@ -63,6 +63,7 @@ class ReadingListComicImage(ComicTileLabel):
     UserCurrentPage = NumericProperty()
     percent_read = NumericProperty()
     view_mode = StringProperty('Server')
+    loading_done = BooleanProperty(False)
 
     def __init__(self, comic_obj=None, **kwargs):
         super(ReadingListComicImage, self).__init__(**kwargs)
@@ -80,7 +81,7 @@ class ReadingListComicImage(ComicTileLabel):
         self.UserLastPageRead = comic_obj.UserLastPageRead
         if self.comic_obj.local_file != '':
             self.has_localfile = True
-        if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount-1:
+        if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount - 1:
             # self.img_color = (.89, .15, .21, 5)
             self.is_read = True
             # txt_color = get_hex_from_color((.89, .15, .21, 1))
@@ -95,7 +96,7 @@ class ReadingListComicImage(ComicTileLabel):
             self.percent_read = 0
         else:
             self.percent_read = round(
-                comic_obj.UserLastPageRead/(comic_obj.PageCount-1)*100)
+                comic_obj.UserLastPageRead / (comic_obj.PageCount - 1) * 100)
         self.page_count_text = f'{self.percent_read}%'
 
     def callback_for_menu_items(self, *args):
@@ -123,11 +124,11 @@ class ReadingListComicImage(ComicTileLabel):
             try:
                 db_comic = Comic.get(Comic.Id == self.comic_obj.Id)
                 if db_comic:
-                    db_comic.UserLastPageRead = self.comic_obj.PageCount-1
-                    db_comic.UserCurrentPage = self.comic_obj.PageCount-1
+                    db_comic.UserLastPageRead = self.comic_obj.PageCount - 1
+                    db_comic.UserCurrentPage = self.comic_obj.PageCount - 1
                     db_comic.save()
                     self.comic_obj.UserLastPageRead = self.comic_obj.PageCount-1  # noqa
-                    self.comic_obj.UserCurrentPage = self.comic_obj.PageCount-1
+                    self.comic_obj.UserCurrentPage = self.comic_obj.PageCount - 1
 
             except (ProgrammingError, OperationalError, DataError) as e:
                 Logger.error(f'Mar as unRead DB: {e}')
@@ -135,7 +136,7 @@ class ReadingListComicImage(ComicTileLabel):
             update_url = '{}/Comics/{}/Progress'.format(
                 self.app.api_url, self.comic_obj.Id)
             server_con.update_progress(
-                update_url, self.comic_obj.PageCount-1,
+                update_url, self.comic_obj.PageCount - 1,
                 callback=lambda req,
                 results: __updated_progress(results, 'Read'))
 
@@ -358,12 +359,13 @@ class ServerReadingListsScreen(Screen):
         for key, val in self.ids.items():
             if key == 'main_grid':
                 c = val
-                c.cols = (Window.width-10)//self.comic_thumb_width
+                c.cols = (Window.width - 10) // self.comic_thumb_width
 
     def collect_readinglist_data(
-            self, readinglist_name,
-            readinglist_Id, mode='From Server'
-            ):
+            self, readinglist_name='',
+            readinglist_Id='',
+            mode='From Server',
+            *largs):
         async def collect_readinglist_data():
             self.readinglist_name = readinglist_name
             self.app.set_screen(self.readinglist_name + ' Page 1')
@@ -432,10 +434,11 @@ class ServerReadingListsScreen(Screen):
                 c.PageCount = comic.PageCount
                 c.pag_pagenum = self.current_page.number
                 grid.add_widget(c)
-                grid.cols = (Window.width-10)//self.comic_thumb_width
+                grid.cols = (Window.width - 10) // self.comic_thumb_width
                 self.dynamic_ids[id] = c
             self.ids.page_count.text = 'Page #\n{} of {}'.format(
                 self.current_page.number, self.paginator_obj.num_pages())
+            self.loading_done = True
         asynckivy.start(build_page())
 
     def refresh_callback(self, *args):

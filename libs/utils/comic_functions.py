@@ -1,4 +1,3 @@
-
 import os
 from datetime import datetime
 from libs.utils.comicapi.comicarchive import MetaDataStyle, ComicArchive
@@ -19,7 +18,6 @@ def convert_comicapi_to_json(comic_path):
         Logger.info(f"Reading in {comic_path}")
         md = getComicMetadata(comic_path)
         data = {
-
             "Id": f"{md.series}_{md.issue}_{md.volume}",
             "Series": md.series,
             "Number": md.issue,
@@ -30,23 +28,23 @@ def convert_comicapi_to_json(comic_path):
             "PageCount": int(md.pageCount),
             "Summary": md.comments,
             "FilePath": comic_path,
-            'Volume': md.volume
-
+            "Volume": md.volume,
         }
         return data
     else:
-        Logger.error(f'{comic_path} is not valid')
+        Logger.error(f"{comic_path} is not valid")
 
 
 def get_comic_page(comic_obj, page_num):
     """returns name of cache file of requested page """
     app = App.get_running_app()
-    cahce_dir = os.path.join(app.store_dir, 'cache')
+    cahce_dir = os.path.join(app.store_dir, "cache")
     if comic_obj.is_sync:
         comic_name = comic_obj.Id
     else:
-        comic_name = '{}_{}_{}'.format(
-            comic_obj.Series, comic_obj.Number, comic_obj.Volume)
+        comic_name = "{}_{}_{}".format(
+            comic_obj.Series, comic_obj.Number, comic_obj.Volume
+        )
 
     comic_dir = os.path.join(cahce_dir, comic_name)
     if not Path(comic_dir).is_dir():
@@ -57,7 +55,7 @@ def get_comic_page(comic_obj, page_num):
         md = getComicMetadata(comic_obj.FilePath)
     ca = ComicArchive(md.path)
     image_data = ca.getPage(int(page_num))
-    filename = os.path.join(comic_dir, f'{page_num}.webp')
+    filename = os.path.join(comic_dir, f"{page_num}.webp")
     with open(filename, "wb") as outfile:
         outfile.write(image_data)
     return filename
@@ -83,8 +81,7 @@ def getComicMetadata(path):
             md = ca.readMetadata(style)
             md.path = ca.path
             md.page_count = ca.page_count
-            md.mod_ts = datetime.utcfromtimestamp(
-                os.path.getmtime(ca.path))
+            md.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))
             return md
     return None
 
@@ -92,15 +89,18 @@ def getComicMetadata(path):
 async def save_thumb(comic_id, c_image_source):
     def got_thumb(results):
         pass
+
     fetch_data = ComicServerConn()
     app = App.get_running_app()
     id_folder = app.store_dir
-    my_thumb_dir = Path(os.path.join(id_folder, 'comic_thumbs'))
+    my_thumb_dir = Path(os.path.join(id_folder, "comic_thumbs"))
 
     if not my_thumb_dir.is_dir():
         os.makedirs(my_thumb_dir)
-    file_name = f'{comic_id}.jpg'
+    file_name = f"{comic_id}.jpg"
     t_file = os.path.join(my_thumb_dir, file_name)
     fetch_data.get_server_file_download(
-        c_image_source, callback=lambda req, results: got_thumb(
-            results), file_path=os.path.join(my_thumb_dir, t_file))
+        c_image_source,
+        callback=lambda req, results: got_thumb(results),
+        file_path=os.path.join(my_thumb_dir, t_file),
+    )

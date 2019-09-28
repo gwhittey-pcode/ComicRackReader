@@ -48,7 +48,7 @@ READINGLIST_SETTINGS_KEYS = [
 COMIC_DB_KEYS = [
     'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-    'Summary',  'FilePath', 'local_file', 'data', 'is_sync'
+    'Summary', 'FilePath', 'local_file', 'data', 'is_sync'
 ]
 
 
@@ -294,7 +294,7 @@ class ComicReadingList(EventDispatcher):
             the_keys = [
                 'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
                 'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-                'Summary',  'FilePath']
+                'Summary', 'FilePath']
             for server_comic in results['items']:
                 for db_comic in self.comics:
                     if db_comic.Id == server_comic['Id']:
@@ -303,14 +303,8 @@ class ComicReadingList(EventDispatcher):
                                 if key in ('UserCurrentPage',
                                            'UserLastPageRead') and (
                                                db_comic.is_sync):
-                                    if (
-                                        (db_comic.UserLastPageRead >
-                                            server_comic['UserLastPageRead'])
-                                            or
-                                        (db_comic.UserCurrentPage >
-                                            server_comic['UserCurrentPage'])):
-                                        if (db_comic.UserCurrentPage >
-                                                db_comic.UserLastPageRead):
+                                    if ((db_comic.UserLastPageRead > server_comic['UserLastPageRead']) or (db_comic.UserCurrentPage > server_comic['UserCurrentPage'])):
+                                        if (db_comic.UserCurrentPage > db_comic.UserLastPageRead):
                                             current_page = db_comic.UserCurrentPage # noqa
                                         else:
                                             current_page = db_comic.UserLastPageRead # noqa
@@ -351,8 +345,7 @@ class ComicReadingList(EventDispatcher):
     def get_last_comic_read(self):
         last_read_comic = 0
         for comic in self.comics:
-            if (comic.UserLastPageRead == comic.PageCount-1 and
-                    comic.PageCount > 1):
+            if (comic.UserLastPageRead == comic.PageCount - 1 and comic.PageCount > 1):
                 last_read_comic = self.comics.index(comic)
         return last_read_comic
 
@@ -365,10 +358,9 @@ class ComicReadingList(EventDispatcher):
         self.fetch_data = ComicServerConn()
         rl_db = ReadingList.get(ReadingList.slug == self.slug)
         end_last_sync_num = rl_db.end_last_sync_num
-        comicindex_db = ComicIndex.get(
-                        ComicIndex.readinglist == self.slug)
+        comicindex_db = ComicIndex.get(ComicIndex.readinglist == self.slug)
         last_read_comic_db = self.db.comics.where(
-            (Comic.UserLastPageRead == Comic.PageCount-1)
+            (Comic.UserLastPageRead == Comic.PageCount - 1)
             & (Comic.PageCount > 1)).order_by(comicindex_db.index)
         if len(last_read_comic_db) > 1:
             last_read_index = ComicIndex.get(
@@ -384,7 +376,7 @@ class ComicReadingList(EventDispatcher):
         if self.cb_limit_active:
             if self.cb_only_read_active:
                 list_comics = self.db.comics.where(
-                                ~(Comic.UserLastPageRead == Comic.PageCount-1)
+                                ~(Comic.UserLastPageRead == Comic.PageCount - 1)
                                 & (Comic.PageCount > 1)
                                 ).order_by(comicindex_db.index)  # noqa: E712
                 if last_read_index < end_last_sync_num:
@@ -394,9 +386,8 @@ class ComicReadingList(EventDispatcher):
                     sync_range = int(end_last_sync_num) + int(self.limit_num)
                     tmp_comic_list = list_comics[end_last_sync_num:sync_range]
                 purge_list = self.db.comics.where(
-                    (Comic.UserLastPageRead == Comic.PageCount-1)
-                    & (Comic.PageCount > 1) &
-                    Comic.is_sync == True).order_by(
+                    (Comic.UserLastPageRead == Comic.PageCount - 1)
+                    & (Comic.PageCount > 1) & Comic.is_sync == True).order_by(
                         comicindex_db.index)  # noqa: E712
                 rl_db.end_last_sync_num = sync_range
                 rl_db.save()
@@ -416,7 +407,7 @@ class ComicReadingList(EventDispatcher):
             rl_db.save()
             if self.cb_only_read_active:
                 list_comics = self.db.comics.where(
-                                ~(Comic.UserLastPageRead == Comic.PageCount-1)
+                                ~(Comic.UserLastPageRead == Comic.PageCount - 1)
                                 & (Comic.PageCount > 1)
                                 ).order_by(comicindex_db.index)  # noqa: E712
                 tmp_comic_list = list_comics[0:sync_range]
@@ -489,10 +480,7 @@ class ComicReadingList(EventDispatcher):
 
         )
         thumb_name = f'{comic.Id}.jpg'
-        self.fetch_data.get_server_file_download(
-            thumb_url, callback=lambda req, results: got_thumb(
-                results), file_path=os.path.join(self.my_thumb_dir, thumb_name)
-            )
+        self.fetch_data.get_server_file_download(thumb_url, callback=lambda req, results: got_thumb(results), file_path=os.path.join(self.my_thumb_dir, thumb_name))
 
     def _finish_sync(self, comic_list, *largs):
         def __finish_toast(dt):
@@ -505,6 +493,7 @@ class ComicReadingList(EventDispatcher):
         if self.num_file_done == num_comic:
             Clock.schedule_once(__finish_toast, 3)
             self.event.cancel()
+            self.event = None
 
     def sync_readinglist(self, comic_list=[]):
         list_comics = comic_list

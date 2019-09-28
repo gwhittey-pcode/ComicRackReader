@@ -19,12 +19,13 @@ from kivy.properties import (
     BooleanProperty,
     ListProperty,
     ObjectProperty,
-    StringProperty)
+    StringProperty,
+)
 from kivy.uix.screenmanager import Screen
 from kivy.uix.treeview import TreeView, TreeViewNode
 from kivymd.toast.kivytoast import toast
 from kivymd.uix.button import MDIconButton
-from kivymd.uix.list import (ILeftBodyTouch, OneLineIconListItem)
+from kivymd.uix.list import ILeftBodyTouch, OneLineIconListItem
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.db_functions import ReadingList
 
@@ -34,7 +35,7 @@ class MyTv(TreeView):
         super(MyTv, self).__init__(**kwargs)
 
     def on_node_expand(self, node):
-        node.icon = 'folder-open'
+        node.icon = "folder-open"
 
 
 class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
@@ -44,7 +45,7 @@ class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
 class TreeViewFolder(OneLineIconListItem, TreeViewNode):
     text = StringProperty()
     color = ListProperty([1, 1, 0.4, 1])
-    icon = StringProperty('folder')
+    icon = StringProperty("folder")
 
     def __init__(self, **kwargs):
         super(TreeViewFolder, self).__init__(**kwargs)
@@ -53,7 +54,7 @@ class TreeViewFolder(OneLineIconListItem, TreeViewNode):
 class TreeViewItem(OneLineIconListItem, TreeViewNode):
     text = StringProperty()
     color = ListProperty([0.4, 0.4, 0.4, 1])
-    icon = StringProperty('view-list')
+    icon = StringProperty("view-list")
 
     def __init__(self, **kwargs):
         super(TreeViewItem, self).__init__(**kwargs)
@@ -71,7 +72,7 @@ class LocalListsScreen(Screen):
         self.lists_loaded = False
         self.app = App.get_running_app()
         self.fetch_data = None
-        self.Data = ''
+        self.Data = ""
         self.fetch_data = ComicServerConn()
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
@@ -87,34 +88,45 @@ class LocalListsScreen(Screen):
             for node in self.node_list:
                 self.my_tree.remove_node(node)
         self.get_comicrack_list()
-        self.app.set_screen('ComicRack Lists')
+        self.app.set_screen("ComicRack Lists")
 
     def on_leave(self):
         self.app.list_previous_screens.append(self.name)
 
     def get_comicrack_list(self):
-        query = ReadingList.select().where(ReadingList.sw_syn_this_active == True)  # noqa
-        self.my_tree.root_options = {'text': 'Synced ReadingLists',
-                                     'color': (0, 0, 0, 1), 'font_size': dp(18)
-                                     }
-        self.my_tree.bind(minimum_height=self.my_tree.setter('height'))
+        query = ReadingList.select().where(
+            ReadingList.sw_syn_this_active == True
+        )  # noqa
+        self.my_tree.root_options = {
+            "text": "Synced ReadingLists",
+            "color": (0, 0, 0, 1),
+            "font_size": dp(18),
+        }
+        self.my_tree.bind(minimum_height=self.my_tree.setter("height"))
         self.my_tree.bind(on_node_expand=self.node_expand)
         self.my_tree.bind(on_node_collapse=self.node_collapse)
         for item in query:
-            new_node = self.my_tree.add_node(TreeViewItem(
-                text=item.name, color=(
-                    0.9568627450980393, 0.2627450980392157,
-                    0.21176470588235294, 1)))
+            new_node = self.my_tree.add_node(
+                TreeViewItem(
+                    text=item.name,
+                    color=(
+                        0.9568627450980393,
+                        0.2627450980392157,
+                        0.21176470588235294,
+                        1,
+                    ),
+                )
+            )
             new_node.rl_slug = item.slug
             new_node.bind(on_touch_down=self.open_readinglist)
             self.node_list.append(new_node)
         self.lists_loaded = False
 
     def node_expand(self, instance, node):
-        node.icon = 'folder-open'
+        node.icon = "folder-open"
 
     def node_collapse(self, instance, node):
-        node.icon = 'folder'
+        node.icon = "folder"
 
     def do_expand(self, instance, node):
         self.my_tree.toggle_node(instance)
@@ -123,22 +135,25 @@ class LocalListsScreen(Screen):
         toast(args[0])
 
     def open_readinglist(self, instance, node):
-        self.app.manager.current = 'local_readinglists_screen'
+        self.app.manager.current = "local_readinglists_screen"
         local_readinglists_screen = self.app.manager.get_screen(
-            'local_readinglists_screen')
+            "local_readinglists_screen"
+        )
         local_readinglists_screen.setup_screen()
         local_readinglists_screen.page_number = 1
         readinglist_Id = instance.rl_slug
-        readinglist_name = (instance.text).split(' : ')[0]
+        readinglist_name = (instance.text).split(" : ")[0]
         local_readinglists_screen.list_loaded = False
         query = ReadingList.select().where(ReadingList.slug == readinglist_Id)
         if query.exists():
-            Logger.info(f'{readinglist_name} already in Database')
-            set_mode = 'From DataBase'
+            Logger.info(f"{readinglist_name} already in Database")
+            set_mode = "From DataBase"
         else:
             Logger.info(
-                f'{readinglist_name} not in Database getting info from server')
-            set_mode = 'From Server'
+                f"{readinglist_name} not in Database getting info from server"
+            )
+            set_mode = "From Server"
         # set_mode = 'From Server'
         local_readinglists_screen.collect_readinglist_data(
-            readinglist_name, readinglist_Id, mode=set_mode)
+            readinglist_name, readinglist_Id, mode=set_mode
+        )
