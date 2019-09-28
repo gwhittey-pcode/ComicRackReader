@@ -12,50 +12,22 @@ name:local_readinglists_screen
 
 """
 
-import ntpath
-import re
-from functools import partial
-
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
-from kivy.graphics import BorderImage
-from kivy.logger import Logger
 from kivy.metrics import dp
-from kivy.properties import (BooleanProperty, DictProperty, ListProperty,
-                             NumericProperty, ObjectProperty, OptionProperty,
-                             StringProperty)
-from kivy.uix.button import ButtonBehavior
-from kivy.uix.image import AsyncImage
-from kivy.uix.label import Label
-from kivy.uix.modalview import ModalView
-from kivy.uix.popup import Popup
+from kivy.properties import (BooleanProperty, DictProperty,
+                             NumericProperty, ObjectProperty, StringProperty)
 from kivy.uix.screenmanager import Screen
-from kivy.utils import get_hex_from_color
-from kivymd.icon_definitions import md_icons
-from kivymd.theming import ThemableBehavior
 from kivymd.toast.kivytoast.kivytoast import toast
-from kivymd.uix.button import (MDFillRoundFlatIconButton, MDIconButton,
-                               MDRaisedButton)
-from kivymd.uix.dialog import BaseDialog
-from kivymd.uix.imagelist import SmartTile, SmartTileWithLabel
-from kivymd.uix.label import MDIcon, MDLabel
-from kivymd.uix.list import (ILeftBody, ILeftBodyTouch, IRightBodyTouch,
-                             OneLineAvatarIconListItem, OneLineIconListItem)
-from kivymd.uix.menu import MDDropdownMenu, MDMenuItem
-from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
-
-from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 from libs.uix.baseclass.server_readinglists_screen import (
     ReadingListComicImage, SyncOptionsPopup)
-from libs.uix.widgets.myimagelist import ComicTileLabel
 from libs.utils.comic_json_to_class import ComicBook, ComicReadingList
 from libs.utils.comic_server_conn import ComicServerConn
-from libs.utils.comicapi.comicarchive import ComicArchive
 from libs.utils.paginator import Paginator
 
 # from libs.utils.server_sync import  SyncReadingListObject
+
 
 class LocalReadingListsScreen(Screen):
     reading_list_title = StringProperty()
@@ -117,8 +89,6 @@ class LocalReadingListsScreen(Screen):
         self.app.set_screen(f'{self.readinglist_name}-(Local) Page 1')
 
     def my_width_callback(self, obj, value):
-        win_x = (Window.width-30)//self.comic_thumb_width
-        win_div = (Window.width-30) % self.comic_thumb_width
         for key, val in self.ids.items():
             if key == 'main_grid':
                 c = val
@@ -168,7 +138,6 @@ class LocalReadingListsScreen(Screen):
 
     def build_page(self, object_lsit):
         grid = self.m_grid
-        main_stack = self.main_stack
         grid.clear_widgets()
         for comic in object_lsit:
             if comic.is_sync:
@@ -176,9 +145,7 @@ class LocalReadingListsScreen(Screen):
                 c.lines = 2
                 c.readinglist_obj = self.new_readinglist
                 c.paginator_obj = self.paginator_obj
-                x = self.comic_thumb_width
                 y = self.comic_thumb_height
-                thumb_size = f'height={y}&width={x}'
                 if self.mode == 'From Server':
                     part_url = f'/Comics/{comic.Id}/Pages/0?'
                     part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
@@ -214,7 +181,6 @@ class LocalReadingListsScreen(Screen):
                 slug=self.readinglist_Id, mode='local_file')
             self.so = self.new_readinglist.sw_syn_this_active
             self.setup_options()
-            orphans = self.max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics
             self.paginator_obj = Paginator(
                 new_readinglist_reversed, self.max_books_page)
@@ -254,7 +220,6 @@ class LocalReadingListsScreen(Screen):
                 comic_index=comic_index)
             self.new_readinglist.add_comic(new_comic)
         self.setup_options()
-        orphans = self.max_books_page - 1
         new_readinglist_reversed = self.new_readinglist.comics[::-1]
         self.paginator_obj = Paginator(
             new_readinglist_reversed, self.max_books_page)

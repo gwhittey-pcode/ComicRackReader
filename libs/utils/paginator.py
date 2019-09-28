@@ -37,15 +37,15 @@ class Paginator:
                 raise ValueError
             number = int(number)
         except (TypeError, ValueError):
-            raise PageNotAnInteger(_('That page number is not an integer'))
+            raise PageNotAnInteger(_('That page number is not an integer'))  # noqa
         if number < 1:
-            raise EmptyPage(_('That page number is less than 1'))
+            raise EmptyPage(_('That page number is less than 1'))  # noqa
         c = self.num_pages()
         if number > c:
             if number == 1 and self.allow_empty_first_page:
                 pass
             else:
-                raise EmptyPage(_('That page contains no results'))
+                raise EmptyPage(_('That page contains no results')) # noqa
         return number
 
     def get_page(self, number):
@@ -81,7 +81,7 @@ class Paginator:
     def count(self):
         """Return the total number of objects, across all pages."""
         c = getattr(self.object_list, 'count', None)
-        if callable(c) and not inspect.isbuiltin(c) and method_has_no_args(c):
+        if callable(c) and not inspect.isbuiltin(c) and method_has_no_args(c): # noqa
             return c()
         return len(self.object_list)
 

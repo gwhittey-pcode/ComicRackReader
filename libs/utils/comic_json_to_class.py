@@ -1,22 +1,22 @@
-from pathlib import Path
-import os
-from kivy.storage.jsonstore import JsonStore
-from kivy.properties import ListProperty, ObjectProperty, DictProperty,\
-    StringProperty, NumericProperty, BooleanProperty
-from kivy.event import EventDispatcher
-from kivymd.toast.kivytoast.kivytoast import toast
-from operator import attrgetter
-from kivy.app import App
-from kivy.clock import Clock
-from libs.utils.db_functions import ReadingList, Comic, ComicIndex
-from libs.utils.comic_server_conn import ComicServerConn
-from kivy.logger import Logger
-import peewee
 import ntpath
-import json
-from kivy.metrics import dp
+import os
 import pickle
 from functools import partial
+from pathlib import Path
+
+import peewee
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.event import EventDispatcher
+from kivy.logger import Logger
+from kivy.metrics import dp
+from kivy.properties import (BooleanProperty, DictProperty, ListProperty,
+                             NumericProperty, ObjectProperty, StringProperty)
+from kivymd.toast.kivytoast.kivytoast import toast
+
+from libs.utils.comic_server_conn import ComicServerConn
+from libs.utils.db_functions import Comic, ComicIndex, ReadingList
+
 CHECKBOX_STATE_BOOL = {
     'normal': False, 'down': True
 }
@@ -96,7 +96,8 @@ class ComicBook(EventDispatcher):
                 comic_data = data
                 self.data = comic_data
                 self.Id = comic_data['Id']
-                self.__str__ = f"{comic_data['Series']} #{comic_data['Number']}"
+                self.__str__ = "{} #{}".format(
+                    comic_data['Series'], comic_data['Number'])
                 self.slug = str(comic_data['Id'])
                 self.name = f"{comic_data['Series']} #{comic_data['Number']}"
                 self.Number = comic_data['Number']
@@ -130,7 +131,7 @@ class ComicBook(EventDispatcher):
         for key in COMIC_DB_KEYS:
             if key == 'comic_index':
                 pass
-            elif key is 'data':
+            elif key == 'data':
                 new_dict = {k: self.data[k] for k in self.data.keys()}
                 tmp_defaults['data'] = new_dict
             else:
@@ -170,11 +171,12 @@ class ComicBook(EventDispatcher):
     def set_is_sync(self):
         try:
             db_item = ComicIndex.get(
-                ComicIndex.comic == self.Id, ComicIndex.readinglist == self.readlist_obj.slug)
+                ComicIndex.comic == self.Id,
+                ComicIndex.readinglist == self.readlist_obj.slug)
             if db_item:
                 if db_item.is_sync:
                     setattr(self, 'is_sync', db_item.is_sync)
-        except:
+        except peewee.IntegrityError:
             Logger.error('Somthing went wrong')
 
 
@@ -243,7 +245,8 @@ class ComicReadingList(EventDispatcher):
                     setattr(self, key, getattr(db_item, key))
                 if created is True:
                     len_dbcomics = len(db_item.comics)
-                    if len_dbcomics == len(self.comic_json) and len(self.comic_json) != 0:
+                    if len_dbcomics == len(self.comic_json) and\
+                            len(self.comic_json) != 0:
                         self.comic_db_in = True
                         self.comics = self.db.comics.order_by(
                             -Comic.comic_index.index)
@@ -252,7 +255,7 @@ class ComicReadingList(EventDispatcher):
                     comicindex_db = ComicIndex.get(
                         ComicIndex.readinglist == self.slug)
                     if mode == "local_file":
-                        list_comics = self.db.comics.where(Comic.is_sync == True, Comic.local_file != '').order_by(
+                        list_comics = self.db.comics.where(Comic.is_sync == True, Comic.local_file != '').order_by( # noqa
                             comicindex_db.index)
                         print(f'len:{len(list_comics)}')
                     else:
@@ -260,7 +263,8 @@ class ComicReadingList(EventDispatcher):
                             comicindex_db.index)
                     for comic in list_comics:
                         new_comic = ComicBook(
-                            comic_Id=comic.Id, readlist_obj=self, mode='db_data',)
+                            comic_Id=comic.Id,
+                            readlist_obj=self, mode='db_data')
                         self.comics.append(new_comic)
                     self.comics_loaded = True
         except peewee.OperationalError:
@@ -296,22 +300,35 @@ class ComicReadingList(EventDispatcher):
                     if db_comic.Id == server_comic['Id']:
                         for key in the_keys:
                             if getattr(db_comic, key) != server_comic[key]:
-                                if key in ('UserCurrentPage', 'UserLastPageRead') and db_comic.is_sync:
-                                    if db_comic.UserLastPageRead > server_comic['UserLastPageRead'] or \
-                                            db_comic.UserCurrentPage > server_comic['UserCurrentPage']:
-                                        if db_comic.UserCurrentPage > db_comic.UserLastPageRead:
-                                            current_page = db_comic.UserCurrentPage
+                                if key in ('UserCurrentPage',
+                                           'UserLastPageRead') and (
+                                               db_comic.is_sync):
+                                    if (
+                                        (db_comic.UserLastPageRead >
+                                            server_comic['UserLastPageRead'])
+                                            or
+                                        (db_comic.UserCurrentPage >
+                                            server_comic['UserCurrentPage'])):
+                                        if (db_comic.UserCurrentPage >
+                                                db_comic.UserLastPageRead):
+                                            current_page = db_comic.UserCurrentPage # noqa
                                         else:
-                                            current_page = db_comic.UserLastPageRead
-                                        update_url = f'{api_url}/Comics/{db_comic.Id}/Progress'
-                                        self.fetch_data.update_progress(update_url, current_page,
-                                                                        callback=lambda req, results:
-                                                                        __updated_progress(results))
+                                            current_page = db_comic.UserLastPageRead # noqa
+                                        update_url = ('{}/Comics/{}/Progress'
+                                                      .format(api_url,
+                                                              db_comic.Id))
+                                        self.fetch_data.update_progress(
+                                            update_url, current_page,
+                                            callback=lambda req, results:
+                                            __updated_progress(results))
                                     else:
+                                        x_str = db_comic.__str__
                                         Logger.info(
-                                            f'Updating DB Record for {key} of {db_comic.__str__}')
+                                            'Updating DB Record for {} of {}'
+                                            .format(key, x_str))
                                         toast(
-                                            f'Updating DB Record for {key} of {db_comic.__str__}')
+                                            'Updating DB Record for {} of {}'
+                                            .format(key, x_str))
                                         db_item = Comic.get(
                                             Comic.Id == db_comic.Id)
                                         if db_item:
@@ -334,7 +351,8 @@ class ComicReadingList(EventDispatcher):
     def get_last_comic_read(self):
         last_read_comic = 0
         for comic in self.comics:
-            if comic.UserLastPageRead == comic.PageCount-1 and comic.PageCount > 1:
+            if (comic.UserLastPageRead == comic.PageCount-1 and
+                    comic.PageCount > 1):
                 last_read_comic = self.comics.index(comic)
         return last_read_comic
 
@@ -471,8 +489,10 @@ class ComicReadingList(EventDispatcher):
 
         )
         thumb_name = f'{comic.Id}.jpg'
-        self.fetch_data.get_server_file_download(thumb_url, callback=lambda req, results: got_thumb(
-            results), file_path=os.path.join(self.my_thumb_dir, thumb_name))
+        self.fetch_data.get_server_file_download(
+            thumb_url, callback=lambda req, results: got_thumb(
+                results), file_path=os.path.join(self.my_thumb_dir, thumb_name)
+            )
 
     def _finish_sync(self, comic_list, *largs):
         def __finish_toast(dt):
@@ -480,7 +500,6 @@ class ComicReadingList(EventDispatcher):
             app = App.get_running_app()
             screen = app.manager.get_screen('server_readinglists_screen')
             screen.refresh_callback()
-           
         list_comics = comic_list
         num_comic = len(list_comics)
         if self.num_file_done == num_comic:

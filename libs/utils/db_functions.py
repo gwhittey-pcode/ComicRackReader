@@ -1,12 +1,13 @@
-from peewee import SqliteDatabase, OperationalError, CharField, \
-    IntegerField, ForeignKeyField, TextField, Model, ManyToManyField, BooleanField, \
-    DeferredThroughModel, DatabaseProxy, BlobField
+from peewee import SqliteDatabase, CharField, \
+    IntegerField, ForeignKeyField, TextField, Model, ManyToManyField, \
+    DeferredThroughModel, DatabaseProxy, BooleanField
 
-from kivy.logger import Logger
+
 from kivy.app import App
 import os
 database_proxy = DatabaseProxy()
-from playhouse.fields import PickleField
+from playhouse.fields import PickleField # noqa
+
 
 def start_db():
 

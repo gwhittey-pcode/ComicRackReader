@@ -1,20 +1,16 @@
-from kivy.core.image import Image as CoreImage
-from kivy.uix.image import Image as kvImage
-from PIL import Image, ImageDraw, ImageFont
+
 import os
-from datetime import datetime, timedelta, date
+from datetime import datetime
 from libs.utils.comicapi.comicarchive import MetaDataStyle, ComicArchive
-from libs.utils.comicapi.issuestring import IssueString
-from libs.utils.comicapi.comicarchive import ComicArchive
-from io import BytesIO
 from kivy.logger import Logger
-import json
 from kivy.app import App
 from pathlib import Path
 from PIL import Image
-import asyncio
-from kivymd.utils import asynckivy
 from libs.utils.comic_server_conn import ComicServerConn
+
+# from kivy.core.image import Image as CoreImage
+# from kivy.uix.image import Image as kvImage
+# from PIL import Image, ImageDraw, ImageFont
 
 
 def convert_comicapi_to_json(comic_path):
@@ -49,7 +45,8 @@ def get_comic_page(comic_obj, page_num):
     if comic_obj.is_sync:
         comic_name = comic_obj.Id
     else:
-        comic_name = f'{comic_obj.Series}_{comic_obj.Number}_{comic_obj.Volume}'
+        comic_name = '{}_{}_{}'.format(
+            comic_obj.Series, comic_obj.Number, comic_obj.Volume)
 
     comic_dir = os.path.join(cahce_dir, comic_name)
     if not Path(comic_dir).is_dir():
@@ -104,5 +101,6 @@ async def save_thumb(comic_id, c_image_source):
         os.makedirs(my_thumb_dir)
     file_name = f'{comic_id}.jpg'
     t_file = os.path.join(my_thumb_dir, file_name)
-    fetch_data.get_server_file_download(c_image_source, callback=lambda req, results: got_thumb(
-        results), file_path=os.path.join(my_thumb_dir, t_file))
+    fetch_data.get_server_file_download(
+        c_image_source, callback=lambda req, results: got_thumb(
+            results), file_path=os.path.join(my_thumb_dir, t_file))

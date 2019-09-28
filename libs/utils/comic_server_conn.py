@@ -1,4 +1,3 @@
-import json
 from kivy.app import App
 from kivy.logger import Logger
 from kivy.network.urlrequest import UrlRequest
@@ -25,7 +24,7 @@ class ComicServerConn(EventDispatcher):
         head = {'Content-Type': "application/json",
                 'Accept': "application/json", 'Cookie': str_cookie
                 }
-        req = UrlRequest(req_url, req_headers=head, on_success=callback,
+        req = UrlRequest(req_url, req_headers=head, on_success=callback,  # noqa
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
                          on_failure=self.got_error
@@ -39,7 +38,7 @@ class ComicServerConn(EventDispatcher):
         head = {'Content-Type': "application/x-www-form-urlencoded",
                 'Accept': "application/json", 'Cookie': str_cookie
                 }
-        req = UrlRequest(req_url, req_headers=head,
+        req = UrlRequest(req_url, req_headers=head, # noqa
                          req_body=data,
                          on_success=callback,
                          on_error=self.got_error,
@@ -57,7 +56,7 @@ class ComicServerConn(EventDispatcher):
 
                 }
 
-        req = UrlRequest(req_url, req_headers=head,
+        req = UrlRequest(req_url, req_headers=head, # noqa
                          on_success=callback,
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
@@ -75,7 +74,7 @@ class ComicServerConn(EventDispatcher):
 
                 }
 
-        req = UrlRequest(req_url, req_headers=head,
+        req = UrlRequest(req_url, req_headers=head, # noqa
                          on_success=instance.got_json,
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
@@ -86,7 +85,7 @@ class ComicServerConn(EventDispatcher):
         head = {'Content-type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'}
         strbody = f'username={username}&password={password}&rememberMe=True'
-        req = UrlRequest(req_url, req_headers=head,
+        req = UrlRequest(req_url, req_headers=head, # noqa
                          req_body=strbody, method="POST",
                          on_success=callback,
                          on_error=self.got_error,
@@ -103,7 +102,7 @@ class ComicServerConn(EventDispatcher):
                 'Cookie': str_cookie
 
                 }
-        req = UrlRequest(req_url, req_headers=head,
+        req = UrlRequest(req_url, req_headers=head, # noqa
                          on_success=instance.got_count,
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
@@ -122,7 +121,7 @@ class ComicServerConn(EventDispatcher):
 
                 }
 
-        req = UrlRequest(req_url, req_headers=head,
+        req = UrlRequest(req_url, req_headers=head, # noqa
                          on_success=callback,
                          on_error=self.got_error,
                          on_redirect=self.got_redirect,
@@ -145,7 +144,7 @@ class ComicServerConn(EventDispatcher):
     def got_failure(self, req, results):
         Logger.critical('----got_failure--')
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
-        
+
     def got_redirect(self, req, results):
         Logger.critical('----got_redirect--')
         Logger.critical('ERROR in %s %s' % (inspect.stack()[0][3], results))
