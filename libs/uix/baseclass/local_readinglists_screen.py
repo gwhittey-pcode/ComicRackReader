@@ -57,8 +57,6 @@ from libs.utils.paginator import Paginator
 
 # from libs.utils.server_sync import  SyncReadingListObject
 
-
-
 class LocalReadingListsScreen(Screen):
     reading_list_title = StringProperty()
     page_number = NumericProperty()
@@ -288,7 +286,7 @@ class LocalReadingListsScreen(Screen):
             cb_limit_active=s_r_l.cb_limit_active,
             limit_num_text=str(s_r_l.limit_num),
             cb_only_read_active=s_r_l.cb_only_read_active,
-            cb_keep_last_read_active=s_r_l.cb_keep_last_read_active,
+            cb_purge_active=s_r_l.cb_purge_active,
             cb_optimize_size_active=s_r_l.cb_optimize_size_active,
             sw_syn_this_active=bool(s_r_l.sw_syn_this_active),
         )

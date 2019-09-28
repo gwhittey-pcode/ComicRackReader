@@ -205,6 +205,23 @@
                     size_hint_y: None
                     height: self.texture_size[1]
                     padding: dp(25), dp(10)
+            BoxLayout:
+                padding: dp(10)
+                size_hint_x:.15
+                MDCheckbox:
+                    id:cb_optimize_size
+                    size_hint: None, None
+                    size: dp(48), dp(48)
+                    active:root.cb_optimize_size_active
+                MDLabel:
+                    font_style: 'Body2'
+                    theme_text_color: 'Primary'
+                    text: "Optimize Size"
+                    halign: 'left'
+                    valign:'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+       
         GridLayout:
             #orientation: 'horizontal'
             cols:3
@@ -257,31 +274,10 @@
                 padding: dp(10)
                 size_hint_x:.15
                 MDCheckbox:
-                    id:cb_optimize_size
-                    size_hint: None, None
-                    size: dp(48), dp(48)
-                    active:root.cb_optimize_size_active
-                MDLabel:
-                    font_style: 'Body2'
-                    theme_text_color: 'Primary'
-                    text: "Optimize Size"
-                    halign: 'left'
-                    valign:'top'
-                    size_hint_y: None
-                    height: self.texture_size[1]
-        GridLayout:
-            #orientation: 'horizontal'
-            cols:3
-            rows:1
-            padding: dp(10), dp(10)
-            spacing: dp(10)
-            BoxLayout:
-                padding: dp(10)
-                size_hint_x:.15
-                MDCheckbox:
                     id:cb_only_read
                     size_hint: None, None
                     size: dp(48), dp(48)
+                    active:root.cb_only_read_active
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
@@ -290,19 +286,18 @@
                     valign:'top'
                     size_hint_y: None
                     height: self.texture_size[1]
-                    active:root.cb_only_read_active
             BoxLayout:
                 padding: dp(10)
                 size_hint_x:.15
                 MDCheckbox:
-                    id:cb_keep_last_read
+                    id:cb_purge
                     size_hint: None, None
                     size: dp(48), dp(48)
-                    active:root.cb_keep_last_read_active
+                    active:root.cb_purge_active
                 MDLabel:
                     font_style: 'Body2'
                     theme_text_color: 'Primary'
-                    text: "But keep last read"
+                    text: "Purge Read or Last Sync Group"
                     halign: 'left'
                     valign:'top'
                     size_hint_y: None

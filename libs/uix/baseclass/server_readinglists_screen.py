@@ -11,57 +11,40 @@
 name:server_readinglists_screen
 
 """
-import os
-from kivy.core.window import Window
-from kivymd.utils import asynckivy
-from kivy.uix.screenmanager import Screen
-from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty,\
-    BooleanProperty, OptionProperty, DictProperty, ListProperty
-from kivy.uix.image import AsyncImage
-from kivy.uix.modalview import ModalView
-from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
-from peewee import ProgrammingError, OperationalError, DataError
-from kivymd.uix.list import (
-    ILeftBody,
-    ILeftBodyTouch,
-    IRightBodyTouch,
-    OneLineIconListItem,
-    OneLineAvatarIconListItem,
-)
-from kivy.uix.label import Label
-from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.textfield import MDTextFieldRound, FixedHintTextInput
-from kivymd.utils import asynckivy
-#from libs.utils.server_sync import  SyncReadingListObject
 
-from kivymd.uix.button import MDRaisedButton
-from kivymd.uix.button import MDFillRoundFlatIconButton, MDIconButton
-from kivymd.uix.dialog import BaseDialog
-from kivymd.uix.label import MDLabel, MDIcon
-from kivymd.toast.kivytoast.kivytoast import toast
-from kivymd.theming import ThemableBehavior
-from kivymd.icon_definitions import md_icons
-from libs.utils.paginator import Paginator
-from kivymd.uix.menu import MDDropdownMenu, MDMenuItem
-from kivymd.uix.dialog import MDDialog
-from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
-from libs.utils.db_functions import Comic, ReadingList
-from libs.utils.comic_functions import save_thumb
-from kivy.clock import Clock
+import os
 from functools import partial
-from kivy.utils import get_hex_from_color
-from kivy.metrics import dp
-from libs.utils.comicapi.comicarchive import ComicArchive
-from libs.utils.comic_server_conn import ComicServerConn
-from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
-from libs.uix.widgets.myimagelist import ComicTileLabel
-from kivy.graphics import BorderImage
-from kivy.uix.button import ButtonBehavior
-from kivy.uix.popup import Popup
+
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.core.window import Window
 from kivy.logger import Logger
-import ntpath
-import re
+from kivy.metrics import dp
+from kivy.properties import (BooleanProperty, DictProperty, NumericProperty,
+                             ObjectProperty, OptionProperty, StringProperty)
+from kivy.uix.button import ButtonBehavior
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
+from kivy.utils import get_hex_from_color
+from kivymd.toast.kivytoast.kivytoast import toast
+from kivymd.uix.button import MDIconButton, MDRaisedButton
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.label import MDIcon
+from kivymd.uix.list import ILeftBody, ILeftBodyTouch, IRightBodyTouch
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.selectioncontrol import MDCheckbox
+from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
+from kivymd.utils import asynckivy
+from peewee import DataError, OperationalError, ProgrammingError
+
+from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+from libs.uix.widgets.myimagelist import ComicTileLabel
+from libs.utils.comic_functions import save_thumb
+from libs.utils.comic_json_to_class import ComicBook, ComicReadingList
+from libs.utils.comic_server_conn import ComicServerConn
+from libs.utils.db_functions import Comic
+from libs.utils.paginator import Paginator
 
 
 class ReadingListComicImage(ComicTileLabel):
@@ -98,9 +81,9 @@ class ReadingListComicImage(ComicTileLabel):
         if self.comic_obj.local_file != '':
             self.has_localfile = True
         if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount-1:
-            #self.img_color = (.89, .15, .21, 5)
+            # self.img_color = (.89, .15, .21, 5)
             self.is_read = True
-            #txt_color = get_hex_from_color((.89, .15, .21, 1))
+            # txt_color = get_hex_from_color((.89, .15, .21, 1))
             txt_color = get_hex_from_color((1, 1, 1, 1))
         else:
             txt_color = get_hex_from_color((1, 1, 1, 1))
@@ -118,16 +101,15 @@ class ReadingListComicImage(ComicTileLabel):
     def callback_for_menu_items(self, *args):
         def __updated_progress(results, state):
             Logger.info(results)
-            tmp_txt = self.text
             if state == 'Unread':
-                #self.img_color = (1, 1, 1, 1)
+                # self.img_color = (1, 1, 1, 1)
                 self.is_read = False
                 self.page_count_text = '0%'
                 self.comic_obj.UserLastPage = 0
                 self.comic_obj.UserCurrentPage = 0
                 self.comic_obj.update()
             elif state == 'Read':
-                #self.img_color = (.89, .15, .21, 5)
+                # self.img_color = (.89, .15, .21, 5)
                 self.is_read = True
                 self.page_count_text = '100%'
                 the_page = self.comic_obj.PageCount
@@ -144,16 +126,18 @@ class ReadingListComicImage(ComicTileLabel):
                     db_comic.UserLastPageRead = self.comic_obj.PageCount-1
                     db_comic.UserCurrentPage = self.comic_obj.PageCount-1
                     db_comic.save()
-                    self.comic_obj.UserLastPageRead = self.comic_obj.PageCount-1
+                    self.comic_obj.UserLastPageRead = self.comic_obj.PageCount-1  # noqa
                     self.comic_obj.UserCurrentPage = self.comic_obj.PageCount-1
 
             except (ProgrammingError, OperationalError, DataError) as e:
                 Logger.error(f'Mar as unRead DB: {e}')
             server_con = ComicServerConn()
-            update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Progress'
+            update_url = '{}/Comics/{}/Progress'.format(
+                self.app.api_url, self.comic_obj.Id)
             server_con.update_progress(
                 update_url, self.comic_obj.PageCount-1,
-                callback=lambda req, results: __updated_progress(results, 'Read'))
+                callback=lambda req,
+                results: __updated_progress(results, 'Read'))
 
         elif action == 'Mark as UnRead':
             try:
@@ -167,7 +151,8 @@ class ReadingListComicImage(ComicTileLabel):
             except (ProgrammingError, OperationalError, DataError) as e:
                 Logger.error(f'Mar as unRead DB: {e}')
             server_con = ComicServerConn()
-            update_url = f'{self.app.api_url}/Comics/{self.comic_obj.Id}/Mark_Unread'
+            update_url = '{}/Comics/{}/Mark_Unread'.format(
+                self.app.api_url, self.comic_obj.Id)
             server_con.update_progress(
                 update_url, 0,
                 callback=lambda req, results:
@@ -203,10 +188,7 @@ class ReadingListComicImage(ComicTileLabel):
 
 
 class CustomMDFillRoundFlatIconButton(MDIconButton):
-    def __init__(self, **kwargs):
-        _url = ObjectProperty()
-        page_num = NumericProperty()
-        super(CustomMDFillRoundFlatIconButton, self).__init__(**kwargs)
+    pass
 
 
 class Tooltip(Label):
@@ -226,38 +208,6 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
         super(SyncButtonIcon, self).__init__(**kwargs)
         self.tooltip = Tooltip(text=self.tooltip_text)
         self.app = App.get_running_app()
-
-    #     self.app = App.get_running_app()
-    #     self.sync_menu_items = [{
-    #         'viewclass': 'MDMenuItem', 'text': '[color=#000000]Sync Options[/color]',
-    #         'callback': self.callback_for_menu_items}, {
-    #         'viewclass': 'MDMenuItem', 'text': '[color=#000000]Start Sync[/color]',
-    #         'callback': self.callback_for_menu_items}]
-
-    # def callback_for_menu_items(self, *args):
-    #     print('callback')
-    #     action = args[0].replace(
-    #         '[color=#000000]', "").replace('[/color]', "")
-    #     if action == "Sync Options":
-    #         # self.app.switch_sync_control()
-    #         self.app.manager.current_screen.open_sync_options()
-    #     elif action == "Start Sync":
-    #         print('sync')
-    #         self.do_sync_rf()
-
-    # def on_press(self):
-    #     callback = partial(self.menu)
-    #     self.do_action = 'menu'
-    #     Clock.schedule_once(callback, .05)
-    #     self.my_clock = callback
-
-    # def menu(self, *args):
-    #     self.do_action = 'menu'
-
-    # def on_release(self):
-    #     Clock.unschedule(self.my_clock)
-    #     self.do_action = 'menu'
-    #     return super(SyncButtonIcon, self).on_press()
 
     def on_mouse_pos(self, *args):
         if not self.get_root_window():
@@ -403,19 +353,17 @@ class ServerReadingListsScreen(Screen):
         self.app.list_previous_screens.append(self.name)
         return super().on_leave(*args)
 
-    def on_enter(self, *args):
-        if self.list_loaded is False:
-            self.show_please_wait_dialog()
-
     def my_width_callback(self, obj, value):
-        win_x = (Window.width-30)//self.comic_thumb_width
-        win_div = (Window.width-30) % self.comic_thumb_width
+
         for key, val in self.ids.items():
             if key == 'main_grid':
                 c = val
                 c.cols = (Window.width-10)//self.comic_thumb_width
 
-    def collect_readinglist_data(self, readinglist_name, readinglist_Id, mode='From Server'):
+    def collect_readinglist_data(
+            self, readinglist_name,
+            readinglist_Id, mode='From Server'
+            ):
         async def collect_readinglist_data():
             self.readinglist_name = readinglist_name
             self.app.set_screen(self.readinglist_name + ' Page 1')
@@ -424,7 +372,8 @@ class ServerReadingListsScreen(Screen):
             self.mode = mode
             if self.mode == 'From Server':
                 self.fetch_data = ComicServerConn()
-                lsit_count_url = f'{self.api_url}/Lists/{readinglist_Id}/Comics/'
+                lsit_count_url = '{}/Lists/{}/Comics/'.format(
+                    self.api_url, readinglist_Id)
                 # self.fetch_data.get_list_count(lsit_count_url,self)
                 self.fetch_data.get_server_data(lsit_count_url, self)
             elif self.mode == 'From DataBase':
@@ -458,7 +407,6 @@ class ServerReadingListsScreen(Screen):
     def build_page(self, object_lsit):
         async def build_page():
             grid = self.m_grid
-            main_stack = self.main_stack
             grid.clear_widgets()
             for comic in object_lsit:
                 await asynckivy.sleep(0)
@@ -466,9 +414,7 @@ class ServerReadingListsScreen(Screen):
                 c.lines = 2
                 c.readinglist_obj = self.new_readinglist
                 c.paginator_obj = self.paginator_obj
-                x = self.comic_thumb_width
                 y = self.comic_thumb_height
-                thumb_size = f'height={y}&width={x}'
                 thumb_filename = f'{comic.Id}.jpg'
                 id_folder = self.app.store_dir
                 my_thumb_dir = os.path.join(
@@ -478,7 +424,8 @@ class ServerReadingListsScreen(Screen):
                     c_image_source = t_file
                 else:
                     part_url = f'/Comics/{comic.Id}/Pages/0?'
-                    part_api = f'&apiKey={self.api_key}&height={round(dp(y))}'
+                    part_api = '&apiKey={}&height={}'.format(
+                        self.api_key, round(dp(y)))
                     c_image_source = f"{self.api_url}{part_url}{part_api}"
                     asynckivy.start(save_thumb(comic.Id, c_image_source))
                 c.source = c_image_source
@@ -487,17 +434,18 @@ class ServerReadingListsScreen(Screen):
                 grid.add_widget(c)
                 grid.cols = (Window.width-10)//self.comic_thumb_width
                 self.dynamic_ids[id] = c
-            self.ids.page_count.text = f'Page #\n{self.current_page.number} of {self.paginator_obj.num_pages()}'
+            self.ids.page_count.text = 'Page #\n{} of {}'.format(
+                self.current_page.number, self.paginator_obj.num_pages())
         asynckivy.start(build_page())
 
     def refresh_callback(self, *args):
         '''A method that updates the state of reading list'''
         def refresh_callback(interval):
             self.ids.main_grid.clear_widgets()
-            page_num = self.current_page.number
-            page = self.paginator_obj.page(page_num)
             self.collect_readinglist_data(
-                self.readinglist_name, self.readinglist_Id, mode='From DataBase')
+                self.readinglist_name,
+                self.readinglist_Id,
+                mode='From DataBase')
 #            self.build_page(page.object_list)
             self.ids.main_scroll.refresh_done()
             self.tick = 0
@@ -509,13 +457,12 @@ class ServerReadingListsScreen(Screen):
         """
         async def _do_readinglist():
             self.new_readinglist = ComicReadingList(
-                name=self.readinglist_name, data='db_data', slug=self.readinglist_Id)
+                name=self.readinglist_name,
+                data='db_data',
+                slug=self.readinglist_Id)
             await asynckivy.sleep(0)
             self.so = self.new_readinglist.sw_syn_this_active
-
-            #self.sync_object = SyncReadingListObject(reading_list=self.new_readinglist)
             self.setup_options()
-            orphans = self.max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics
             self.paginator_obj = Paginator(
                 new_readinglist_reversed, self.max_books_page)
@@ -539,23 +486,22 @@ class ServerReadingListsScreen(Screen):
                 self.prev_button.page_num = ''
             self.build_page(page.object_list)
             self.list_loaded = True
-        #Clock.schedule_once(lambda dt: _do_readinglist(), 0)
         asynckivy.start(_do_readinglist())
-        # self.bind(new_readinglist=self.setter('sync_bool'))
-        # self.max_books_page = int(self.app.config.get(
-        #    'General', 'max_books_page'))
 
     def got_json(self, req, results):
         async def got_json():
             self.new_readinglist = ComicReadingList(
-                name=self.readinglist_name, data=results, slug=self.readinglist_Id)
+                name=self.readinglist_name,
+                data=results,
+                slug=self.readinglist_Id)
             for item in self.new_readinglist.comic_json:
                 comic_index = self.new_readinglist.comic_json.index(item)
                 new_comic = ComicBook(
-                    item, readlist_obj=self.new_readinglist, comic_index=comic_index)
+                    item,
+                    readlist_obj=self.new_readinglist,
+                    comic_index=comic_index)
                 self.new_readinglist.add_comic(new_comic)
             self.setup_options()
-            orphans = self.max_books_page - 1
             new_readinglist_reversed = self.new_readinglist.comics[::-1]
             self.paginator_obj = Paginator(
                 new_readinglist_reversed, self.max_books_page)
@@ -599,8 +545,8 @@ class ServerReadingListsScreen(Screen):
             cb_limit_active=self.new_readinglist.cb_limit_active,
             limit_num_text=str(self.new_readinglist.limit_num),
             cb_only_read_active=self.new_readinglist.cb_only_read_active,
-            cb_keep_last_read_active=self.new_readinglist.cb_keep_last_read_active,
-            cb_optimize_size_active=self.new_readinglist.cb_optimize_size_active,
+            cb_purge_active=self.new_readinglist.cb_purge_active,  # noqa
+            cb_optimize_size_active=self.new_readinglist.cb_optimize_size_active,  # noqa
             sw_syn_this_active=bool(
                 self.new_readinglist.sw_syn_this_active),
         )
@@ -632,7 +578,7 @@ class SyncOptionsPopup(Popup):
     cb_limit_active = BooleanProperty(False)
     limit_num_text = BooleanProperty(False)
     cb_only_read_active = BooleanProperty(False)
-    cb_keep_last_read_active = BooleanProperty(False)
+    cb_purge_active = BooleanProperty(False)
     cb_optimize_size_active = BooleanProperty(False)
     sw_syn_this_active = BooleanProperty(False)
     ok_text = StringProperty('OK')
@@ -675,7 +621,7 @@ class SyncOptionsPopup(Popup):
                 cb_limit_active=self.ids.cb_limit.active,
                 limit_num=int(self.ids.limit_num.text),
                 cb_only_read_active=self.ids.cb_only_read.active,
-                cb_keep_last_read_active=self.ids.cb_keep_last_read.active,
+                cb_purge_active=self.ids.cb_purge.active,
                 cb_optimize_size_active=self.ids.cb_optimize_size.active,
                 sw_syn_this_active=self.ids.sw_syn_this.active,
             )
@@ -685,12 +631,12 @@ class SyncOptionsPopup(Popup):
             return
 
     def on_cancel(self):
-        self.ids.cb_limit.active = self.current_screen.new_readinglist.cb_limit_active
+        self.ids.cb_limit.active = self.current_screen.new_readinglist.cb_limit_active # noqa
         self.ids.limit_num.text = str(
             self.current_screen.new_readinglist.limit_num)
-        self.ids.cb_only_read.active = self.current_screen.new_readinglist.cb_only_read_active
-        self.ids.cb_keep_last_read.active = self.current_screen.new_readinglist.cb_keep_last_read_active
-        self.ids.cb_optimize_size.active = self.current_screen.new_readinglist.cb_optimize_size_active
+        self.ids.cb_only_read.active = self.current_screen.new_readinglist.cb_only_read_active # noqa
+        self.ids.cb_purge.active = self.current_screen.new_readinglist.cb_purge_active # noqa
+        self.ids.cb_optimize_size.active = self.current_screen.new_readinglist.cb_optimize_size_active # noqa
         self.ids.sw_syn_this.active = bool(
             self.current_screen.new_readinglist.sw_syn_this_active)
         self.ids.limit_num.error = False

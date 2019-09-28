@@ -4,25 +4,6 @@ hot_keys_options = []
 for item in Keyboard.keycodes:
     hot_keys_options.append(item[0])
 
-
-def gen_reading_rl_sync_options(rl_name):
-    data = [
-        {'type':    'title',
-         'title':   'Sync Settings'},
-
-        {'type': 'path',
-         'title': 'Sync Directory',
-         'desc': 'Path to store downloaded sync comics',
-         'section': 'Sync',
-         'key': 'sync_folder'},
-        {'type': 'numeric',
-         'title': 'Default Max Comic to Sync',
-         'desc': 'This is how many Comics to sync Default',
-         'section': 'Sync',
-         'key': 'max_num_sync'}
-    ]
-
-
 settings_json_sync = json.dumps([
     {'type':    'title',
      'title':   'Sync Settings'},
@@ -44,7 +25,7 @@ settings_json_server = json.dumps([
 
     {'type':    'string',
      'title':   'Server URL',
-     'desc':    'URL for server. Leave ending / off. ex: http://192.168.1.215:8080/tablet',
+     'desc':    'URL for server. Leave ending / off. ex: http://192.168.1.215:8080/tablet',  # noqa
      'section': 'General',
      'key':     'base_url'},
 

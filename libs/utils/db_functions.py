@@ -43,9 +43,10 @@ class Comic(BaseModel):
     FilePath = CharField(null=True)
     Volume = CharField(null=True)
     data = PickleField(null=True)
-    
     local_file = CharField(null=True)
-    
+    is_sync = BooleanField(default=False)
+
+
 ComicIndexDeferred = DeferredThroughModel()
 
 
@@ -58,10 +59,9 @@ class ReadingList(BaseModel):
     cb_limit_active = BooleanField(null=True)
     limit_num = IntegerField(null=True)
     cb_only_read_active = BooleanField(null=True)
-    cb_keep_last_read_active = BooleanField(null=True)
+    cb_purge_active = BooleanField(null=True)
     cb_optimize_size_active = BooleanField(null=True)
     sw_syn_this_active = BooleanField(null=True)
-    start_last_sync_num = IntegerField(default=0)
     end_last_sync_num = IntegerField(default=0)
     totalCount = IntegerField()
 
@@ -70,7 +70,6 @@ class ComicIndex(BaseModel):
     comic = ForeignKeyField(Comic, backref='comic_index')
     readinglist = ForeignKeyField(ReadingList, backref='Indexes')
     index = IntegerField()
-    is_sync = BooleanField(default=False)
 
 
 ComicIndexDeferred.set_model(ComicIndex)

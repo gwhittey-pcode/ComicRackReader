@@ -16,7 +16,7 @@ import ntpath
 import json
 from kivy.metrics import dp
 import pickle
-
+from functools import partial
 CHECKBOX_STATE_BOOL = {
     'normal': False, 'down': True
 }
@@ -25,10 +25,9 @@ READINGLIST_DB_KEYS = [
     'cb_limit_active',
     'limit_num',
     'cb_only_read_active',
-    'cb_keep_last_read_active',
+    'cb_purge_active',
     'cb_optimize_size_active',
     'sw_syn_this_active',
-    'start_last_sync_num',
     'end_last_sync_num',
     'totalCount',
     'data',
@@ -39,7 +38,7 @@ READINGLIST_SETTINGS_KEYS = [
     'cb_limit_active',
     'limit_num',
     'cb_only_read_active',
-    'cb_keep_last_read_active',
+    'cb_purge_active',
     'cb_optimize_size_active',
     'sw_syn_this_active',
 
@@ -49,7 +48,7 @@ READINGLIST_SETTINGS_KEYS = [
 COMIC_DB_KEYS = [
     'Id', 'Series', 'Number', 'Volume', 'Year', 'Month',
     'UserCurrentPage', 'UserLastPageRead', 'PageCount',
-    'Summary',  'FilePath', 'local_file', 'data',
+    'Summary',  'FilePath', 'local_file', 'data', 'is_sync'
 ]
 
 
@@ -157,7 +156,6 @@ class ComicBook(EventDispatcher):
             self.name = self.__str__
             self.date = f"{db_item.Month}/{db_item.Year}"
             self.slug = str(self.Id)
-            self.set_is_sync()
 
             self.comic_index = db_item.comic_index.select(
                 ReadingList.slug == self.readlist_obj.slug)
@@ -191,7 +189,7 @@ class ComicReadingList(EventDispatcher):
     comic_json = ListProperty()
     cb_only_read_active = BooleanProperty(False)
     cb_only_read_active = BooleanProperty(False)
-    cb_keep_last_read_active = BooleanProperty(False)
+    cb_purge_active = BooleanProperty(False)
     cb_optimize_size_active = BooleanProperty(False)
     cb_limit_active = BooleanProperty(False)
     limit_num = NumericProperty(25)
@@ -208,6 +206,7 @@ class ComicReadingList(EventDispatcher):
     def __init__(self, name='', data=None, slug='', mode='Server'):
         self.slug = slug
         self.name = name
+        self.event = None
         if data != 'db_data':
 
             self.pickled_data = pickle.dumps(data, -1)
@@ -231,7 +230,7 @@ class ComicReadingList(EventDispatcher):
         tmp_defaults = {}
         try:
             for key in READINGLIST_DB_KEYS:
-                if key is 'data':
+                if key == 'data':
                     new_dict = {k: self.data[k] for k in self.data.keys()}
                     tmp_defaults['data'] = new_dict
                 else:
@@ -253,7 +252,7 @@ class ComicReadingList(EventDispatcher):
                     comicindex_db = ComicIndex.get(
                         ComicIndex.readinglist == self.slug)
                     if mode == "local_file":
-                        list_comics = self.db.comics.where(comicindex_db.is_sync == True, Comic.local_file != '').order_by(
+                        list_comics = self.db.comics.where(Comic.is_sync == True, Comic.local_file != '').order_by(
                             comicindex_db.index)
                         print(f'len:{len(list_comics)}')
                     else:
@@ -340,18 +339,73 @@ class ComicReadingList(EventDispatcher):
         return last_read_comic
 
     def do_sync(self):
-
+        if self.event is not None:
+            toast('Sync Already In Progress wait till it finshes')
+            return
         self.num_file_done = 0
-        self.sync_range = 0
+        sync_range = 0
         self.fetch_data = ComicServerConn()
-        self.last_comic_read = 0
-        self.last_comic_read = self.get_last_comic_read()
-        if self.cb_limit_active:
-            self.sync_range = int(self.last_comic_read) + int(self.limit_num)
+        rl_db = ReadingList.get(ReadingList.slug == self.slug)
+        end_last_sync_num = rl_db.end_last_sync_num
+        comicindex_db = ComicIndex.get(
+                        ComicIndex.readinglist == self.slug)
+        last_read_comic_db = self.db.comics.where(
+            (Comic.UserLastPageRead == Comic.PageCount-1)
+            & (Comic.PageCount > 1)).order_by(comicindex_db.index)
+        if len(last_read_comic_db) > 1:
+            last_read_index = ComicIndex.get(
+                ComicIndex.comic == last_read_comic_db[-1].Id,
+                ComicIndex.readinglist == self.slug).index
+        elif len(last_read_comic_db) != 0:
+            last_read_index = ComicIndex.get(
+                ComicIndex.comic == last_read_comic_db[0].Id,
+                ComicIndex.readinglist == self.slug).index
         else:
-            self.sync_range = len(self.comics)
-        # if self.cb_only_read_active:
-        #    self.do_purge()
+            last_read_index = 0
+
+        if self.cb_limit_active:
+            if self.cb_only_read_active:
+                list_comics = self.db.comics.where(
+                                ~(Comic.UserLastPageRead == Comic.PageCount-1)
+                                & (Comic.PageCount > 1)
+                                ).order_by(comicindex_db.index)  # noqa: E712
+                if last_read_index < end_last_sync_num:
+                    sync_range = int(self.limit_num)
+                    tmp_comic_list = list_comics[0:sync_range]
+                else:
+                    sync_range = int(end_last_sync_num) + int(self.limit_num)
+                    tmp_comic_list = list_comics[end_last_sync_num:sync_range]
+                purge_list = self.db.comics.where(
+                    (Comic.UserLastPageRead == Comic.PageCount-1)
+                    & (Comic.PageCount > 1) &
+                    Comic.is_sync == True).order_by(
+                        comicindex_db.index)  # noqa: E712
+                rl_db.end_last_sync_num = sync_range
+                rl_db.save()
+            else:
+                list_comics = self.db.comics.where(
+                    Comic.is_sync == False).order_by(comicindex_db.index)  # noqa: E712,E501
+                sync_range = int(end_last_sync_num) + int(self.limit_num)
+                tmp_comic_list = list_comics[end_last_sync_num:sync_range]
+                purge_list = self.db.comics.where(
+                    Comic.is_sync == True).order_by(
+                        comicindex_db.index)  # noqa: E712
+                rl_db.end_last_sync_num = sync_range
+                rl_db.save()
+        else:
+            sync_range = len(self.comics)
+            rl_db.end_last_sync_num = sync_range
+            rl_db.save()
+            if self.cb_only_read_active:
+                list_comics = self.db.comics.where(
+                                ~(Comic.UserLastPageRead == Comic.PageCount-1)
+                                & (Comic.PageCount > 1)
+                                ).order_by(comicindex_db.index)  # noqa: E712
+                tmp_comic_list = list_comics[0:sync_range]
+            else:
+                list_comics = self.db.comics.where(
+                    Comic.is_sync == False).order_by(comicindex_db.index)  # noqa: E712,E501
+                tmp_comic_list = list_comics[end_last_sync_num:sync_range]
         db_item = ReadingList.get(ReadingList.slug == self.slug)
         for key in READINGLIST_SETTINGS_KEYS:
             v = getattr(db_item, key)
@@ -361,24 +415,27 @@ class ComicReadingList(EventDispatcher):
         my_comic_dir = Path(os.path.join(id_folder, 'comics'))
         if os.path.isdir(my_comic_dir):
             print(f'{get_size(my_comic_dir)/1000000} MB')
-        self.sync_readinglist()
+        sync_comic_list = []
+        for comic in tmp_comic_list:
+            if comic.is_sync is False:
+                sync_comic_list.append(comic)
+        if self.cb_purge_active:
+            for item in purge_list:
+                os.remove(item.local_file)
+                db_comic = Comic.get(Comic.Id == item.Id)
+                db_comic.is_sync = False
+                db_comic.local_file = ''
+                db_comic.save()
+        self.sync_readinglist(comic_list=sync_comic_list)
 
     def download_file(self, comic):
-        comic_index = 0
-        self.file_download = False
-        file_name = ntpath.basename(comic.FilePath)
-        for i, j in enumerate(self.comics):
-            if j.Id == comic.Id:
-                comic_index = i
-
         def got_file(comic_obj, comic_file=""):
             self.num_file_done += 1
-            toast(f'{file_name} Synced')
+            toast(f'{comic_file} Synced')
             self.file_download = True
-            db_comic_index = ComicIndex.get(
-                ComicIndex.comic == comic_obj.Id, ComicIndex.readinglist == self.slug)
-            db_comic_index.is_sync = True
-            db_comic_index.save()
+            db_comic = Comic.get(Comic.Id == comic_obj.Id)
+            db_comic.is_sync = True
+            db_comic.save()
             db_comic = Comic.get(Comic.Id == comic_obj.Id)
             db_comic.local_file = comic_file
             db_comic.save()
@@ -386,9 +443,9 @@ class ComicReadingList(EventDispatcher):
         def got_thumb(results):
             pass
 
-        x = 240
-        y = 156
-        thumb_size = f'height={y}&width={x}'
+        self.file_download = False
+        file_name = ntpath.basename(comic.FilePath)
+        y = 240
         part_url = f'/Comics/{comic.Id}/Pages/0?'
         app = App.get_running_app()
         part_api = f'&apiKey={app.api_key}&height={round(dp(y))}'
@@ -397,7 +454,7 @@ class ComicReadingList(EventDispatcher):
         if self.cb_optimize_size_active is False:
             sync_url = f'{app.api_url}/Comics/{comic.Id}/Sync/File/'
         elif self.cb_optimize_size_active is True:
-            sync_url = f'{app.api_url}/Comics/{comic.Id}/Sync/webp'
+            sync_url = f'{app.api_url}/Comics/{comic.Id}/Sync/Webp'
         print(f'sync_url:{sync_url}')
         app = App.get_running_app()
         id_folder = os.path.join(app.sync_folder, self.slug)
@@ -417,22 +474,23 @@ class ComicReadingList(EventDispatcher):
         self.fetch_data.get_server_file_download(thumb_url, callback=lambda req, results: got_thumb(
             results), file_path=os.path.join(self.my_thumb_dir, thumb_name))
 
-    def _finish_sync(self, dt):
+    def _finish_sync(self, comic_list, *largs):
         def __finish_toast(dt):
-            toast('Reading List has been Synceddd')
-
-        list_comics = self.comics
-
-        sync_num_comics = list_comics[self.last_comic_read: self.sync_range]
-        num_comic = len(sync_num_comics)
+            toast('Reading List has been Synced, Refreshing Screen')
+            app = App.get_running_app()
+            screen = app.manager.get_screen('server_readinglists_screen')
+            screen.refresh_callback()
+           
+        list_comics = comic_list
+        num_comic = len(list_comics)
         if self.num_file_done == num_comic:
             Clock.schedule_once(__finish_toast, 3)
             self.event.cancel()
 
-    def sync_readinglist(self):
-        list_comics = self.comics
-        sync_num_comics = list_comics[self.last_comic_read: self.sync_range]
+    def sync_readinglist(self, comic_list=[]):
+        list_comics = comic_list
         app = App.get_running_app()
         app.delayed_work(
-            self.download_file, sync_num_comics, delay=.5)
-        self.event = Clock.schedule_interval(self._finish_sync, 0.5)
+            self.download_file, list_comics, delay=.5)
+        self.event = Clock.schedule_interval(partial(
+            self._finish_sync, comic_list), .5)

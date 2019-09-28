@@ -15,7 +15,7 @@ import sys
 import os
 from pathlib import Path
 from ast import literal_eval
-from kivy.config import Config
+
 
 from kivy.app import App
 from kivy.uix.modalview import ModalView
@@ -24,26 +24,24 @@ from kivy.core.window import Window
 from kivy.core.window import Keyboard
 from kivy.config import ConfigParser
 from kivy.clock import Clock
-from kivy.utils import get_color_from_hex, get_hex_from_color
-from kivy.metrics import dp
-from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty, BooleanProperty
+from kivy.utils import get_hex_from_color
+
+from kivy.properties import (
+    ObjectProperty, StringProperty, ListProperty,
+    NumericProperty, BooleanProperty)
 from main import __version__
-from libs.translation import Translation
 from libs.uix.baseclass.startscreen import StartScreen
-from libs.uix.lists import Lists
 from kivy.logger import Logger
 from kivymd.theming import ThemeManager
-from kivymd.uix.label import MDLabel
 from kivymd.toast.kivytoast import toast
-from kivy.storage.jsonstore import JsonStore
 from kivymd.uix.filemanager import MDFileManager
 from libs.utils.db_functions import start_db
 # from dialogs import card
 # End KivyMD imports
-from settings.settingsjson import settings_json_server, settings_json_dispaly,\
-    settings_json_screen_tap_control, settings_json_hotkeys, settings_json_sync,\
-    gen_reading_rl_sync_options
-from kivy.properties import ObjectProperty, StringProperty
+from settings.settingsjson import (
+    settings_json_server, settings_json_dispaly,
+    settings_json_screen_tap_control, settings_json_hotkeys,
+    settings_json_sync)
 from settings.custom_settings import MySettings
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 from libs.utils.comic_functions import convert_comicapi_to_json
@@ -76,8 +74,8 @@ class ComicRackReader(App):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = 'below_target'
-        self.LIST_SCREENS = ['base', 'license', 'about', 'server_readinglists_screen',
-                             'server_lists_screen', 'syncscreen',
+        self.LIST_SCREENS = ['base', 'license', 'about', 'server_lists_screen',
+                             'syncscreen', 'server_readinglists_screen',
                              'single_file_screen', 'open_file_screen',
                              ]
 
@@ -91,9 +89,9 @@ class ComicRackReader(App):
         self.comic_thumb_width = 156
         self.dict_language = literal_eval(
             open(
-                os.path.join(self.directory, 'data', 'locales',
-                             'locales.txt')).read()
-        )
+                os.path.join(
+                    self.directory, 'data', 'locales',
+                    'locales.txt')).read())
         # self.translation = Translation(
         #     self.lang, 'Ttest', os.path.join(self.directory,
         # data', 'locales')
@@ -276,7 +274,7 @@ class ComicRackReader(App):
         hk_toggle_fullscreen = app.config.get(
             'Hotkeys', 'hk_toggle_fullscreen')
         Logger.debug(f'keyboard:{keyboard}')
-        if not current_screen.name in self.LIST_SCREENS:
+        if current_screen.name not in self.LIST_SCREENS:
             if keyboard in (c.string_to_keycode(hk_next_page), 275):
                 current_screen.load_next_slide()
             elif keyboard in (c.string_to_keycode(hk_prev_page), 276):
@@ -315,7 +313,7 @@ class ComicRackReader(App):
         return True
 
     def toggle_full_screen(self):
-        if App.get_running_app().full_screen == False:
+        if App.get_running_app().full_screen is False:
             Window.fullscreen = 'auto'
             App.get_running_app().full_screen = True
         else:
@@ -331,7 +329,7 @@ class ComicRackReader(App):
                 return
             try:
                 self.manager.current = self.list_previous_screens.pop()
-            except:
+            except: # noqa
                 self.manager.current = 'base'
             # self.screen.ids.action_bar.title = self.title
 
@@ -364,33 +362,6 @@ class ComicRackReader(App):
         self.screen.ids.action_bar.left_action_items = [
             ['chevron-left', lambda x: self.back_screen(27)]]
         self.screen.ids.action_bar.title = 'MIT LICENSE'
-
-    # def select_locale(self, *args):
-    #     '''Displays a window with a list of available language localizations'''
-
-    #     def select_locale(name_locale):
-    #         '''Sets the selected location..'''
-
-    #         for locale in self.dict_language.keys():
-    #             if name_locale == self.dict_language[locale]:
-    #                 self.lang=locale
-    #                 self.config.set('Language', 'language', self.lang)
-    #                 self.config.write()
-
-    #     dict_info_locales={}
-    #     for locale in self.dict_language.keys():
-    #         dict_info_locales[self.dict_language[locale]]=[
-    #             'locale', locale == self.lang]
-
-        # if not self.window_language:
-        #     self.window_language = card(
-        #         Lists(
-        #             dict_items=dict_info_locales,
-        #             events_callback=select_locale, flag='one_select_check'
-        #         ),
-        #         size=(.85, .55)
-        #     )
-        # self.window_language.open()
 
     def dialog_exit(self):
         def check_interval_press(interval):
@@ -429,21 +400,14 @@ class ComicRackReader(App):
     def switch_server_lists_screen(self):
         self.set_screen("List of Reading Lists Screen")
         self.manager.current = 'server_lists_screen'
-        server_lists_screen = self.manager.get_screen('server_lists_screen')
-
-    # def switch_open_comics_screen(self):
-    #     self.set_screen("Open Comics Screen")
-    #     self.manager.current='open_comicscreen'
 
     def switch_readinglists_screen(self):
-       
         screen = self.manager.get_screen(
             'server_readinglists_screen')
         self.set_screen(screen.reading_list_title)
         if self.manager.current_screen.name not in self.LIST_SCREENS and\
                 screen.list_loaded:
             screen.refresh_callback()
-            
         self.manager.current = 'server_readinglists_screen'
 
     def switch_base_screen(self):
@@ -535,7 +499,11 @@ class ComicRackReader(App):
                 for item in new_rl.comic_json:
                     comic_index = new_rl.comic_json
                     new_comic = ComicBook(
-                        item, readinglist_ob=new_rl, comic_index=comic_index, mode='FileOpen')
+                        item,
+                        readinglist_ob=new_rl,
+                        comic_index=comic_index,
+                        mode='FileOpen'
+                        )
                     new_rl.add_comic(new_comic)
         if has_cb_files is True:
             max_books_page = int(self.config.get(

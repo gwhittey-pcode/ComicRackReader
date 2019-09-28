@@ -14,7 +14,6 @@
 import os
 import sys
 import traceback
-from kivy.network.urlrequest import UrlRequest
 NICK_NAME_AND_NAME_REPOSITORY = \
     'git@github.com:gwhittey-pcode/ComicRackReader.git'
 
@@ -27,7 +26,7 @@ try:
     kivy.require('1.11.1')
 
     from kivy.config import Config
-    #Config.set('kivy', 'keyboard_mode', 'system')
+    # Config.set('kivy', 'keyboard_mode', 'system')
     Config.set('kivy', 'log_enable', 0)
 
     from kivymd.theming import ThemeManager

@@ -245,11 +245,12 @@ class BaseScreen(Screen):
                                         my_thumb_dir, thumb_name)
                                     c_image_source = t_file
                                 else:
+                                    round_y = round(dp(y))
                                     part_url = f'/Comics/{comic.Id}/Pages/0?'
-                                    part_api = f'&apiKey={self.api_key}\
-                                        &height={round(dp(y))}'
-                                    c_image_source = f"{self.app.api_url}\
-                                                        {part_url}{part_api}"
+                                    part_api = '&apiKey={}&height={}'.format(
+                                        self.api_key, round_y)
+                                    c_image_source = '{}{}{}'.format(
+                                        self.app.api_url, part_url, part_api)
                                 c.source = c_image_source
                                 c.PageCount = comic.PageCount
                                 c.pag_pagenum = tmp_last_pag_pagnum

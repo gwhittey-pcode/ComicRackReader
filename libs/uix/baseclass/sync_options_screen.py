@@ -123,8 +123,7 @@ class SyncOptions(Screen):
         self.my_tree.clear_widgets()
         self.my_tree.bind(minimum_height=self.my_tree.setter('height'))
         for item in result:
-            if item['Type'] == "ComicLibraryListItem" or\
-                    item['Type'] == "ComicSmartListItem":
+            if item['Type'] == "ComicLibraryListItem" or item['Type'] == "ComicSmartListItem":
                 new_node = self.my_tree.add_node(TreeViewRLNode2(
                     text=item['Name'], color=(
                         0.9568627450980393, 0.2627450980392157,

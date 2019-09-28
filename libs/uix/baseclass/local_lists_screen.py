@@ -13,26 +13,18 @@ name:local_lists_screen
 """
 
 from kivy.app import App
-from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.metrics import dp
 from kivy.properties import (
     BooleanProperty,
-    DictProperty,
     ListProperty,
     ObjectProperty,
     StringProperty)
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
 from kivy.uix.screenmanager import Screen
-from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
+from kivy.uix.treeview import TreeView, TreeViewNode
 from kivymd.toast.kivytoast import toast
 from kivymd.uix.button import MDIconButton
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.list import (ILeftBody, ILeftBodyTouch, IRightBodyTouch,
-                             OneLineAvatarIconListItem, OneLineIconListItem)
-from kivymd.uix.selectioncontrol import MDCheckbox
-
+from kivymd.uix.list import (ILeftBodyTouch, OneLineIconListItem)
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.db_functions import ReadingList
 
