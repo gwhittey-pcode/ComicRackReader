@@ -15,8 +15,8 @@ import sys
 import os
 from pathlib import Path
 from ast import literal_eval
-
-
+from shutil import copyfile
+from kivymd.uix.dialog import MDDialog
 from kivy.app import App
 from kivy.uix.modalview import ModalView
 from kivy.lang import Builder
@@ -204,22 +204,49 @@ class ComicRackReader(App):
             'General', 'how_to_open_comic')
 
     def config_callback(self, section, key, value):
-        config_items = {
-            'base_url': 'base_url',
-            'api_key': 'api_key',
-            'sync_folder': 'sync_folder',
-            'password': 'password',
-            'username': 'username',
-            'storagedir': 'store_dir',
-            'max_books_page': 'max_books_page',
-            'sync_folder': 'sync_folder'
-        }
-        item_list = list(config_items.keys())
-        if key in item_list:
-            item = config_items[key]
-            setattr(self, item, value)
-        self.api_url = self.base_url + "/API"
-        self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
+        if key == 'storagedir':
+            def __callback_for_please_wait_dialog(*args):
+                
+                if args[0] == 'Delete Database':
+                    self.stop()
+                elif args[0] == "Move Database":
+                    print('move')
+                    db_folder = self.my_data_dir
+                    old_dbfile = os.path.join(db_folder, "ComicRackReader.db")
+                    store_dir = os.path.join(value, 'store_dir')
+                    new_data_dir = os.path.join(store_dir, 'comics_db')
+                    new_dbfile = os.path.join(new_data_dir, "ComicRackReader.db")
+                    if not os.path.isdir(store_dir):
+                        os.makedirs(store_dir)
+                    if not os.path.isdir(new_data_dir):
+                        os.makedirs(new_data_dir)
+                    copyfile(old_dbfile, new_dbfile)
+                    self.stop()
+            self.please_wait_dialog = MDDialog(
+                title="Please Restart ComicRackReader",
+                size_hint=(0.8, 0.4),
+                text_button_ok="Delete Data",
+                text_button_cancel="Move Database",
+                text=f"Storage/Databse dir changed Delete Data or Move it to new dir?",
+                events_callback=__callback_for_please_wait_dialog,
+            )
+            self.please_wait_dialog.open()
+        else:
+            config_items = {
+                'base_url': 'base_url',
+                'api_key': 'api_key',
+                'sync_folder': 'sync_folder',
+                'password': 'password',
+                'username': 'username',
+                'max_books_page': 'max_books_page',
+                'sync_folder': 'sync_folder'
+            }
+            item_list = list(config_items.keys())
+            if key in item_list:
+                item = config_items[key]
+                setattr(self, item, value)
+            self.api_url = self.base_url + "/API"
+            #self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
 
     def build(self):
         self.set_value_from_config()

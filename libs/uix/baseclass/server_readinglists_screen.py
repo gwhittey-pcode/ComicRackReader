@@ -205,7 +205,7 @@ class SyncButtonIcon(ButtonBehavior, MDIcon):
     tooltip = Tooltip(text='No Tooltip')
 
     def __init__(self, **kwargs):
-        Window.bind(mouse_pos=self.on_mouse_pos)
+        #Window.bind(mouse_pos=self.on_mouse_pos)
         super(SyncButtonIcon, self).__init__(**kwargs)
         self.tooltip = Tooltip(text=self.tooltip_text)
         self.app = App.get_running_app()
