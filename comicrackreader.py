@@ -44,6 +44,7 @@ from settings.settingsjson import (
     settings_json_sync)
 from settings.custom_settings import MySettings
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+
 from libs.utils.comic_functions import convert_comicapi_to_json
 from libs.utils.paginator import Paginator
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
@@ -225,9 +226,9 @@ class ComicRackReader(App):
             self.please_wait_dialog = MDDialog(
                 title="Please Restart ComicRackReader",
                 size_hint=(0.8, 0.4),
-                text_button_ok="Delete Data",
+                text_button_ok="Delete Database",
                 text_button_cancel="Move Database",
-                text=f"Storage/Databse dir changed Delete Data or Move it to new dir?",
+                text=f"Storage/Databse dir changed Delete Data or Move it to new dir \nApp will Close please restart it for new setting to take effect?",
                 events_callback=__callback_for_please_wait_dialog,
             )
             self.please_wait_dialog.open()
@@ -250,6 +251,16 @@ class ComicRackReader(App):
 
     def build(self):
         self.set_value_from_config()
+        from libs.uix.baseclass.basescreen import BaseScreen
+        from libs.uix.baseclass.about import About
+        from libs.uix.baseclass.local_lists_screen import LocalListsScreen
+        from libs.uix.baseclass.local_readinglists_screen import LocalReadingListsScreen
+        from libs.uix.baseclass.navdrawer import NavDrawer
+        from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+        from libs.uix.baseclass.server_lists_screen import ServerListsScreen
+        from libs.uix.baseclass.server_readinglists_screen import ServerReadingListsScreen
+        from libs.uix.baseclass.license import License
+        from libs.uix.lists import SingleIconItem
         start_db()
         self.load_all_kv_files(os.path.join(
             self.directory, 'libs', 'uix', 'kv'))
