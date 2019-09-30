@@ -369,7 +369,7 @@ class ServerComicBookScreen(Screen):
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}/size"
         get_size_url = f"{self.api_url}{s_url_part}"
         if self.view_mode == 'FileOpen' or self.comic_obj.is_sync:
-            if ( kivy.utils.platform != 'android' ):
+            if (platform != 'android'):
                 width, height = get_file_page_size(comic_page_source)
                 data = {"width": width, "height": height}
                 got_page_size(data)
