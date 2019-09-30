@@ -54,7 +54,7 @@
         SyncButtonIcon:
             #font_style: 'Icon'
             id:syn_options
-            icon_name: 'settings-transfer'
+            icon_name: 'settings'
             tooltip_text:'Sync Options'
             size_hint: None,None
             size:dp(50),dp(50)
@@ -143,7 +143,6 @@
 
 <ReadingListComicImage>
     size: (dp(160),dp(240))
-    mipmap: True
     font_style: 'Subtitle1'
     on_release:
         if self.do_action is 'read': self.open_comic()

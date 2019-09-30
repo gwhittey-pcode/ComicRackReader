@@ -189,6 +189,10 @@ class ServerComicBookScreen(Screen):
         self.prev_comic = self.get_prev_comic()
         self.build_next_comic_dialog()
         self.build_prev_comic_dialog()
+        if self.app.manager.has_screen(self.app.open_comic_screen):
+            old_screen = self.app.manager.get_screen(self.app.open_comic_screen)
+            self.app.manager.remove_widget(old_screen)
+        self.app.open_comic_screen = self.comic_obj.Id
 
     def toggle_full_screen(self):
         if self.full_screen is False:
@@ -212,9 +216,9 @@ class ServerComicBookScreen(Screen):
         self.option_pop.dismiss()
 
     def on_leave(self, *args):
-
-        self.app.manager.remove_widget(self)
-        self = None
+        pass
+        # self.app.manager.remove_widget(self)
+        # self = None
 
     def load_UserCurrentPage(self):
         for slide in self.ids.comic_book_carousel.slides:
@@ -989,7 +993,8 @@ class OptionToolBar(MDToolbar):
         title_txt = comic_book_screen.comic_obj.__str__
         if comic_book_screen.view_mode == 'FileOpen':
             title_txt = f'{title_txt} *File*'
-        self.title = title_txt
+        elif comic_book_screen.view_mode == 'Sync':
+            self.title =  title_txt = f'{title_txt} *Sync File*'
         root = self
         self.left_action_items = [
             # ["menu", (lambda x: nav_drawer._toggle())],
@@ -1003,6 +1008,9 @@ class OptionToolBar(MDToolbar):
                 lambda x: app.switch_server_lists_screen()],
             ['view-list',
                 lambda x: app.switch_readinglists_screen()],
+            ['folder-sync', lambda x: app.switch_local_lists_screen()],
+            ['playlist-check', lambda x: app.switch_local_readinglists_screen()],
+            ['book-open-page-variant', lambda x: app.switch_comic_reader()],
             ['close-box-outline', lambda x: app.stop()]
         ]
 

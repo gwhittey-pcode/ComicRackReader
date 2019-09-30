@@ -10,7 +10,7 @@ from playhouse.fields import PickleField # noqa
 
 
 def start_db():
-
+    print('stardb')
     app = App.get_running_app()
     db_folder = app.my_data_dir
     db_file = os.path.join(db_folder, "ComicRackReader.db")
