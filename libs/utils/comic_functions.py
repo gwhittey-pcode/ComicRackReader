@@ -6,7 +6,8 @@ from kivy.app import App
 from pathlib import Path
 from PIL import Image
 from libs.utils.comic_server_conn import ComicServerConn
-
+from kivy.utils import platform
+from kivy.core.image import Image as CoreImage
 # from kivy.core.image import Image as CoreImage
 # from kivy.uix.image import Image as kvImage
 # from PIL import Image, ImageDraw, ImageFont
@@ -62,9 +63,14 @@ def get_comic_page(comic_obj, page_num):
 
 
 def get_file_page_size(file):
-    im = Image.open(file)
+    im = CoreImage(file)
     width, height = im.size
     return width, height
+    # if (platform != 'android'):
+    #     im = Image.open(file)
+    #     width, height = im.size
+    #     return width, height
+    # else:
 
 
 def getComicMetadata(path):

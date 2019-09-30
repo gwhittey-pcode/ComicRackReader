@@ -29,8 +29,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.scrollview import ScrollView
 from kivymd.toast.kivytoast import toast
 from kivymd.uix.toolbar import MDToolbar
-from kivy.utils import platform
- 
+
 from libs.uix.widgets.comicbook_screen_widgets import (
     ComicBookPageImage, ComicBookPageScatter, ComicBookPageThumb,
     CommonComicsCoverImage, CommonComicsCoverInnerGrid, CommonComicsOuterGrid,
@@ -369,10 +368,9 @@ class ServerComicBookScreen(Screen):
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}/size"
         get_size_url = f"{self.api_url}{s_url_part}"
         if self.view_mode == 'FileOpen' or self.comic_obj.is_sync:
-            if (platform != 'android'):
-                width, height = get_file_page_size(comic_page_source)
-                data = {"width": width, "height": height}
-                got_page_size(data)
+            width, height = get_file_page_size(comic_page_source)
+            data = {"width": width, "height": height}
+            got_page_size(data)
         else:
             self.fetch_data.get_page_size_data(
                 get_size_url, callback=lambda req,
