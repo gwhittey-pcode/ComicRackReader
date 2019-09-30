@@ -77,6 +77,7 @@ class ReadingListComicImage(ComicTileLabel):
             self.menu_items.append(a_menu_item)
         self.app = App.get_running_app()
         self.comic_obj = comic_obj
+        self.img_color = 1, 1, 1, 1
         self.UserCurrentPage = comic_obj.UserCurrentPage
         self.UserLastPageRead = comic_obj.UserLastPageRead
         if self.comic_obj.local_file != '':
