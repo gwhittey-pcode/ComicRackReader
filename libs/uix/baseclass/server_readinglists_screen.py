@@ -31,6 +31,7 @@ from kivymd.toast.kivytoast.kivytoast import toast
 from kivymd.uix.button import MDIconButton, MDRaisedButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.label import MDIcon
+from kivymd.uix.imagelist import SmartTileWithLabel
 from kivymd.uix.list import ILeftBody, ILeftBodyTouch, IRightBodyTouch
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.selectioncontrol import MDCheckbox
@@ -47,7 +48,7 @@ from libs.utils.db_functions import Comic
 from libs.utils.paginator import Paginator
 
 
-class ReadingListComicImage(ComicTileLabel):
+class ReadingListComicImage(SmartTileWithLabel):
     my_clock = ObjectProperty()
     do_action = StringProperty()
     comic_slug = StringProperty()
@@ -77,7 +78,7 @@ class ReadingListComicImage(ComicTileLabel):
             self.menu_items.append(a_menu_item)
         self.app = App.get_running_app()
         self.comic_obj = comic_obj
-        self.img_color = (.89, .15, .21, 5)
+        #self.img_color = (.89, .15, .21, 5)
         self.UserCurrentPage = comic_obj.UserCurrentPage
         self.UserLastPageRead = comic_obj.UserLastPageRead
         if self.comic_obj.local_file != '':
