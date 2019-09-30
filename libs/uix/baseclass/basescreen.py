@@ -105,7 +105,6 @@ class BaseScreen(Screen):
                     )
                 )
 
-    # get api key from server and store it in settings.
     def open_comic(
         self,
         tmp_last_comic_id="",
@@ -114,27 +113,21 @@ class BaseScreen(Screen):
         comic=None,
         tmp_last_pag_pagnum=None,
     ):
-        new_screen_name = str(tmp_last_comic_id)
-        if new_screen_name not in self.app.manager.screen_names:
-            if tmp_last_comic_type == "local_file":
-                view_mode = "Sync"
-            else:
-                view_mode = "Server"
-            new_screen = ServerComicBookScreen(
-                readinglist_obj=self.new_readinglist,
-                comic_obj=comic,
-                paginator_obj=paginator_obj,
-                pag_pagenum=tmp_last_pag_pagnum,
-                name=new_screen_name,
-                last_load=0,
-                view_mode=view_mode,
-            )
-            self.app.manager.add_widget(new_screen)
-            self.app.manager.current = new_screen_name
-            self.app.app_started = True
+        if tmp_last_comic_type == "local_file":
+            view_mode = "Sync"
         else:
-            self.app.manager.current = new_screen_name
-            self.app.app_started = True
+            view_mode = "Server"
+        screen = self.app.manager.get_screen("comic_book_screen")
+        screen.setup_screen(
+            readinglist_obj=self.new_readinglist,
+            comic_obj=comic,
+            paginator_obj=paginator_obj,
+            pag_pagenum=tmp_last_pag_pagnum,
+            last_load=0,
+            view_mode=view_mode,
+        )
+        self.app.manager.current = "comic_book_screen"
+        self.app.app_started = True
 
     def validate_user(self):
         def got_api(result):

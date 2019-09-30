@@ -51,7 +51,6 @@ from settings.settingsjson import (
     settings_json_sync,
 )
 from settings.custom_settings import MySettings
-from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 
 from libs.utils.comic_functions import convert_comicapi_to_json
 from libs.utils.paginator import Paginator
@@ -115,7 +114,8 @@ class ComicRackReader(App):
         self.base_url = ""
         self.settings_cls = MySettings
         self.md_manager = None
-        self.open_comic_screen = ''
+        self.open_comic_screen = ""
+
     # def get_application_config(self):
     #     return super(ComicRackReader, self).get_application_config(
     #         '{}/%(appname)s.ini'.format(self.directory))
@@ -231,24 +231,28 @@ class ComicRackReader(App):
         )
 
     def config_callback(self, section, key, value):
-        if key == 'storagedir':
+        if key == "storagedir":
+
             def __callback_for_please_wait_dialog(*args):
-                
-                if args[0] == 'Delete Database':
+
+                if args[0] == "Delete Database":
                     self.stop()
                 elif args[0] == "Move Database":
-                    print('move')
+                    print("move")
                     db_folder = self.my_data_dir
                     old_dbfile = os.path.join(db_folder, "ComicRackReader.db")
-                    store_dir = os.path.join(value, 'store_dir')
-                    new_data_dir = os.path.join(store_dir, 'comics_db')
-                    new_dbfile = os.path.join(new_data_dir, "ComicRackReader.db")
+                    store_dir = os.path.join(value, "store_dir")
+                    new_data_dir = os.path.join(store_dir, "comics_db")
+                    new_dbfile = os.path.join(
+                        new_data_dir, "ComicRackReader.db"
+                    )
                     if not os.path.isdir(store_dir):
                         os.makedirs(store_dir)
                     if not os.path.isdir(new_data_dir):
                         os.makedirs(new_data_dir)
                     copyfile(old_dbfile, new_dbfile)
                     self.stop()
+
             self.please_wait_dialog = MDDialog(
                 title="Please Restart ComicRackReader",
                 size_hint=(0.8, 0.4),
@@ -260,33 +264,40 @@ class ComicRackReader(App):
             self.please_wait_dialog.open()
         else:
             config_items = {
-                'base_url': 'base_url',
-                'api_key': 'api_key',
-                'sync_folder': 'sync_folder',
-                'password': 'password',
-                'username': 'username',
-                'max_books_page': 'max_books_page',
-                'sync_folder': 'sync_folder'
+                "base_url": "base_url",
+                "api_key": "api_key",
+                "sync_folder": "sync_folder",
+                "password": "password",
+                "username": "username",
+                "max_books_page": "max_books_page",
+                "sync_folder": "sync_folder",
             }
             item_list = list(config_items.keys())
             if key in item_list:
                 item = config_items[key]
                 setattr(self, item, value)
             self.api_url = self.base_url + "/API"
-            #self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
+            # self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
 
     def build(self):
         self.set_value_from_config()
         from libs.uix.baseclass.basescreen import BaseScreen
         from libs.uix.baseclass.about import About
         from libs.uix.baseclass.local_lists_screen import LocalListsScreen
-        from libs.uix.baseclass.local_readinglists_screen import LocalReadingListsScreen
+        from libs.uix.baseclass.local_readinglists_screen import (
+            LocalReadingListsScreen,
+        )
         from libs.uix.baseclass.navdrawer import NavDrawer
-        from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
+        from libs.uix.baseclass.server_comicbook_screen import (
+            ServerComicBookScreen,
+        )
         from libs.uix.baseclass.server_lists_screen import ServerListsScreen
-        from libs.uix.baseclass.server_readinglists_screen import ServerReadingListsScreen
+        from libs.uix.baseclass.server_readinglists_screen import (
+            ServerReadingListsScreen,
+        )
         from libs.uix.baseclass.license import License
         from libs.uix.lists import SingleIconItem
+
         start_db()
         self.load_all_kv_files(
             os.path.join(self.directory, "libs", "uix", "kv")
@@ -302,14 +313,16 @@ class ComicRackReader(App):
         ]
         # right side Action bar Icons
         action_bar.right_action_items = [
-            
-            ['file-cabinet', lambda x: self.file_manager_open()],
-            ['server', lambda x: self.switch_server_lists_screen()],
-            ['view-list', lambda x: self.switch_readinglists_screen()],
-            ['folder-sync', lambda x: self.switch_local_lists_screen()],
-            ['playlist-check', lambda x: self.switch_local_readinglists_screen()],
-            ['book-open-page-variant', lambda x: self.switch_comic_reader()],
-            ['close-box-outline', lambda x: self.stop()]
+            ["file-cabinet", lambda x: self.file_manager_open()],
+            ["server", lambda x: self.switch_server_lists_screen()],
+            ["view-list", lambda x: self.switch_readinglists_screen()],
+            ["folder-sync", lambda x: self.switch_local_lists_screen()],
+            [
+                "playlist-check",
+                lambda x: self.switch_local_readinglists_screen(),
+            ],
+            ["book-open-page-variant", lambda x: self.switch_comic_reader()],
+            ["close-box-outline", lambda x: self.stop()],
         ]
 
         self.config.add_callback(self.config_callback)
@@ -481,28 +494,24 @@ class ComicRackReader(App):
     def switch_readinglists_screen(self):
         screen = self.manager.get_screen("server_readinglists_screen")
         self.set_screen(screen.reading_list_title)
-        if (
-            self.manager.current_screen.name not in self.LIST_SCREENS
-            and screen.list_loaded
-        ):
+        if (screen.list_loaded):
             screen.refresh_callback()
         self.manager.current = "server_readinglists_screen"
 
     def switch_local_readinglists_screen(self):
-        screen = self.manager.get_screen(
-            'local_readinglists_screen')
+        screen = self.manager.get_screen("local_readinglists_screen")
         self.set_screen(screen.reading_list_title)
-        self.manager.current = 'local_readinglists_screen'
-    
+        self.manager.current = "local_readinglists_screen"
+
     def switch_comic_reader(self):
-        if self.manager.has_screen(str(self.open_comic_screen)):
-            self.manager.current = str(self.open_comic_screen)
+        if self.open_comic_screen:
+            self.manager.current = 'comic_book_screen'
         else:
-            toast('No ComicBook Open')
+            toast("No ComicBook Open")
 
     def switch_base_screen(self):
         self.set_screen("ComicRackReader Home Screen")
-        self.manager.current = 'base'
+        self.manager.current = "base"
 
     def switch_local_lists_screen(self):
         self.set_screen("Local Sync Comics")
@@ -557,7 +566,7 @@ class ComicRackReader(App):
                 comic_data = convert_comicapi_to_json(path)
                 data["items"].append(comic_data)
                 new_rl = ComicReadingList(
-                    name="Single_FileLoad", data=data, slug="FileOpen"
+                    name="Single_FileLoad", data=data, slug="FileOpen", mode="FileOpen"
                 )
                 new_comic = ComicBook(data["items"][0], mode="FileOpen")
                 new_rl.add_comic(new_comic)
@@ -596,18 +605,15 @@ class ComicRackReader(App):
         if has_cb_files is True:
             max_books_page = int(self.config.get("General", "max_books_page"))
             paginator_obj = Paginator(new_rl.comics, max_books_page)
-            new_screen_name = str(new_rl.comics[0].Id)
-            if new_screen_name not in self.manager.screen_names:
-                new_screen = ServerComicBookScreen(
-                    readinglist_obj=new_rl,
-                    comic_obj=new_rl.comics[0],
-                    paginator_obj=paginator_obj,
-                    pag_pagenum=1,
-                    view_mode="FileOpen",
-                    name=new_screen_name,
-                )
-                self.manager.add_widget(new_screen)
-                self.manager.current = new_screen_name
+            screen = self.manager.get_screen("comic_book_screen")
+            screen.setup_screen(
+                readinglist_obj=new_rl,
+                comic_obj=new_rl.comics[0],
+                paginator_obj=paginator_obj,
+                pag_pagenum=1,
+                view_mode="FileOpen",
+            )
+            self.manager.current = "comic_book_screen"
             toast(f"Opening {new_rl.comics[0].__str__}")
         else:
             toast("A vaild ComicBook File was not found")
