@@ -185,6 +185,7 @@ class ServerComicBookScreen(Screen):
             id="outtergrd",
         )
         outer_grid.bind(minimum_width=outer_grid.setter("width"))
+        scroll.add_widget(outer_grid)
         i = 0
         self.use_sections = False
         if number_pages <= max_comic_pages_limit:
@@ -210,7 +211,6 @@ class ServerComicBookScreen(Screen):
                 if (self.last_load - max_comic_pages_limit) >= 0:
                     self.last_section = self.last_load - max_comic_pages_limit
                 self.last_load = self.last_load + max_comic_pages_limit
-
             if self.use_sections:
                 if i + 1 >= number_pages:
                     self.use_sections = False
@@ -219,8 +219,6 @@ class ServerComicBookScreen(Screen):
                     self.section = "First"
                 else:
                     self.section = "Section"
-
-        scroll.add_widget(outer_grid)
         self.close_next_dialog()
         self.close_prev_dialog()
         self.build_top_nav()
