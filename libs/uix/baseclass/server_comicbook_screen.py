@@ -65,6 +65,8 @@ class ServerComicBookScreen(Screen):
     pag_pagenum = NumericProperty()
     view_mode = StringProperty()
     dynamic_ids = DictProperty({})  # declare class attribute, dynamic_ids
+    paginator_obj = ObjectProperty()
+    comic_obj = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(ServerComicBookScreen, self).__init__(**kwargs)
@@ -73,10 +75,6 @@ class ServerComicBookScreen(Screen):
         self.base_url = self.app.base_url
         self.api_url = self.app.api_url
         self.current_page = None
-        self.comic_obj = ObjectProperty()
-        self.comic_obj = None
-        self.paginator_obj = ObjectProperty()
-        self.paginator_obj = None
         self.fetch_data = ComicServerConn()
         self.api_key = self.app.config.get("General", "api_key")
         self.popup_bkcolor = (0.5, 0.5, 0.5, 0.87)
@@ -105,6 +103,7 @@ class ServerComicBookScreen(Screen):
         last_load=0,
         **kwargs,
     ):
+        self.readinglist_obj = None
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
         self.paginator_obj = paginator_obj
@@ -341,7 +340,9 @@ class ServerComicBookScreen(Screen):
         # fire off dblpage split if server replies size of image is
         # width>height
         def got_page_size(results):
+            print(results)
             if results["width"] > results["height"]:
+                print('Size thing Triggered')
                 proxyImage = Loader.image(comic_page_source)
                 proxyImage.bind(
                     on_load=partial(
@@ -438,6 +439,8 @@ class ServerComicBookScreen(Screen):
             data = {"width": width, "height": height}
             got_page_size(data)
         else:
+            print('*****************************************************')
+            print(f'comic_obj.Id:{comic_obj.Id}')
             self.fetch_data.get_page_size_data(
                 get_size_url,
                 callback=lambda req, results: got_page_size(results),
@@ -686,8 +689,9 @@ class ServerComicBookScreen(Screen):
         page = self.current_page
         comic_obj = self.comic_obj
         comics_list = page.object_list
-        index = comics_list.index(comic_obj)
-
+        for x in comics_list:
+            if x.Id == comic_obj.Id:
+                index = comics_list.index(x)
         if comic_obj.Id == comics_list[-1].Id and page.has_next():
             n_page = n_paginator.page(page.next_page_number())
             comics_list = n_page.object_list
@@ -712,7 +716,9 @@ class ServerComicBookScreen(Screen):
         page = self.current_page
         comics_list = page.object_list
         comic_obj = self.comic_obj
-        index = comics_list.index(comic_obj)  # first index where x appears
+        for x in comics_list:
+            if x.Id == comic_obj.Id:
+                index = comics_list.index(x)
         if comic_obj.Id == comics_list[0].Id and page.has_previous():
             n_page = n_paginator.page(page.previous_page_number())
             comics_list = n_page.object_list
@@ -739,7 +745,9 @@ class ServerComicBookScreen(Screen):
         comics_list = page.object_list
         comic = self.next_comic
         comic_obj = self.comic_obj
-        index = comics_list.index(comic_obj)  # first index where x appears
+        for x in comics_list:
+            if x.Id == comic_obj.Id:
+                index = comics_list.index(x)
         if index + 1 == len(comics_list) and page.has_next():
             n_page = n_paginator.page(page.next_page_number())
             comics_list = n_page.object_list
@@ -795,7 +803,7 @@ class ServerComicBookScreen(Screen):
                     dialog_title = "Load Next Page"
                 else:
                     dialog_title = "Load Next Comic"
-
+        
         self.next_dialog = Popup(
             id="next_pop",
             title=dialog_title,
@@ -854,7 +862,9 @@ class ServerComicBookScreen(Screen):
         comics_list = page.object_list
         comic = self.prev_comic
         comic_obj = self.comic_obj
-        index = comics_list.index(comic_obj)  # first index where x appears
+        for x in comics_list:
+            if x.Id == comic_obj.Id:
+                index = comics_list.index(x)
         prev_page_number = 1
         if index == 0 and page.has_previous():
             n_page = n_paginator.page(page.previous_page_number())
