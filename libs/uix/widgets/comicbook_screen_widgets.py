@@ -255,6 +255,7 @@ class ComicBookPageImage(AsyncImage):
     fetch_data = ObjectProperty()
     comic_page = NumericProperty()
     comic_page_type = StringProperty
+    proxyImage = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(ComicBookPageImage, self).__init__(**kwargs)
@@ -263,6 +264,7 @@ class ComicBookPageImage(AsyncImage):
         self, scatter, outer_grid, comic_obj, var_i, src_url, proxyImage
     ):
         """Fired once the image is downloaded and ready to use"""
+        Logger.debug("_new_image_downloaded")
 
         def _remove_widget():
             carousel.remove_widget(scatter)
@@ -334,7 +336,7 @@ class ComicBookPageImage(AsyncImage):
                 page_image_id = str(var_i)
                 carousel = (
                     App.get_running_app()
-                    .manager.get_screen('comic_book_screen')
+                    .manager.get_screen("comic_book_screen")
                     .ids.comic_book_carousel
                 )
                 inner_grid_id = "inner_grid%s" % str(var_i)
@@ -613,7 +615,6 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     mode = StringProperty()
 
     def enable_me(self, instance):
-        Logger.debug("enabling %s" % self.id)
         self.disabled = False
 
     # def open_comic(self,*args):

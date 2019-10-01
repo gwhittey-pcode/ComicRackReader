@@ -32,6 +32,7 @@ from kivy.uix.modalview import ModalView
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.scrollview import ScrollView
+from kivy.logger import Logger
 from kivymd.toast.kivytoast import toast
 from kivymd.uix.toolbar import MDToolbar
 
@@ -103,7 +104,10 @@ class ServerComicBookScreen(Screen):
         last_load=0,
         **kwargs,
     ):
+        self.current_page = None
         self.readinglist_obj = None
+        self.pag_pagenum = 0
+        self.last_load = 0
         self.readinglist_obj = readinglist_obj
         self.comic_obj = comic_obj
         self.paginator_obj = paginator_obj
@@ -259,6 +263,23 @@ class ServerComicBookScreen(Screen):
             if slide.comic_page == self.comic_obj.UserCurrentPage:
                 self.ids.comic_book_carousel.load_slide(slide)
 
+    def refresh_callback(self, *args):
+        """A method that updates the state of your application
+        while the spinner remains on the screen."""
+
+        def refresh_callback(interval):
+            pass
+            # self.screen.ids.box.clear_widgets()
+            # if self.x == 0:
+            #     self.x, self.y = 15, 30
+            # else:
+            #     self.x, self.y = 0, 15
+            # self.set_list()
+            # self.screen.ids.refresh_layout.refresh_done()
+            # self.tick = 0
+
+        Clock.schedule_once(refresh_callback, 1)
+
     def slide_changed(self, index):  # noqa
         def __update_page(key_val=None):
             db_item = Comic.get(Comic.Id == self.comic_obj.Id)
@@ -335,23 +356,36 @@ class ServerComicBookScreen(Screen):
                                     child.do_zoom(False)
 
     def add_pages(self, comic_book_carousel, outer_grid, comic_obj, i):
+        proxyImage = None
         # fire off dblpage split if server replies size of image is
         # width>height
         def got_page_size(results):
-            print(results)
+            Logger.debug(results)
             if results["width"] > results["height"]:
-                print('Size thing Triggered')
-                proxyImage = Loader.image(comic_page_source)
-                proxyImage.bind(
-                    on_load=partial(
-                        comic_page_image._new_image_downloaded,
+                Logger.debug("Size thing Triggered")
+                comic_page_image.proxyImage = Loader.image(
+                    comic_page_source, nocache=True
+                )
+                if comic_page_image.proxyImage.loaded:
+                    comic_page_image._new_image_downloaded(
                         comic_page_scatter,
                         outer_grid,
                         comic_obj,
                         i,
                         comic_page_source,
+                        comic_page_image.proxyImage
                     )
-                )
+                else:
+                    comic_page_image.proxyImage.bind(
+                        on_load=partial(
+                            comic_page_image._new_image_downloaded,
+                            comic_page_scatter,
+                            outer_grid,
+                            comic_obj,
+                            i,
+                            comic_page_source,
+                        )
+                    )
 
         strech_image = App.get_running_app().config.get(
             "Display", "stretch_image"
@@ -381,7 +415,6 @@ class ServerComicBookScreen(Screen):
             comic_page_source = get_comic_page(comic_obj, i)
         else:
             comic_page_source = f"{self.api_url}{s_url_part}{s_url_api}"
-        print(f'comic_page_source:{comic_page_source}')
         comic_page_image = ComicBookPageImage(
             comic_slug=comic_obj.slug,
             id="pi_" + str(i),
@@ -403,7 +436,6 @@ class ServerComicBookScreen(Screen):
         inner_grid = ThumbPopPageInnerGrid(
             id="inner_grid" + str(i), spacing=(0, 0)
         )
-        print(f'src_img:{src_img}')
         page_thumb = ComicBookPageThumb(
             comic_slug=comic_obj.slug,
             id="page_thumb" + str(i),
@@ -437,8 +469,6 @@ class ServerComicBookScreen(Screen):
             data = {"width": width, "height": height}
             got_page_size(data)
         else:
-            print('*****************************************************')
-            print(f'comic_obj.Id:{comic_obj.Id}')
             self.fetch_data.get_page_size_data(
                 get_size_url,
                 callback=lambda req, results: got_page_size(results),
@@ -801,7 +831,7 @@ class ServerComicBookScreen(Screen):
                     dialog_title = "Load Next Page"
                 else:
                     dialog_title = "Load Next Comic"
-        
+
         self.next_dialog = Popup(
             id="next_pop",
             title=dialog_title,

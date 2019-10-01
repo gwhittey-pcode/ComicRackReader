@@ -58,11 +58,11 @@ from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 
 
 class ComicRackReader(App):
-    title = "ComicRackReader"
-    icon = "icon.png"
+    
+    
     nav_drawer = ObjectProperty()
     theme_cls = ThemeManager()
-    theme_cls.primary_palette = "Amber"
+    
     lang = StringProperty("en")
     open_comics_list = ListProperty()
     sync_folder = StringProperty()
@@ -299,6 +299,9 @@ class ComicRackReader(App):
         from libs.uix.lists import SingleIconItem
 
         start_db()
+        self.icon = "data\icon.png"
+        self.title = "ComicRackReader 1.2"
+        self.theme_cls.primary_palette = "Amber"
         self.load_all_kv_files(
             os.path.join(self.directory, "libs", "uix", "kv")
         )
