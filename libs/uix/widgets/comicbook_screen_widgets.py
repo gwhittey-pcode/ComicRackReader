@@ -115,7 +115,7 @@ class ComicBookPageScatter(ScatterLayout):
                     )
                 elif child.id == "mag_glass":
                     mag_glass_w = child
-        except:
+        except Exception:
             Logger.critical("Some bad happened in _call_mag")
         else:
             if self.move_state == "open":
@@ -326,22 +326,21 @@ class ComicBookPageImage(AsyncImage):
             split_dbl_page = App.get_running_app().config.get(
                 "Display", "dblpagesplit"
             )
+            p_width = proxyImage.image.texture.width
+            p_height = proxyImage.image.texture.height
+            c_width = self.texture.width
+            c_height = self.texture.height
             if (
-                proxyImage.image.texture.width > 2 * Window.width
+                p_width > p_height
                 and split_dbl_page == "1"
             ):
                 last_page = False
                 app = App.get_running_app()
-                inner_grid_id = "inner_grid" + str(var_i)
-                page_image_id = str(var_i)
                 carousel = (
                     App.get_running_app()
                     .manager.get_screen("comic_book_screen")
                     .ids.comic_book_carousel
                 )
-                inner_grid_id = "inner_grid%s" % str(var_i)
-                c_width = self.texture.width
-                c_height = self.texture.height
                 i = 0
                 for slide in carousel.slides:
                     if slide.id == scatter.id:
@@ -352,7 +351,7 @@ class ComicBookPageImage(AsyncImage):
                     i += 1
 
             else:
-                if proxyImage.image.texture.width > 2 * Window.width:
+                if p_width > p_height:
                     scatter.size_hint = (2, 1)
             if comic_obj.PageCount - 1 == var_i:
                 app = App.get_running_app()
@@ -361,7 +360,7 @@ class ComicBookPageImage(AsyncImage):
 
 
 class ComicCarousel(Carousel):
-    def on_touch_move(self, touch):
+    def on_touch_move(self, touch):  # noqa
         if not self.touch_mode_change:
             if self.ignore_perpendicular_swipes and self.direction in (
                 "top",
@@ -520,8 +519,6 @@ class ThumbPopPagebntlbl(MDRaisedButton):
 
     def __init__(self, **kwargs):
         super(ThumbPopPagebntlbl, self).__init__(**kwargs)
-        base_url = App.get_running_app().config.get("General", "base_url")
-        opposite_colors = True
 
     def click(self, instance):
         app = App.get_running_app()
@@ -573,7 +570,6 @@ class ComicBookPageThumb(ButtonBehavior, AsyncImage):
 
     def __init__(self, **kwargs):
         super(ComicBookPageThumb, self).__init__(**kwargs)
-        base_url = App.get_running_app().config.get("General", "base_url")
 
     def click(self, instance):
         app = App.get_running_app()

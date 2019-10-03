@@ -356,9 +356,10 @@ class ServerComicBookScreen(Screen):
                                     child.do_zoom(False)
 
     def add_pages(self, comic_book_carousel, outer_grid, comic_obj, i):
-        proxyImage = None
+
         # fire off dblpage split if server replies size of image is
         # width>height
+
         def got_page_size(results):
             Logger.debug(results)
             if results["width"] > results["height"]:
@@ -373,7 +374,7 @@ class ServerComicBookScreen(Screen):
                         comic_obj,
                         i,
                         comic_page_source,
-                        comic_page_image.proxyImage
+                        comic_page_image.proxyImage,
                     )
                 else:
                     comic_page_image.proxyImage.bind(
@@ -408,8 +409,9 @@ class ServerComicBookScreen(Screen):
             s_allow_stretch = False
             s_keep_ratio = True
         s_max_height = round(dp(max_height))
-
-        s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_max_height}"
+        h = round(dp(Window.height))
+        w = round(dp(Window.height))
+        s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={h}"
         s_url_api = f"&apiKey={self.api_key}"
         if self.view_mode == "FileOpen" or self.comic_obj.is_sync:
             comic_page_source = get_comic_page(comic_obj, i)
@@ -427,6 +429,7 @@ class ServerComicBookScreen(Screen):
         comic_book_carousel.add_widget(comic_page_scatter)
         # Let's make the thumbs for popup
         s_height = round(dp(240))
+
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_height}"
         s_url_api = f"&apiKey={self.api_key}"
         if self.view_mode == "FileOpen" or comic_obj.is_sync:
