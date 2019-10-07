@@ -104,6 +104,7 @@ class ServerComicBookScreen(Screen):
         last_load=0,
         **kwargs,
     ):
+        print(f'THE ID:{comic_obj.Id}')
         self.current_page = None
         self.readinglist_obj = None
         self.pag_pagenum = 0
@@ -392,7 +393,7 @@ class ServerComicBookScreen(Screen):
             "Display", "stretch_image"
         )
 
-        max_height = App.get_running_app().config.get("General", "max_height")
+        max_height = App.get_running_app().config.get("Display", "max_height")
         comic_page_scatter = ComicBookPageScatter(
             id="comic_scatter" + str(i),
             comic_page=i,
@@ -408,11 +409,18 @@ class ServerComicBookScreen(Screen):
         else:
             s_allow_stretch = False
             s_keep_ratio = True
-        s_max_height = round(dp(max_height))
-        h = round(dp(Window.height))
-        w = round(dp(Window.height))
-        s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={h}"
-        s_url_api = f"&apiKey={self.api_key}"
+        if max_height == "Use Original Size":
+            s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}"
+            s_url_api = f"?apiKey={self.api_key}"
+        elif max_height == "Use Window Size":
+            h = round(dp(Window.height))
+            w = round(dp(Window.height))
+            s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={h}"
+            s_url_api = f"&apiKey={self.api_key}"
+        else:
+            s_max_height = round(dp(max_height))
+            s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_max_height}"
+            s_url_api = f"&apiKey={self.api_key}"
         if self.view_mode == "FileOpen" or self.comic_obj.is_sync:
             comic_page_source = get_comic_page(comic_obj, i)
         else:
@@ -721,7 +729,8 @@ class ServerComicBookScreen(Screen):
         comic_obj = self.comic_obj
         comics_list = page.object_list
         for x in comics_list:
-            if x.Id == comic_obj.Id:
+            print(x.Id)
+            if str(x.Id) == str(comic_obj.Id):
                 index = comics_list.index(x)
         if comic_obj.Id == comics_list[-1].Id and page.has_next():
             n_page = n_paginator.page(page.next_page_number())
@@ -1156,7 +1165,7 @@ class OptionToolBar(MDToolbar):
     def option_bar_action(self, *args):
         app = App.get_running_app()
         screen_manager = app.manager
-        comic_book_screen = screen_manager.get_screen(self.comic_Id)
+        comic_book_screen = screen_manager.get_screen('comic_book_screen')
         comic_book_screen.option_pop.dismiss()
         if args[0] == "base":
             app.show_action_bar()
@@ -1165,7 +1174,7 @@ class OptionToolBar(MDToolbar):
     def toggle_full_screen(self):
         app = App.get_running_app()
         screen_manager = app.manager
-        comic_book_screen = screen_manager.get_screen(self.comic_Id)
+        comic_book_screen = screen_manager.get_screen('comic_book_screen')
         if comic_book_screen.full_screen is False:
             Window.fullscreen = "auto"
             comic_book_screen.full_screen = True

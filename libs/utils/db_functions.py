@@ -1,28 +1,39 @@
-from peewee import SqliteDatabase, CharField, \
-    IntegerField, ForeignKeyField, TextField, Model, ManyToManyField, \
-    DeferredThroughModel, DatabaseProxy, BooleanField
+from peewee import (
+    SqliteDatabase,
+    CharField,
+    IntegerField,
+    ForeignKeyField,
+    TextField,
+    Model,
+    ManyToManyField,
+    DeferredThroughModel,
+    DatabaseProxy,
+    BooleanField,
+)
 
 
 from kivy.app import App
 import os
+
 database_proxy = DatabaseProxy()
-from playhouse.fields import PickleField # noqa
+from playhouse.fields import PickleField  # noqa
 
 
 def start_db():
-    print('stardb')
+    print("stardb")
     app = App.get_running_app()
     db_folder = app.my_data_dir
     db_file = os.path.join(db_folder, "ComicRackReader.db")
 
     database_proxy.initialize(SqliteDatabase(db_file))
-    database_proxy.create_tables([
-        ReadingList,
-        Comic,
-        ComicIndex,
-        ReadingList.comics.get_through_model(),
-
-    ])
+    database_proxy.create_tables(
+        [
+            ReadingList,
+            Comic,
+            ComicIndex,
+            ReadingList.comics.get_through_model(),
+        ]
+    )
 
 
 class BaseModel(Model):
@@ -46,6 +57,7 @@ class Comic(BaseModel):
     data = PickleField(null=True)
     local_file = CharField(null=True)
     is_sync = BooleanField(default=False)
+    been_sync = BooleanField(default=False)
 
 
 ComicIndexDeferred = DeferredThroughModel()
@@ -56,7 +68,8 @@ class ReadingList(BaseModel):
     slug = CharField(primary_key=True)
     data = PickleField(null=True)
     comics = ManyToManyField(
-        Comic, backref='readinglists', through_model=ComicIndexDeferred)
+        Comic, backref="readinglists", through_model=ComicIndexDeferred
+    )
     cb_limit_active = BooleanField(null=True)
     limit_num = IntegerField(null=True)
     cb_only_read_active = BooleanField(null=True)
@@ -68,13 +81,10 @@ class ReadingList(BaseModel):
 
 
 class ComicIndex(BaseModel):
-    comic = ForeignKeyField(Comic, backref='comic_index')
-    readinglist = ForeignKeyField(ReadingList, backref='Indexes')
+    comic = ForeignKeyField(Comic, backref="comic_index")
+    readinglist = ForeignKeyField(ReadingList, backref="Indexes")
     index = IntegerField()
 
 
 ComicIndexDeferred.set_model(ComicIndex)
 
-
-class SyncData(BaseModel):
-    readinglist = ForeignKeyField(ReadingList)

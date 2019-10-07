@@ -402,6 +402,7 @@ class ServerReadingListsScreen(Screen):
         readinglist_name="",
         readinglist_Id="",
         mode="From Server",
+        current_page_num=1,
         *largs,
     ):
         async def collect_readinglist_data():
@@ -409,6 +410,7 @@ class ServerReadingListsScreen(Screen):
             self.app.set_screen(self.readinglist_name + " Page 1")
             self.reading_list_title = self.readinglist_name + " Page 1"
             self.readinglist_Id = readinglist_Id
+            self.page_number = current_page_num
             self.mode = mode
             if self.mode == "From Server":
                 self.fetch_data = ComicServerConn()
@@ -447,41 +449,41 @@ class ServerReadingListsScreen(Screen):
         self.build_page(page.object_list)
 
     def build_page(self, object_lsit):
-        async def build_page():
-            grid = self.m_grid
-            grid.clear_widgets()
-            for comic in object_lsit:
-                await asynckivy.sleep(0)
-                c = ReadingListComicImage(comic_obj=comic)
-                c.lines = 2
-                c.readinglist_obj = self.new_readinglist
-                c.paginator_obj = self.paginator_obj
-                y = self.comic_thumb_height
-                thumb_filename = f"{comic.Id}.jpg"
-                id_folder = self.app.store_dir
-                my_thumb_dir = os.path.join(id_folder, "comic_thumbs")
-                t_file = os.path.join(my_thumb_dir, thumb_filename)
-                if os.path.isfile(t_file):
-                    c_image_source = t_file
-                else:
-                    part_url = f"/Comics/{comic.Id}/Pages/0?"
-                    part_api = "&apiKey={}&height={}".format(
-                        self.api_key, round(dp(y))
-                    )
-                    c_image_source = f"{self.api_url}{part_url}{part_api}"
-                    asynckivy.start(save_thumb(comic.Id, c_image_source))
-                c.source = c_image_source
-                c.PageCount = comic.PageCount
-                c.pag_pagenum = self.current_page.number
-                grid.add_widget(c)
-                grid.cols = (Window.width - 10) // self.comic_thumb_width
-                self.dynamic_ids[id] = c
-            self.ids.page_count.text = "Page #\n{} of {}".format(
-                self.current_page.number, self.paginator_obj.num_pages()
-            )
-            self.loading_done = True
+        # async def build_page():
+        grid = self.m_grid
+        grid.clear_widgets()
+        for comic in object_lsit:
+            # await asynckivy.sleep(0)
+            c = ReadingListComicImage(comic_obj=comic)
+            c.lines = 2
+            c.readinglist_obj = self.new_readinglist
+            c.paginator_obj = self.paginator_obj
+            y = self.comic_thumb_height
+            thumb_filename = f"{comic.Id}.jpg"
+            id_folder = self.app.store_dir
+            my_thumb_dir = os.path.join(id_folder, "comic_thumbs")
+            t_file = os.path.join(my_thumb_dir, thumb_filename)
+            if os.path.isfile(t_file):
+                c_image_source = t_file
+            else:
+                part_url = f"/Comics/{comic.Id}/Pages/0?"
+                part_api = "&apiKey={}&height={}".format(
+                    self.api_key, round(dp(y))
+                )
+                c_image_source = f"{self.api_url}{part_url}{part_api}"
+                asynckivy.start(save_thumb(comic.Id, c_image_source))
+            c.source = c_image_source
+            c.PageCount = comic.PageCount
+            c.pag_pagenum = self.current_page.number
+            grid.add_widget(c)
+            grid.cols = (Window.width - 10) // self.comic_thumb_width
+            self.dynamic_ids[id] = c
+        self.ids.page_count.text = "Page #\n{} of {}".format(
+            self.current_page.number, self.paginator_obj.num_pages()
+        )
+        self.loading_done = True
 
-        asynckivy.start(build_page())
+        # asynckivy.start(build_page())
 
     def refresh_callback(self, *args):
         """A method that updates the state of reading list"""
@@ -491,6 +493,7 @@ class ServerReadingListsScreen(Screen):
             self.collect_readinglist_data(
                 self.readinglist_name,
                 self.readinglist_Id,
+                current_page_num=self.page_number,
                 mode="From DataBase",
             )
             #            self.build_page(page.object_list)

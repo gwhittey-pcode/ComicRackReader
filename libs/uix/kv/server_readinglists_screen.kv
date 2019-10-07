@@ -16,130 +16,143 @@
     name: 'server_readinglists_screen'
     max_books_page: app.max_books_page
     sync_bool:self.so
-    StackLayout:
+    BoxLayout:
         id:main_stack
-        orientation: 'lr-tb'
+        orientation: 'vertical'
         padding: dp(10), dp(10)
-        spacing: dp(4)
-        height: self.minimum_height
-        CustomMDFillRoundFlatIconButton:
-            id:prev_button
-            text: "Prev Page"
-            icon: "arrow-left"
-            width: dp(50)
-            padding: dp(10), dp(10)
-            center_x:main_stack.x + (self.width)
-            on_release:root.get_page(self)
-        MDTextButton:
-            id:page_count
-            width: dp(1)
-            text: ''
-            center_x:main_stack.center_x
-            disabled:False
-            #on_release:MDDropdownMenu(items=root.menu_items,hor_growth='right',starting_coords ='bottom', width_mult=.5,background_color=(1,1,1,1)).open(self)
-        CustomMDFillRoundFlatIconButton:
-            id:next_button
-            text: 'Next Page'
-            icon: "arrow-right"
-            width: dp(50)
-            padding: dp(10), dp(10)
-            center_x:main_stack.right - (self.width)
-            on_release:root.get_page(self)
-        MDTextButton:
-            id:comics_per
-            width: dp(1)
-            text: ''
-            disabled:False
+        spacing: dp(10)
+        disabled:False
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:9
+            rows:1
+            
+            spacing: dp(10)
+            size_hint_y:None
+            height:dp(50)
+            CustomMDFillRoundFlatIconButton:
+                id:prev_button
+                text: "Prev Page"
+                icon: "arrow-left"
+                width: dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.x + (self.width)
+                on_release:root.get_page(self)
+            MDTextButton:
+                id:page_count
+                width: dp(1)
+                text: ''
+                center_x:main_stack.center_x
+                disabled:False
+                #on_release:MDDropdownMenu(items=root.menu_items,hor_growth='right',starting_coords ='bottom', width_mult=.5,background_color=(1,1,1,1)).open(self)
+            CustomMDFillRoundFlatIconButton:
+                id:next_button
+                text: 'Next Page'
+                icon: "arrow-right"
+                width: dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                on_release:root.get_page(self)
+            MDTextButton:
+                id:comics_per
+                width: dp(1)
+                text: ''
+                disabled:False
 
-        SyncButtonIcon:
-            #font_style: 'Icon'
-            id:syn_options
-            icon_name: 'settings'
-            tooltip_text:'Sync Options'
-            size_hint: None,None
-            size:dp(50),dp(50)
-            padding: dp(10), dp(10)
-            center_x:main_stack.right - (self.width)
-            center_y:root.top - (self.height/2)
-            text: md_icons.get(self.icon_name)
-            theme_text_color: 'Custom'
-            text_color: app.theme_cls.primary_color
-            font_size: dp(35)
-            on_release:self.do_options()
-        SyncButtonIcon:
-            #font_style: 'Icon'
-            id:sync_button
-            icon_name: 'sync' if root.sync_bool else 'sync-off'
-            tooltip_text:'Sync ReadingList'
-            size_hint: None,None
-            size:dp(50),dp(50)
-            padding: dp(10), dp(10)
-            center_x:main_stack.right - (self.width)
-            center_y:root.top - (self.height/2)
-            text: md_icons.get(self.icon_name) 
-            theme_text_color: 'Custom'
-            text_color: app.theme_cls.primary_color
-            font_size: dp(35)
-            on_release:self.do_sync_rf()
-        SyncButtonIcon:
-            #font_style: 'Icon'
-            id:sync_db
-            icon_name: 'database-refresh'
-            tooltip_text:'Refresh DB'
-            size_hint: None,None
-            size:dp(50),dp(50)
-            padding: dp(10), dp(10)
-            center_x:main_stack.right - (self.width)
-            center_y:root.top - (self.height/2)
-            text: md_icons.get(self.icon_name) 
-            theme_text_color: 'Custom'
-            text_color: app.theme_cls.primary_color
-            font_size: dp(35)
-            on_release:self.do_data_refresh()
-        SyncButtonIcon:
-            #font_style: 'Icon'
-            id:sync_db
-            icon_name: 'refresh'
-            tooltip_text:'Refresh List'
-            size_hint: None,None
-            size:dp(50),dp(50)
-            padding: dp(10), dp(10)
-            center_x:main_stack.right - (self.width)
-            center_y:root.top - (self.height/2)
-            text: md_icons.get(self.icon_name) 
-            theme_text_color: 'Custom'
-            text_color: app.theme_cls.primary_color
-            font_size: dp(35)
-            on_release:root.refresh_callback()
-        MDFlatButton:
-            id:spacer
-            width: dp(10)
-            height:dp(60)
-            padding: dp(10), dp(10)
-            disabled:False
-            icon: "arrow-right"
-        MDScrollViewRefreshLayout:
-            do_scroll_x: False
-            id: main_scroll
-            padding: dp(10), dp(10)
-            refresh_callback: self.refresh_callback
-            GridLayout:
-                id: main_grid
-                row_force_default: True
+            SyncButtonIcon:
+                #font_style: 'Icon'
+                id:syn_options
+                icon_name: 'settings'
+                tooltip_text:'Sync Options'
+                size_hint: None,None
+                size:dp(50),dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                center_y:root.top - (self.height/2)
+                text: md_icons.get(self.icon_name)
+                theme_text_color: 'Custom'
+                text_color: app.theme_cls.primary_color
+                font_size: dp(35)
+                on_release:self.do_options()
+            SyncButtonIcon:
+                #font_style: 'Icon'
+                id:sync_button
+                icon_name: 'sync' if root.sync_bool else 'sync-off'
+                tooltip_text:'Sync ReadingList'
+                size_hint: None,None
+                size:dp(50),dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                center_y:root.top - (self.height/2)
+                text: md_icons.get(self.icon_name) 
+                theme_text_color: 'Custom'
+                text_color: app.theme_cls.primary_color
+                font_size: dp(35)
+                on_release:self.do_sync_rf()
+            SyncButtonIcon:
+                #font_style: 'Icon'
+                id:sync_db
+                icon_name: 'database-refresh'
+                tooltip_text:'Refresh DB'
+                size_hint: None,None
+                size:dp(50),dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                center_y:root.top - (self.height/2)
+                text: md_icons.get(self.icon_name) 
+                theme_text_color: 'Custom'
+                text_color: app.theme_cls.primary_color
+                font_size: dp(35)
+                on_release:self.do_data_refresh()
+            SyncButtonIcon:
+                #font_style: 'Icon'
+                id:sync_db
+                icon_name: 'refresh'
+                tooltip_text:'Refresh List'
+                size_hint: None,None
+                size:dp(50),dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                center_y:root.top - (self.height/2)
+                text: md_icons.get(self.icon_name) 
+                theme_text_color: 'Custom'
+                text_color: app.theme_cls.primary_color
+                font_size: dp(35)
+                on_release:root.refresh_callback()
+            MDLabel:
+                #font_style: 'Icon'
+                id: sync_status_lbl
                 size_hint_y: None
-                size_hint_x: None
-                height: self.minimum_height
-                padding: dp(10), dp(10),dp(30),dp(50)
-                spacing: dp(4)
-                col_default_width:root.comic_thumb_width
-                row_default_height:root.comic_thumb_height
-                
-        
-        MDFlatButton:
-            id:spacer
-            width: dp(10)
-            disabled:False
-            icon: "arrow-right"
+                height: self.texture_size[1]
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                center_y:root.top - (self.height/2)
+                text: 'Sync Label'
+                theme_text_color: 'Custom'
+                text_color: app.theme_cls.primary_color
+                font_size: dp(15)
+        GridLayout:
+            #orientation: 'horizontal'
+            cols:3
+            rows:1
+            padding: dp(10), dp(10)
+            spacing: dp(10)
+            MDScrollViewRefreshLayout:
+                do_scroll_x: False
+                id: main_scroll
+                padding: dp(10), dp(10)
+                refresh_callback: self.refresh_callback
+                GridLayout:
+                    id: main_grid
+                    row_force_default: True
+                    size_hint_y: None
+                    size_hint_x: None
+                    height: self.minimum_height
+                    padding: dp(10), dp(10),dp(30),dp(50)
+                    spacing: dp(4)
+                    col_default_width:root.comic_thumb_width
+                    row_default_height:root.comic_thumb_height
+       
 
 <ReadingListComicImage>
     size: (dp(160),dp(240))

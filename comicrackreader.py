@@ -58,11 +58,8 @@ from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 
 
 class ComicRackReader(App):
-    
-    
     nav_drawer = ObjectProperty()
     theme_cls = ThemeManager()
-    
     lang = StringProperty("en")
     open_comics_list = ListProperty()
     sync_folder = StringProperty()
@@ -78,7 +75,7 @@ class ComicRackReader(App):
     how_to_open_comic = StringProperty()
     app_started = BooleanProperty(False)
     open_comic_screen = StringProperty()
-
+    sync_is_running = BooleanProperty(False)
     def __init__(self, **kvargs):
         super(ComicRackReader, self).__init__(**kvargs)
         Window.bind(on_keyboard=self.events_program)
@@ -138,7 +135,6 @@ class ComicRackReader(App):
             {
                 "base_url": "http://",
                 "storagedir": self.user_data_dir,
-                "max_height": 1500,
                 "use_api_key": 0,
                 "api_key": "",
                 "username": "",
@@ -160,12 +156,9 @@ class ComicRackReader(App):
                 "dblpagesplit": "0",
                 "stretch_image": "0",
                 "keep_ratio": "0",
-                # 'comic_thumb_width': 200,
-                # 'comic_thumb_height': 300,
                 "reading_list_icon_size": "Small",
                 "max_comic_pages_limit": 50,
-                "window_height": 800,
-                "window_width": 600,
+                "max_height": 1500,
             },
         )
 
@@ -299,7 +292,9 @@ class ComicRackReader(App):
         from libs.uix.lists import SingleIconItem
 
         start_db()
-        self.icon = "data\icon.png"
+        path = os.path.dirname(__file__)
+        icon_path = os.path.join(path, f"data{os.sep}")
+        self.icon = os.path.join(icon_path, f"icon.png")
         self.title = "ComicRackReader 1.2"
         self.theme_cls.primary_palette = "Amber"
         self.load_all_kv_files(
@@ -497,8 +492,6 @@ class ComicRackReader(App):
     def switch_readinglists_screen(self):
         screen = self.manager.get_screen("server_readinglists_screen")
         self.set_screen(screen.reading_list_title)
-        if (screen.list_loaded):
-            screen.refresh_callback()
         self.manager.current = "server_readinglists_screen"
 
     def switch_local_readinglists_screen(self):
@@ -508,7 +501,7 @@ class ComicRackReader(App):
 
     def switch_comic_reader(self):
         if self.open_comic_screen:
-            self.manager.current = 'comic_book_screen'
+            self.manager.current = "comic_book_screen"
         else:
             toast("No ComicBook Open")
 
@@ -569,7 +562,10 @@ class ComicRackReader(App):
                 comic_data = convert_comicapi_to_json(path)
                 data["items"].append(comic_data)
                 new_rl = ComicReadingList(
-                    name="Single_FileLoad", data=data, slug="FileOpen", mode="FileOpen"
+                    name="Single_FileLoad",
+                    data=data,
+                    slug="FileOpen",
+                    mode="FileOpen",
                 )
                 new_comic = ComicBook(data["items"][0], mode="FileOpen")
                 new_rl.add_comic(new_comic)

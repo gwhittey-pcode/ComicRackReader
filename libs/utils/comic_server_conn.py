@@ -142,7 +142,7 @@ class ComicServerConn(EventDispatcher):
             "Cookie": str_cookie,
         }
 
-        UrlRequest(
+        req = UrlRequest(
             req_url,
             req_headers=head,
             on_success=callback,
@@ -171,6 +171,10 @@ class ComicServerConn(EventDispatcher):
     def got_redirect(self, req, results):
         Logger.critical("----got_redirect--")
         Logger.critical("ERROR in %s %s" % (inspect.stack()[0][3], results))
+
+    def on_progress(self, request, current_size, total_size):
+        print(f"current_size:{current_size}")
+        print(f"total_size:{total_size}")
 
 
 class JsonToObject:
