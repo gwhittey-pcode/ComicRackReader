@@ -52,10 +52,15 @@ def get_comic_page(comic_obj, page_num):
     if not Path(comic_dir).is_dir():
         os.makedirs(comic_dir)
     if comic_obj.is_sync:
-        md = getComicMetadata(comic_obj.local_file)
+        comic_file = comic_obj.local_file
     else:
-        md = getComicMetadata(comic_obj.FilePath)
-    ca = ComicArchive(md.path)
+        comic_file = comic_obj.FilePath
+    md = getComicMetadata(comic_file)
+    try:
+        ca = ComicArchive(md.path)
+    except Exception as e:
+        Logger.error(f"Error Loading {comic_file} {e}")
+        return "assets/image_load_error.jpg"
     image_data = ca.getPage(int(page_num))
     filename = os.path.join(comic_dir, f"{page_num}.webp")
     with open(filename, "wb") as outfile:

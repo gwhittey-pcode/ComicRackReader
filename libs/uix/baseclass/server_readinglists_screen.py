@@ -210,7 +210,7 @@ class ReadingListComicImage(ComicTileLabel):
             last_load=0,
             view_mode=self.view_mode,
         )
-        Clock.schedule_once(lambda dt: self.open_comic_callback(), 0.5)
+        Clock.schedule_once(lambda dt: self.open_comic_callback(), .1)
 
     def open_comic_callback(self, *args):
         self.app.manager.current = 'comic_book_screen'
