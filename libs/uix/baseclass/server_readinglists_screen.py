@@ -70,6 +70,7 @@ class ReadingListComicImage(ComicTileLabel):
     percent_read = NumericProperty()
     view_mode = StringProperty("Server")
     loading_done = BooleanProperty(False)
+    PageRead = NumericProperty()
 
     def __init__(self, comic_obj=None, **kwargs):
         super(ReadingListComicImage, self).__init__(**kwargs)
@@ -91,7 +92,7 @@ class ReadingListComicImage(ComicTileLabel):
         self.comic_obj = comic_obj
         # self.img_color = (.89, .15, .21, 5)
         self.UserCurrentPage = comic_obj.UserCurrentPage
-        self.UserLastPageRead = comic_obj.UserLastPageRead
+        self.PageRead = comic_obj.UserLastPageRead
         if self.comic_obj.local_file != "":
             self.has_localfile = True
         if self.comic_obj.UserLastPageRead == self.comic_obj.PageCount - 1:
@@ -105,11 +106,11 @@ class ReadingListComicImage(ComicTileLabel):
         strtxt = f"{self.comic_obj.Series} #{self.comic_obj.Number}"
         self.text = f"[color={txt_color}]{strtxt}[/color]"
         self._comic_object = self.comic_obj
-        if comic_obj.UserLastPageRead == 0:
+        if self.comic_obj.UserLastPageRead == 0:
             self.percent_read = 0
         else:
             self.percent_read = round(
-                comic_obj.UserLastPageRead / (comic_obj.PageCount - 1) * 100
+                self.comic_obj.UserLastPageRead / (comic_obj.PageCount - 1) * 100
             )
         self.page_count_text = f"{self.percent_read}%"
 
@@ -210,7 +211,7 @@ class ReadingListComicImage(ComicTileLabel):
             view_mode=self.view_mode,
         )
         Clock.schedule_once(lambda dt: self.open_comic_callback(), 0.5)
-    
+
     def open_comic_callback(self, *args):
         self.app.manager.current = 'comic_book_screen'
 
@@ -396,6 +397,18 @@ class ServerReadingListsScreen(Screen):
             if key == "main_grid":
                 c = val
                 c.cols = (Window.width - 10) // self.comic_thumb_width
+
+    def page_turn(self, c_id, new_UserLastPageRead):
+        grid = self.m_grid
+        for child in grid.children:
+            if child.comic_obj.Id == c_id:
+                if new_UserLastPageRead == 0:
+                    child.percent_read = 0
+                else:
+                    child.percent_read = round(
+                        new_UserLastPageRead / (child.comic_obj.PageCount - 1) * 100
+                    )
+                child.page_count_text = f"{child.percent_read}%"
 
     def collect_readinglist_data(
         self,

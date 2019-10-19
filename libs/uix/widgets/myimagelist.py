@@ -1,4 +1,3 @@
-
 from kivy.lang import Builder
 from kivy.properties import (
     StringProperty,
@@ -13,10 +12,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 
 from kivymd.uix.button import MDIconButton
-from kivymd.uix.ripplebehavior import RectangularRippleBehavior
+from kivymd.behaviors.ripplebehavior import RectangularRippleBehavior
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
 from kivymd.icon_definitions import md_icons
+
 Builder.load_string(
     """
 #:import md_icons kivymd.icon_definitions.md_icons

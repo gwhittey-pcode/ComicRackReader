@@ -641,7 +641,6 @@ class ComicReadingList(EventDispatcher):
             sync_url = f"{app.api_url}/Comics/{comic.Id}/Sync/File/"
         elif self.cb_optimize_size_active is True:
             sync_url = f"{app.api_url}/Comics/{comic.Id}/Sync/Webp"
-        print(f"sync_url:{sync_url}")
         app = App.get_running_app()
         id_folder = os.path.join(app.sync_folder, self.slug)
         self.my_comic_dir = Path(os.path.join(id_folder, "comics"))

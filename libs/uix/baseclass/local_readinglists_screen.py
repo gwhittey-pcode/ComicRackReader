@@ -101,6 +101,20 @@ class LocalReadingListsScreen(Screen):
                 c = val
                 c.cols = (Window.width - 10) // self.comic_thumb_width
 
+    def page_turn(self, c_id, new_UserLastPageRead):
+        grid = self.m_grid
+        for child in grid.children:
+            if child.comic_obj.Id == c_id:
+                if new_UserLastPageRead == 0:
+                    child.percent_read = 0
+                else:
+                    child.percent_read = round(
+                        new_UserLastPageRead
+                        / (child.comic_obj.PageCount - 1)
+                        * 100
+                    )
+                child.page_count_text = f"{child.percent_read}%"
+
     def collect_readinglist_data(
         self, readinglist_name, readinglist_Id, mode="From DataBase"
     ):

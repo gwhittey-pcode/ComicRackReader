@@ -8,6 +8,7 @@ from PIL import Image
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.utils import platform
 from kivy.core.image import Image as CoreImage
+
 # from kivy.core.image import Image as CoreImage
 # from kivy.uix.image import Image as kvImage
 # from PIL import Image, ImageDraw, ImageFont
@@ -59,13 +60,21 @@ def get_comic_page(comic_obj, page_num):
     filename = os.path.join(comic_dir, f"{page_num}.webp")
     with open(filename, "wb") as outfile:
         outfile.write(image_data)
-    return filename
+    file_size = os.path.getsize(filename)
+    if file_size == 0:
+        return "assets/image_load_error.jpg"
+    else:
+        return filename
 
 
 def get_file_page_size(file):
-    im = CoreImage(file)
-    width, height = im.size
-    return width, height
+    file_size = os.path.getsize(file)
+    if file_size == 0:
+        return 0, 0
+    else:
+        im = CoreImage(file)
+        width, height = im.size
+        return width, height
     # if (platform != 'android'):
     #     im = Image.open(file)
     #     width, height = im.size
