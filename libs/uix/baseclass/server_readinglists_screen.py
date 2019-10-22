@@ -410,6 +410,12 @@ class ServerReadingListsScreen(Screen):
                     )
                 child.page_count_text = f"{child.percent_read}%"
 
+    def file_sync_update(self, c_id, state):
+        grid = self.m_grid
+        for child in grid.children:
+            if child.comic_obj.Id == c_id:
+                child.has_localfile = state
+
     def collect_readinglist_data(
         self,
         readinglist_name="",

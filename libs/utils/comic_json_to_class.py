@@ -470,7 +470,6 @@ class ComicReadingList(EventDispatcher):
             ).index
         else:
             last_read_index = 0
-
         if self.cb_limit_active:
             if self.cb_only_read_active:
                 list_comics = self.db.comics.where(
@@ -494,16 +493,13 @@ class ComicReadingList(EventDispatcher):
                 ).order_by(
                     comicindex_db.index
                 )  # noqa: E712
-                new_end_last_sync_num = int(end_last_sync_num) + int(
-                    len(tmp_comic_list)
-                )
-                # rl_db.end_last_sync_num = new_end_last_sync_num
-                # rl_db.save()
             else:
-                list_comics = Comic.select().where(
-                    (Comic.is_sync == False) & (Comic.been_sync == False)
-                ).order_by(
-                    comicindex_db.index
+                list_comics = (
+                    Comic.select()
+                    .where(
+                        (Comic.is_sync == False) & (Comic.been_sync == False)
+                    )
+                    .order_by(comicindex_db.index)
                 )  # noqa: E712,E501
                 for comic in list_comics:
                     print(comic.Id)
@@ -514,11 +510,6 @@ class ComicReadingList(EventDispatcher):
                 ).order_by(
                     comicindex_db.index
                 )  # noqa: E712
-                new_end_last_sync_num = int(end_last_sync_num) + int(
-                    len(tmp_comic_list)
-                )
-                # rl_db.end_last_sync_num = new_end_last_sync_num
-                # rl_db.save()
         else:
             sync_range = len(self.comics)
             # rl_db.end_last_sync_num = new_end_last_sync_num
@@ -558,6 +549,10 @@ class ComicReadingList(EventDispatcher):
                 db_comic.is_sync = False
                 db_comic.local_file = ""
                 db_comic.save()
+                server_readinglists_screen = app.manager.get_screen(
+                    "server_readinglists_screen"
+                )
+                server_readinglists_screen.file_sync_update(item.Id, False)
         self.sync_readinglist(comic_list=sync_comic_list)
 
     def get_server_file_download(self, req_url, callback, file_path):
@@ -598,8 +593,10 @@ class ComicReadingList(EventDispatcher):
             screen.refresh_callback()
 
     def got_file(self, comic_obj, comic_file="", *args, **kwargs):
+        def file_finished_toast(dt):
+            toast(f"{os.path.basename(comic_file)} Synced")
         self.num_file_done += 1
-        toast(f"{comic_file} Synced")
+        Clock.schedule_once(file_finished_toast)
         self.file_download = True
         db_comic = Comic.get(Comic.Id == comic_obj.Id)
         db_comic.is_sync = True
@@ -611,6 +608,11 @@ class ComicReadingList(EventDispatcher):
         rl_db = ReadingList.get(ReadingList.slug == self.slug)
         rl_db.end_last_sync_num += 1
         rl_db.save()
+        app = App.get_running_app()
+        server_readinglists_screen = app.manager.get_screen(
+            "server_readinglists_screen"
+        )
+        server_readinglists_screen.file_sync_update(comic_obj.Id, True)
 
     def download_file(self, dt):
         def got_thumb(results):
@@ -626,7 +628,7 @@ class ComicReadingList(EventDispatcher):
             screen.ids.sync_status_lbl.text = ""
             screen.ids.sync_button.enabled = True
             app.sync_is_running = False
-            screen.refresh_callback()
+            # screen.refresh_callback()
             return
         comic = self.sync_list.pop(0)
         self.file_download = False
@@ -665,9 +667,9 @@ class ComicReadingList(EventDispatcher):
     def _finish_sync(self, comic_list, *largs):
         def __finish_toast(dt):
             toast("Reading List has been Synced, Refreshing Screen")
-            app = App.get_running_app()
-            screen = app.manager.get_screen("server_readinglists_screen")
-            screen.refresh_callback()
+            # app = App.get_running_app()
+            # screen = app.manager.get_screen("server_readinglists_screen")
+            # screen.refresh_callback()
 
         list_comics = comic_list
         num_comic = len(list_comics)
@@ -677,13 +679,12 @@ class ComicReadingList(EventDispatcher):
             self.event = None
 
     def sync_readinglist(self, comic_list=[]):
-        list_comics = comic_list
         app = App.get_running_app()
         self.sync_list = comic_list
         app = App.get_running_app()
         screen = app.manager.get_screen("server_readinglists_screen")
         screen.ids.sync_status_lbl.text = (
-            f"Sync is Running Left in Que: {len(self.sync_list)}"
+            f"Sync is Running Comics to Sync: {len(self.sync_list)}"
         )
         app.sync_is_running = True
         screen.ids.sync_button.enabled = False
@@ -693,4 +694,3 @@ class ComicReadingList(EventDispatcher):
         # self.event = Clock.schedule_interval(
         #     partial(self._finish_sync, comic_list), 0.5
         # )
-

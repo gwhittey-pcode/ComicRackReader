@@ -28,7 +28,6 @@ Builder.load_string(
     _box_label: boxlabel
     _box_header: box_header
     _box_icon: boxicon
-    
     AsyncImage:
         id: img
         allow_stretch: root.allow_stretch
@@ -121,8 +120,6 @@ Builder.load_string(
             #root.page_count_text
             theme_text_color: 'Custom'
             text_color: app.theme_cls.primary_color
-            
-           
 """
 )
 
