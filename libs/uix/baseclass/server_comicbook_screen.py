@@ -325,10 +325,7 @@ class ServerComicBookScreen(Screen):
                     else:
                         key_val = {"UserCurrentPage": current_page}
                     Clock.schedule_once(
-                        lambda dt, key_value={}: __update_page(
-                            key_val=key_val
-                        ),
-                        0.15,
+                        lambda dt, key_value={}: __update_page(key_val=key_val)
                     )
                 for slide in comic_book_carousel.slides:
                     for child in slide.walk():
@@ -337,10 +334,8 @@ class ServerComicBookScreen(Screen):
                                 if child.zoom_state == "zoomed":
                                     child.do_zoom(False)
         else:
-
             def updated_progress(results):
                 pass
-
             if index is not None:
                 comic_book_carousel = self.ids.comic_book_carousel
                 current_page = comic_book_carousel.current_slide.comic_page
@@ -356,15 +351,18 @@ class ServerComicBookScreen(Screen):
                     else:
                         key_val = {"UserCurrentPage": current_page}
                     Clock.schedule_once(
-                        lambda dt, key_value={}: __update_page(
-                            key_val=key_val
-                        ),
-                        0.15,
+                        lambda dt, key_value={}: __update_page(key_val=key_val)
                     )
                 self.fetch_data.update_progress(
                     update_url,
                     current_page,
                     callback=lambda req, results: updated_progress(results),
+                )
+                server_readinglists_screen = self.app.manager.get_screen(
+                    "server_readinglists_screen"
+                )
+                server_readinglists_screen.page_turn(
+                    self.comic_obj.Id, current_page
                 )
                 for slide in comic_book_carousel.slides:
                     for child in slide.walk():
