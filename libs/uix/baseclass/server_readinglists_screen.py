@@ -43,7 +43,7 @@ from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
 from kivymd.utils import asynckivy
 from peewee import DataError, OperationalError, ProgrammingError
-
+from libs.applibs.dialogs.dialogs import DialogLoadKvFiles
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
 from libs.uix.widgets.myimagelist import ComicTileLabel
 from libs.utils.comic_functions import save_thumb
@@ -110,7 +110,9 @@ class ReadingListComicImage(ComicTileLabel):
             self.percent_read = 0
         else:
             self.percent_read = round(
-                self.comic_obj.UserLastPageRead / (comic_obj.PageCount - 1) * 100
+                self.comic_obj.UserLastPageRead
+                / (comic_obj.PageCount - 1)
+                * 100
             )
         self.page_count_text = f"{self.percent_read}%"
 
@@ -148,7 +150,13 @@ class ReadingListComicImage(ComicTileLabel):
                     self.comic_obj.UserCurrentPage = (
                         self.comic_obj.PageCount - 1
                     )
-
+                    server_readinglists_screen = self.app.manager.get_screen(
+                        "server_readinglists_screen"
+                    )
+                    for item in server_readinglists_screen.new_readinglist.comics:
+                        if item.Id == self.comic_obj.Id:
+                            item.UserCurrentPage = self.comic_obj.PageCount - 1
+                            item.UserLastPageRead = self.comic_obj.PageCount - 1
             except (ProgrammingError, OperationalError, DataError) as e:
                 Logger.error(f"Mar as unRead DB: {e}")
             server_con = ComicServerConn()
@@ -162,7 +170,6 @@ class ReadingListComicImage(ComicTileLabel):
                     results, "Read"
                 ),
             )
-
         elif action == "Mark as UnRead":
             try:
                 db_comic = Comic.get(Comic.Id == self.comic_obj.Id)
@@ -172,8 +179,15 @@ class ReadingListComicImage(ComicTileLabel):
                     db_comic.save()
                     self.comic_obj.UserLastPageRead = 0
                     self.comic_obj.UserCurrentPage = 0
+                    server_readinglists_screen = self.app.manager.get_screen(
+                        "server_readinglists_screen"
+                    )
+                    for item in server_readinglists_screen.new_readinglist.comics:
+                        if item.Id == self.comic_obj.Id:
+                            item.UserCurrentPage = 0
+                            item.UserLastPageRead = 0
             except (ProgrammingError, OperationalError, DataError) as e:
-                Logger.error(f"Mar as unRead DB: {e}")
+                Logger.error(f"Mark as unRead DB: {e}")
             server_con = ComicServerConn()
             update_url = "{}/Comics/{}/Mark_Unread".format(
                 self.app.api_url, self.comic_obj.Id
@@ -210,10 +224,10 @@ class ReadingListComicImage(ComicTileLabel):
             last_load=0,
             view_mode=self.view_mode,
         )
-        Clock.schedule_once(lambda dt: self.open_comic_callback(), .1)
+        Clock.schedule_once(lambda dt: self.open_comic_callback(), 0.1)
 
     def open_comic_callback(self, *args):
-        self.app.manager.current = 'comic_book_screen'
+        self.app.manager.current = "comic_book_screen"
 
 
 class CustomMDFillRoundFlatIconButton(MDIconButton):
@@ -371,6 +385,7 @@ class ServerReadingListsScreen(Screen):
         self.num_file_done = 0
         self.max_books_page = self.app.max_books_page
         self.please_wait_dialog = None
+        self.dialog_load_comic_data = None
 
     def callback_for_menu_items(self, *args):
         pass
@@ -406,7 +421,9 @@ class ServerReadingListsScreen(Screen):
                     child.percent_read = 0
                 else:
                     child.percent_read = round(
-                        new_UserLastPageRead / (child.comic_obj.PageCount - 1) * 100
+                        new_UserLastPageRead
+                        / (child.comic_obj.PageCount - 1)
+                        * 100
                     )
                 child.page_count_text = f"{child.percent_read}%"
 
@@ -468,41 +485,41 @@ class ServerReadingListsScreen(Screen):
         self.build_page(page.object_list)
 
     def build_page(self, object_lsit):
-        # async def build_page():
-        grid = self.m_grid
-        grid.clear_widgets()
-        for comic in object_lsit:
-            # await asynckivy.sleep(0)
-            c = ReadingListComicImage(comic_obj=comic)
-            c.lines = 2
-            c.readinglist_obj = self.new_readinglist
-            c.paginator_obj = self.paginator_obj
-            y = self.comic_thumb_height
-            thumb_filename = f"{comic.Id}.jpg"
-            id_folder = self.app.store_dir
-            my_thumb_dir = os.path.join(id_folder, "comic_thumbs")
-            t_file = os.path.join(my_thumb_dir, thumb_filename)
-            if os.path.isfile(t_file):
-                c_image_source = t_file
-            else:
-                part_url = f"/Comics/{comic.Id}/Pages/0?"
-                part_api = "&apiKey={}&height={}".format(
-                    self.api_key, round(dp(y))
-                )
-                c_image_source = f"{self.api_url}{part_url}{part_api}"
-                asynckivy.start(save_thumb(comic.Id, c_image_source))
-            c.source = c_image_source
-            c.PageCount = comic.PageCount
-            c.pag_pagenum = self.current_page.number
-            grid.add_widget(c)
-            grid.cols = (Window.width - 10) // self.comic_thumb_width
-            self.dynamic_ids[id] = c
-        self.ids.page_count.text = "Page #\n{} of {}".format(
-            self.current_page.number, self.paginator_obj.num_pages()
-        )
-        self.loading_done = True
+        async def _build_page():
+            grid = self.m_grid
+            grid.clear_widgets()
+            for comic in object_lsit:
+                await asynckivy.sleep(0)
+                c = ReadingListComicImage(comic_obj=comic)
+                c.lines = 2
+                c.readinglist_obj = self.new_readinglist
+                c.paginator_obj = self.paginator_obj
+                y = self.comic_thumb_height
+                thumb_filename = f"{comic.Id}.jpg"
+                id_folder = self.app.store_dir
+                my_thumb_dir = os.path.join(id_folder, "comic_thumbs")
+                t_file = os.path.join(my_thumb_dir, thumb_filename)
+                if os.path.isfile(t_file):
+                    c_image_source = t_file
+                else:
+                    part_url = f"/Comics/{comic.Id}/Pages/0?"
+                    part_api = "&apiKey={}&height={}".format(
+                        self.api_key, round(dp(y))
+                    )
+                    c_image_source = f"{self.api_url}{part_url}{part_api}"
+                    asynckivy.start(save_thumb(comic.Id, c_image_source))
+                c.source = c_image_source
+                c.PageCount = comic.PageCount
+                c.pag_pagenum = self.current_page.number
+                grid.add_widget(c)
+                grid.cols = (Window.width - 10) // self.comic_thumb_width
+                self.dynamic_ids[id] = c
+            self.ids.page_count.text = "Page #\n{} of {}".format(
+                self.current_page.number, self.paginator_obj.num_pages()
+            )
+            self.loading_done = True
 
-        # asynckivy.start(build_page())
+        asynckivy.start(_build_page())
 
     def refresh_callback(self, *args):
         """A method that updates the state of reading list"""
@@ -563,13 +580,24 @@ class ServerReadingListsScreen(Screen):
         asynckivy.start(_do_readinglist())
 
     def got_json(self, req, results):
-        async def got_json():
+        print("Start got_json")
+
+        async def _got_json():
+            print("Start _got_json")
             self.new_readinglist = ComicReadingList(
                 name=self.readinglist_name,
                 data=results,
                 slug=self.readinglist_Id,
             )
+            totalCount = self.new_readinglist.totalCount
+            i = 1
             for item in self.new_readinglist.comic_json:
+                await asynckivy.sleep(0)
+                str_name = "{} #{}".format(item["Series"], item["Number"])
+                self.dialog_load_comic_data.name_kv_file = str_name
+                self.dialog_load_comic_data.percent = str(
+                    i * 100 // int(totalCount)
+                )
                 comic_index = self.new_readinglist.comic_json.index(item)
                 new_comic = ComicBook(
                     item,
@@ -577,6 +605,8 @@ class ServerReadingListsScreen(Screen):
                     comic_index=comic_index,
                 )
                 self.new_readinglist.add_comic(new_comic)
+                i += 1
+            print("End for item in self.new_readinglist.comic_json:")
             self.setup_options()
             new_readinglist_reversed = self.new_readinglist.comics[::-1]
             self.paginator_obj = Paginator(
@@ -602,8 +632,11 @@ class ServerReadingListsScreen(Screen):
                 self.prev_button.page_num = ""
             self.build_page(page.object_list)
             self.list_loaded = True
+            self.dialog_load_comic_data.dismiss()
 
-        asynckivy.start(got_json())
+        self.dialog_load_comic_data = DialogLoadKvFiles()
+        self.dialog_load_comic_data.open()
+        asynckivy.start(_got_json())
 
     def show_please_wait_dialog(self):
         def __callback_for_please_wait_dialog(*args):

@@ -141,8 +141,7 @@ class ComicBook(EventDispatcher):
                 self.local_file = ""
                 if mode != "FileOpen":
                     Clock.schedule_once(
-                        lambda dt: self.get_or_create_db_item(), 0.15
-                    )
+                        lambda dt: self.get_or_create_db_item())
         if mode == "db_data":
             self.Id = comic_Id
         if mode != "FileOpen":
@@ -442,9 +441,6 @@ class ComicReadingList(EventDispatcher):
             )
             self.please_wait_dialog.open()
             return
-        if self.event is not None:
-            toast("Sync Already In Progress wait till it finshes")
-            return
         self.num_file_done = 0
         sync_range = 0
         self.fetch_data = ComicServerConn()
@@ -482,10 +478,10 @@ class ComicReadingList(EventDispatcher):
                 )  # noqa: E712
                 if last_read_index < end_last_sync_num:
                     sync_range = int(self.limit_num)
-                    tmp_comic_list = list_comics[0:sync_range]
+                    tmp_comic_list = list_comics[0:int(sync_range)]
                 else:
                     sync_range = int(end_last_sync_num) + int(self.limit_num)
-                    tmp_comic_list = list_comics[end_last_sync_num:sync_range]
+                    tmp_comic_list = list_comics[end_last_sync_num:int(sync_range)]
                 purge_list = self.db.comics.where(
                     (Comic.UserLastPageRead == Comic.PageCount - 1)
                     & (Comic.PageCount > 1)
@@ -501,10 +497,8 @@ class ComicReadingList(EventDispatcher):
                     )
                     .order_by(comicindex_db.index)
                 )  # noqa: E712,E501
-                for comic in list_comics:
-                    print(comic.Id)
                 sync_range = int(self.limit_num)
-                tmp_comic_list = list_comics[0:sync_range]
+                tmp_comic_list = list_comics[0:int(sync_range)]
                 purge_list = self.db.comics.where(
                     Comic.is_sync == True
                 ).order_by(

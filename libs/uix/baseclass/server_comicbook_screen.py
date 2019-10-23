@@ -116,6 +116,7 @@ class ServerComicBookScreen(Screen):
         self.app.config.write()
         self.pag_pagenum = pag_pagenum
         self.last_load = last_load
+        self.app.open_comic_screen = 'None'
         if self.view_mode == "FileOpen":
             pass
         else:
@@ -138,6 +139,8 @@ class ServerComicBookScreen(Screen):
         self.app.config.write()
         comic_book_carousel = self.ids.comic_book_carousel
         comic_book_carousel.clear_widgets()
+        for slide in comic_book_carousel.slides:
+            print(slide)
         if self.scroller:
             self.scroller.clear_widgets()
         if self.top_pop:
@@ -282,6 +285,9 @@ class ServerComicBookScreen(Screen):
         Clock.schedule_once(refresh_callback, 1)
 
     def slide_changed(self, index):  # noqa
+        if self.app.open_comic_screen == 'None':
+            return
+
         def __update_page(key_val=None):
             db_item = Comic.get(Comic.Id == self.comic_obj.Id)
             for key, value in key_val.items():
@@ -305,7 +311,6 @@ class ServerComicBookScreen(Screen):
                             self.comic_obj.Id, value
                         )
             db_item.save()
-
         if self.view_mode == "FileOpen" or (
             self.view_mode == "Sync" and self.comic_obj.is_sync
         ):
@@ -342,17 +347,16 @@ class ServerComicBookScreen(Screen):
                 comic_obj = self.comic_obj
                 comic_Id = comic_obj.Id
                 update_url = f"{self.api_url}/Comics/{comic_Id}/Progress"
-                if self.comic_obj.is_sync:
-                    if current_page > self.comic_obj.UserLastPageRead:
-                        key_val = {
-                            "UserLastPageRead": current_page,
-                            "UserCurrentPage": current_page,
-                        }
-                    else:
-                        key_val = {"UserCurrentPage": current_page}
-                    Clock.schedule_once(
-                        lambda dt, key_value={}: __update_page(key_val=key_val)
-                    )
+                if current_page > self.comic_obj.UserLastPageRead:
+                    key_val = {
+                        "UserLastPageRead": current_page,
+                        "UserCurrentPage": current_page,
+                    }
+                else:
+                    key_val = {"UserCurrentPage": current_page}
+                Clock.schedule_once(
+                    lambda dt, key_value={}: __update_page(key_val=key_val)
+                )
                 self.fetch_data.update_progress(
                     update_url,
                     current_page,

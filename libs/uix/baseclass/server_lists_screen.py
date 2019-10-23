@@ -136,7 +136,8 @@ class ServerListsScreen(Screen):
                 mode=set_mode,
             )
         )
-        self.loading_event = Clock.schedule_interval(__wait_for_open, 0.25)
+        self.app.manager.current = "server_readinglists_screen"
+        # self.loading_event = Clock.schedule_interval(__wait_for_open, 0.25)
 
     def got_json(self, req, result):
         self.ids.mytv.clear_widgets()

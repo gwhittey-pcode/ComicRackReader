@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 VKGroups
 
 Copyright © 2010-2018 HeaTTheatR
@@ -11,16 +11,14 @@ Copyright © 2010-2018 HeaTTheatR
 Данный файл распространяется по условиям той же лицензии,
 что и фреймворк Kivy.
 
-'''
+"""
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ObjectProperty
 
 
-ACTIVITY = '''
-#:import MDLabel kivymd.label.MDLabel
-#:import MDCheckbox kivymd.selectioncontrols.MDCheckbox
+ACTIVITY = """
 
 <Selection>:
     spacing: dp(5)
@@ -40,7 +38,7 @@ ACTIVITY = '''
         markup: True
         theme_text_color: 'Primary'
         halign: 'left'
-'''
+"""
 
 
 class Selection(BoxLayout):
