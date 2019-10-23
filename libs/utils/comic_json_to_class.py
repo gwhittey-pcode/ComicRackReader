@@ -511,7 +511,7 @@ class ComicReadingList(EventDispatcher):
                     comicindex_db.index
                 )  # noqa: E712
         else:
-            sync_range = len(self.comics)
+            sync_range = int(len(self.comics))
             # rl_db.end_last_sync_num = new_end_last_sync_num
             # rl_db.save()
             if self.cb_only_read_active:
@@ -521,14 +521,14 @@ class ComicReadingList(EventDispatcher):
                 ).order_by(
                     comicindex_db.index
                 )  # noqa: E712
-                tmp_comic_list = list_comics[0:sync_range]
+                tmp_comic_list = list_comics[0:int(sync_range)]
             else:
                 list_comics = self.db.comics.where(
                     (Comic.is_sync == False) & (Comic.been_sync == False)
                 ).order_by(
                     comicindex_db.index
                 )  # noqa: E712,E501
-                tmp_comic_list = list_comics[end_last_sync_num:sync_range]
+                tmp_comic_list = list_comics
         db_item = ReadingList.get(ReadingList.slug == self.slug)
         for key in READINGLIST_SETTINGS_KEYS:
             v = getattr(db_item, key)
