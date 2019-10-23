@@ -7,14 +7,12 @@ from kivy.properties import (
     ListProperty,
     OptionProperty,
 )
-from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 
 from kivymd.uix.button import MDIconButton
-from kivymd.behaviors.ripplebehavior import RectangularRippleBehavior
 from kivymd.theming import ThemableBehavior
-from kivymd.uix.imagelist import SmartTileWithLabel, SmartTile
+from kivymd.uix.imagelist import SmartTile
 from kivymd.icon_definitions import md_icons
 
 Builder.load_string(

@@ -590,7 +590,7 @@ class ComicReadingList(EventDispatcher):
             screen.ids.sync_status_lbl.text = ""
             screen.ids.sync_button.enabled = True
             app.sync_is_running = False
-            screen.refresh_callback()
+            # screen.refresh_callback()
 
     def got_file(self, comic_obj, comic_file="", *args, **kwargs):
         def file_finished_toast(dt):

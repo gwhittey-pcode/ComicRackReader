@@ -78,7 +78,7 @@ class ReadingListComicImage(ComicTileLabel):
             "Open This Comic",
             "Mark as Read",
             "Mark as UnRead",
-            "Download Comic",
+            # "Download Comic",
         ]
         self.menu_items = []
         for item in list_menu_items:
@@ -507,7 +507,7 @@ class ServerReadingListsScreen(Screen):
     def refresh_callback(self, *args):
         """A method that updates the state of reading list"""
 
-        def refresh_callback(interval):
+        def __refresh_callback(interval):
             self.ids.main_grid.clear_widgets()
             self.collect_readinglist_data(
                 self.readinglist_name,
@@ -519,7 +519,7 @@ class ServerReadingListsScreen(Screen):
             self.ids.main_scroll.refresh_done()
             self.tick = 0
 
-        Clock.schedule_once(refresh_callback, 1)
+        Clock.schedule_once(__refresh_callback, 1)
 
     def got_db_data(self):
         """

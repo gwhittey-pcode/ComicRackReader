@@ -30,7 +30,7 @@ from kivy.properties import (
 )
 
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.behaviors.ripplebehavior import CircularRippleBehavior
+from kivymd.uix.behaviors.ripplebehavior import CircularRippleBehavior
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.list import (
     ILeftBody,
