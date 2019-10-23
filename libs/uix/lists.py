@@ -330,4 +330,3 @@ Builder.load_string(
                     size: self.size
 """
 )
-
