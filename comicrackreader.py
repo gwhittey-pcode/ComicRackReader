@@ -17,6 +17,7 @@ from pathlib import Path
 from ast import literal_eval
 from shutil import copyfile
 from kivymd.uix.dialog import MDDialog
+from kivymd.app import MDApp
 from kivy.app import App
 from kivy.uix.modalview import ModalView
 from kivy.lang import Builder
@@ -57,9 +58,8 @@ from libs.utils.paginator import Paginator
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
 
 
-class ComicRackReader(App):
+class ComicRackReader(MDApp):
     nav_drawer = ObjectProperty()
-    theme_cls = ThemeManager()
     lang = StringProperty("en")
     open_comics_list = ListProperty()
     sync_folder = StringProperty()
@@ -76,8 +76,9 @@ class ComicRackReader(App):
     app_started = BooleanProperty(False)
     open_comic_screen = StringProperty()
     sync_is_running = BooleanProperty(False)
-    def __init__(self, **kvargs):
-        super(ComicRackReader, self).__init__(**kvargs)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         Window.bind(on_keyboard=self.events_program)
         Window.soft_input_mode = "below_target"
         self.LIST_SCREENS = [

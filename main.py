@@ -14,42 +14,45 @@
 import os
 import sys
 import traceback
-NICK_NAME_AND_NAME_REPOSITORY = \
-    'git@github.com:gwhittey-pcode/ComicRackReader.git'
+
+NICK_NAME_AND_NAME_REPOSITORY = (
+    "git@github.com:gwhittey-pcode/ComicRackReader.git"
+)
 
 directory = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.join(directory, 'libs/applibs'))
+sys.path.insert(0, os.path.join(directory, "libs/applibs"))
 
 try:
     import webbrowser
     import kivy
-    kivy.require('1.11.1')
+
+    kivy.require("1.11.1")
 
     from kivy.config import Config
+
     # Config.set('kivy', 'keyboard_mode', 'system')
-    Config.set('kivy', 'log_enable', 0)
+    Config.set("kivy", "log_enable", 0)
 
     from kivymd.theming import ThemeManager
+    from kivymd.app import MDApp
     from libs.applibs.bugreporter import BugReporter
 except Exception:
-    traceback.print_exc(file=open(os.path.join(directory, 'error.log'), 'w'))
+    traceback.print_exc(file=open(os.path.join(directory, "error.log"), "w"))
     print(traceback.print_exc())
     sys.exit(1)
 
 
-__version__ = '1.0RC1'
+__version__ = "1.0RC1"
 
 
 def main():
     def create_error_monitor():
-        class _App(App):
-            theme_cls = ThemeManager()
-            theme_cls.primary_palette = 'BlueGray'
-
+        class _App(MDApp):
             def build(self):
                 box = BoxLayout()
                 box.add_widget(report)
                 return box
+
         app = _App()
         app.run()
 
@@ -60,5 +63,5 @@ def main():
     app.run()
 
 
-if __name__ in ('__main__', '__android__'):
+if __name__ in ("__main__", "__android__"):
     main()
