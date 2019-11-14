@@ -56,6 +56,8 @@ from settings.custom_settings import MySettings
 from libs.utils.comic_functions import convert_comicapi_to_json
 from libs.utils.paginator import Paginator
 from libs.utils.comic_json_to_class import ComicReadingList, ComicBook
+from libs.uix.widgets.mytoolbar import MDToolbarTooltips
+from kivy.factory import Factory
 
 
 class ComicRackReader(MDApp):
@@ -274,6 +276,8 @@ class ComicRackReader(MDApp):
             # self.my_data_dir = os.path.join(self.store_dir, 'comics_db')
 
     def build(self):
+        r = Factory.register
+        r("MDToolbarTooltips", module="libs.uix.widgets.mytoolbar")
         self.set_value_from_config()
         from libs.uix.baseclass.basescreen import BaseScreen
         from libs.uix.baseclass.about import About
@@ -306,24 +310,23 @@ class ComicRackReader(MDApp):
         action_bar = self.screen.ids.action_bar
         # Left side Action bar Icons
         action_bar.left_action_items = [
-            ["home", lambda x: self.switch_base_screen()],
-            ["settings", lambda x: self.open_settings()],
-            ["fullscreen", lambda x: self.toggle_full_screen()],
+            ["home", "Home", lambda x: self.switch_base_screen()],
+            ["settings", "Settings", lambda x: self.open_settings()],
+            ["fullscreen", "Full Screen", lambda x: self.toggle_full_screen()],
         ]
         # right side Action bar Icons
         action_bar.right_action_items = [
-            ["file-cabinet", lambda x: self.file_manager_open()],
-            ["server", lambda x: self.switch_server_lists_screen()],
-            ["view-list", lambda x: self.switch_readinglists_screen()],
-            ["folder-sync", lambda x: self.switch_local_lists_screen()],
+            ["file-cabinet", "Open File", lambda x: self.file_manager_open()],
+            ["server", "ComicRack Reading Lists", lambda x: self.switch_server_lists_screen()],
+            ["view-list", "Current Server Reading List", lambda x: self.switch_readinglists_screen()],
+            ["folder-sync", "Local Reading Lists", lambda x: self.switch_local_lists_screen()],
             [
-                "playlist-check",
+                "playlist-check", "Current Server Reading List",
                 lambda x: self.switch_local_readinglists_screen(),
             ],
-            ["book-open-page-variant", lambda x: self.switch_comic_reader()],
-            ["close-box-outline", lambda x: self.stop()],
+            ["book-open-page-variant", "Open Comic Book", lambda x: self.switch_comic_reader()],
+            ["close-box-outline", "Exit App", lambda x: self.stop()],
         ]
-
         self.config.add_callback(self.config_callback)
         return self.screen
 
@@ -416,27 +419,6 @@ class ComicRackReader(MDApp):
             except:  # noqa
                 self.manager.current = "base"
             # self.screen.ids.action_bar.title = self.title
-
-    def show_about(self, *args):
-        self.nav_drawer.toggle_nav_drawer()
-        self.screen.ids.about.ids.label.text = (
-            "[size=20][b]ComicRackReader[/b][/size]\n\n"
-            "[b]Version:[/b] {version}\n"
-            "[b]License:[/b] MIT\n\n"
-            "[size=20][b]Developer[/b][/size]\n\n"
-            "[ref=SITE_PROJECT]"
-            "[color={link_color}]Gerard Whittey[/color][/ref]\n\n"
-            "[b]Source code:[/b] "
-            "[ref=git@github-pcode:gwhittey-pcode/ComicRackReader.git]"
-            "[color={link_color}]GitHub[/color][/ref]"
-        ).format(
-            version=__version__,
-            link_color=get_hex_from_color(self.theme_cls.primary_color),
-        )
-        self.manager.current = "about"
-        self.screen.ids.action_bar.left_action_items = [
-            ["chevron-left", lambda x: self.back_screen(27)]
-        ]
 
     def show_license(self, *args):
         self.screen.ids.license.ids.text_license.text = ("%s") % open(
@@ -638,5 +620,7 @@ class ComicRackReader(MDApp):
             Clock.schedule_once(_sync_delayed_work, delay)
 
         Clock.schedule_once(_sync_delayed_work, delay)
+
+
 c = ComicRackReader()
 c.run()

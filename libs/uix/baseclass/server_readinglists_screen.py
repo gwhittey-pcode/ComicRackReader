@@ -42,6 +42,7 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
 from kivymd.utils import asynckivy
+from kivymd.uix.tooltip import MDTooltip
 from peewee import DataError, OperationalError, ProgrammingError
 from libs.applibs.dialogs.dialogs import DialogLoadKvFiles
 from libs.uix.baseclass.server_comicbook_screen import ServerComicBookScreen
@@ -238,37 +239,35 @@ class Tooltip(Label):
     pass
 
 
-class SyncButtonIcon(ButtonBehavior, MDIcon):
+class SyncButtonIcon(MDIconButton, MDTooltip):
     icon_name = StringProperty()
 
     my_clock = ObjectProperty()
     do_action = StringProperty()
-    tooltip_text = StringProperty()
-    tooltip = Tooltip(text="No Tooltip")
 
     def __init__(self, **kwargs):
         # Window.bind(mouse_pos=self.on_mouse_pos)
         super(SyncButtonIcon, self).__init__(**kwargs)
-        self.tooltip = Tooltip(text=self.tooltip_text)
+        # self.tooltip = Tooltip(text=self.tooltip_text)
         self.app = App.get_running_app()
 
-    def on_mouse_pos(self, *args):
-        if not self.get_root_window():
-            return
-        pos = args[1]
-        self.tooltip.text = self.tooltip_text
-        self.tooltip.pos = pos
-        # cancel scheduled event since I moved the cursor
-        Clock.unschedule(self.display_tooltip)
-        self.close_tooltip()  # close if it's opened
-        if self.collide_point(*self.to_widget(*pos)):
-            Clock.schedule_once(self.display_tooltip, 0.5)
+    # def on_mouse_pos(self, *args):
+    #     if not self.get_root_window():
+    #         return
+    #     pos = args[1]
+    #     self.tooltip.text = self.tooltip_text
+    #     self.tooltip.pos = pos
+    #     # cancel scheduled event since I moved the cursor
+    #     Clock.unschedule(self.display_tooltip)
+    #     self.close_tooltip()  # close if it's opened
+    #     if self.collide_point(*self.to_widget(*pos)):
+    #         Clock.schedule_once(self.display_tooltip, 0.5)
 
-    def close_tooltip(self, *args):
-        Window.remove_widget(self.tooltip)
+    # def close_tooltip(self, *args):
+    #     Window.remove_widget(self.tooltip)
 
-    def display_tooltip(self, *args):
-        Window.add_widget(self.tooltip)
+    # def display_tooltip(self, *args):
+    #     Window.add_widget(self.tooltip)
 
     def do_sync_rf(self, *args):
         self.app.manager.get_screen(
@@ -533,7 +532,7 @@ class ServerReadingListsScreen(Screen):
                 mode="From DataBase",
             )
             #            self.build_page(page.object_list)
-            self.ids.main_scroll.refresh_done()
+            # self.ids.main_scroll.refresh_done()
             self.tick = 0
 
         Clock.schedule_once(__refresh_callback, 1)

@@ -51,6 +51,7 @@ from libs.utils.comic_functions import get_comic_page, get_file_page_size
 from libs.utils.comic_server_conn import ComicServerConn
 from libs.utils.db_functions import Comic
 from settings.settingsjson import settings_json_screen_tap_control
+from libs.uix.widgets.mytoolbar import MDToolbarTooltips
 
 
 class ServerComicBookScreen(Screen):
@@ -250,12 +251,12 @@ class ServerComicBookScreen(Screen):
 
     def on_pre_enter(self):
         self.app.hide_action_bar()
-        self.build_option_pop()
+        # self.build_option_pop()
 
     def on_pre_leave(self, *args):
         self.top_pop.dismiss()
         self.page_nav_popup.dismiss()
-        self.option_pop.dismiss()
+        # self.option_pop.dismiss()
 
     def on_leave(self, *args):
         pass
@@ -1124,23 +1125,25 @@ class ServerComicBookScreen(Screen):
                 return
                 ######
 
-    def build_option_pop(self):
-        def call_back_dismiss(instance):
-            self.option_isopen = False
+    # def build_option_pop(self):
+    #     def call_back_dismiss(instance):
+    #         self.option_isopen = False
 
-        option_bar = OptionToolBar(comic_Id=self.comic_obj.Id)
-        self.option_pop = ModalView(
-            pos_hint={"top": 1}, size_hint=(1, None), height=option_bar.height
-        )
-        self.option_pop.add_widget(option_bar)
-        self.option_pop.bind(on_dismiss=call_back_dismiss)
+    #     option_bar = OptionToolBar(comic_Id=self.comic_obj.Id)
+    #     self.option_pop = ModalView(
+    #         pos_hint={"top": 1}, size_hint=(1, None), height=option_bar.height
+    #     )
+    #     self.option_pop.add_widget(option_bar)
+    #     self.option_pop.bind(on_dismiss=call_back_dismiss)
 
     def toggle_option_bar(self):
         if self.option_isopen is True:
-            self.option_pop.dismiss()
+            self.app.hide_action_bar()
+            # self.option_pop.dismiss()
             self.option_isopen = False
         else:
-            self.option_pop.open()
+            self.app.show_action_bar()
+            # self.option_pop.open()
             self.option_isopen = True
 
 
@@ -1148,7 +1151,7 @@ class OptionPopup(Popup):
     pass
 
 
-class OptionToolBar(MDToolbar):
+class OptionToolBar(MDToolbarTooltips):
     title = StringProperty()
     comic_Id = StringProperty()
 
@@ -1163,23 +1166,41 @@ class OptionToolBar(MDToolbar):
         elif comic_book_screen.view_mode == "Sync":
             self.title = title_txt = f"{title_txt} *Sync File*"
         root = self
+        # self.left_action_items = [
+        #     # ["menu", (lambda x: nav_drawer._toggle())],
+        #     ["home", lambda x: root.option_bar_action("base")],
+        #     ["settings", lambda x: app.open_settings()],
+        #     ["fullscreen", lambda x: root.toggle_full_screen()],
+        # ]
+        # self.right_action_items = [
+        #     ["file-cabinet", lambda x: app.file_manager_open()],
+        #     ["server", lambda x: app.switch_server_lists_screen()],
+        #     ["view-list", lambda x: app.switch_readinglists_screen()],
+        #     ["folder-sync", lambda x: app.switch_local_lists_screen()],
+        #     [
+        #         "playlist-check",
+        #         lambda x: app.switch_local_readinglists_screen(),
+        #     ],
+        #     ["book-open-page-variant", lambda x: app.switch_comic_reader()],
+        #     ["close-box-outline", lambda x: app.stop()],
+        # ]
         self.left_action_items = [
-            # ["menu", (lambda x: nav_drawer._toggle())],
-            ["home", lambda x: root.option_bar_action("base")],
-            ["settings", lambda x: app.open_settings()],
-            ["fullscreen", lambda x: root.toggle_full_screen()],
+            ["home", "Home", lambda x: root.switch_base_screen()],
+            ["settings", "Settings", lambda x: app.open_settings()],
+            ["fullscreen", "Full Screen", lambda x: root.toggle_full_screen()],
         ]
+        # right side Action bar Icons
         self.right_action_items = [
-            ["file-cabinet", lambda x: app.file_manager_open()],
-            ["server", lambda x: app.switch_server_lists_screen()],
-            ["view-list", lambda x: app.switch_readinglists_screen()],
-            ["folder-sync", lambda x: app.switch_local_lists_screen()],
+            ["file-cabinet", "Open File", lambda x: app.file_manager_open()],
+            ["server", "ComicRack Reading Lists", lambda x: app.switch_server_lists_screen()],
+            ["view-list", "Current Server Reading List", lambda x: app.switch_readinglists_screen()],
+            ["folder-sync", "Local Reading Lists", lambda x: app.switch_local_lists_screen()],
             [
-                "playlist-check",
+                "playlist-check", "Current Server Reading List",
                 lambda x: app.switch_local_readinglists_screen(),
             ],
-            ["book-open-page-variant", lambda x: app.switch_comic_reader()],
-            ["close-box-outline", lambda x: app.stop()],
+            ["book-open-page-variant", "Open Comic Book", lambda x: app.switch_comic_reader()],
+            ["close-box-outline", "Exit App", lambda x: app.stop()],
         ]
 
     def option_bar_action(self, *args):
