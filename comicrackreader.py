@@ -17,8 +17,9 @@ from pathlib import Path
 from ast import literal_eval
 from shutil import copyfile
 from kivymd.uix.dialog import MDDialog
-from kivymd.app import MDApp
+# from kivymd.app import MDApp
 from kivy.app import App
+from kivymd.app import MDApp
 from kivy.uix.modalview import ModalView
 from kivy.lang import Builder
 from kivy.core.window import Window
@@ -34,7 +35,6 @@ from kivy.properties import (
     NumericProperty,
     BooleanProperty,
 )
-from main import __version__
 from libs.uix.baseclass.startscreen import StartScreen
 from kivy.logger import Logger
 from kivymd.theming import ThemeManager
@@ -638,3 +638,5 @@ class ComicRackReader(MDApp):
             Clock.schedule_once(_sync_delayed_work, delay)
 
         Clock.schedule_once(_sync_delayed_work, delay)
+c = ComicRackReader()
+c.run()
