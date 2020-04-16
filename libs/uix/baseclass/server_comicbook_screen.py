@@ -81,6 +81,7 @@ class ServerComicBookScreen(Screen):
     dynamic_ids = DictProperty({})  # declare class attribute, dynamic_ids
     paginator_obj = ObjectProperty()
     comic_obj = ObjectProperty()
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(ServerComicBookScreen, self).__init__(**kwargs)
@@ -386,10 +387,13 @@ class ServerComicBookScreen(Screen):
                 )
                 for slide in comic_book_carousel.slides:
                     for child in slide.walk():
-                        if child.id is not None:
-                            if "comic_scatter" in child.id:
-                                if child.zoom_state == "zoomed":
-                                    child.do_zoom(False)
+                        try:
+                            if child.id is not None:
+                                if "comic_scatter" in child.id:
+                                    if child.zoom_state == "zoomed":
+                                        child.do_zoom(False)
+                        except AttributeError:
+                            pass
 
     def add_pages(self, comic_book_carousel, outer_grid, comic_obj, i):
 
@@ -537,9 +541,12 @@ class ServerComicBookScreen(Screen):
         comic_book_carousel = self.ids.comic_book_carousel
         current_slide = comic_book_carousel.current_slide
         for child in self.walk():
-            if child.id == current_slide.id:
-                current_page = child
-                comic_page = current_page.comic_page
+            try:
+                if child.id == current_slide.id:
+                    current_page = child
+                    comic_page = current_page.comic_page
+            except AttributeError:
+                pass
         # scroller = self.dynamic_ids['page_thumb_scroll']
         # for grandchild in scroller.walk():
         #             c_page_thumb = f'page_thumb{comic_page}'
@@ -549,15 +556,18 @@ class ServerComicBookScreen(Screen):
         #                 self.scroller.scroll_to(
         #                     target_thumb, padd7ing=10, animate=True)
         for child in self.page_nav_popup.walk():
-            if child.id == "page_thumb_scroll":
-                scroller = child
-                for grandchild in scroller.walk():
-                    c_page_thumb = f"page_thumb{comic_page}"
-                    if grandchild.id == c_page_thumb:
-                        target_thumb = grandchild
-                        self.scroller.scroll_to(
-                            target_thumb, padding=10, animate=True
-                        )
+            try:
+                if child.id == "page_thumb_scroll":
+                    scroller = child
+                    for grandchild in scroller.walk():
+                        c_page_thumb = f"page_thumb{comic_page}"
+                        if grandchild.id == c_page_thumb:
+                            target_thumb = grandchild
+                            self.scroller.scroll_to(
+                                target_thumb, padding=10, animate=True
+                            )
+            except AttributeError:
+                pass
 
     def build_top_nav(self):
         """

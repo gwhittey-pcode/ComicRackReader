@@ -31,7 +31,6 @@ Builder.load_string(
         allow_stretch: root.allow_stretch
         anim_delay: root.anim_delay
         anim_loop: root.anim_loop
-        color: root.img_color
         keep_ratio: root.keep_ratio
         mipmap: root.mipmap
         source: root.source
