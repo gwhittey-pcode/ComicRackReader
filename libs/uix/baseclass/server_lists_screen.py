@@ -42,6 +42,7 @@ class TreeViewFolder(OneLineIconListItem, TreeViewNode):
     text = StringProperty()
     color = ListProperty([1, 1, 0.4, 1])
     icon = StringProperty("folder")
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(TreeViewFolder, self).__init__(**kwargs)
@@ -52,6 +53,7 @@ class TreeViewItem(OneLineIconListItem, TreeViewNode):
     color = ListProperty([0.4, 0.4, 0.4, 1])
     icon = StringProperty("view-list")
     rl_slug = StringProperty()
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(TreeViewItem, self).__init__(**kwargs)

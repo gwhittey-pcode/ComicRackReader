@@ -54,6 +54,18 @@ from settings.settingsjson import settings_json_screen_tap_control
 from libs.uix.widgets.mytoolbar import MDToolbarTooltips
 
 
+class MyScrollView(ScrollView):
+    id = StringProperty()
+
+
+class MyPopup(Popup):
+    id = StringProperty()
+
+
+class MyGridLayout(GridLayout):
+    id = StringProperty()
+
+
 class ServerComicBookScreen(Screen):
     scroller = ObjectProperty()
     top_pop = ObjectProperty()
@@ -117,7 +129,7 @@ class ServerComicBookScreen(Screen):
         self.app.config.write()
         self.pag_pagenum = pag_pagenum
         self.last_load = last_load
-        self.app.open_comic_screen = 'None'
+        self.app.open_comic_screen = "None"
         if self.view_mode == "FileOpen":
             pass
         else:
@@ -168,7 +180,7 @@ class ServerComicBookScreen(Screen):
                 )
         self.str_page_count = x_title
         x_title = f"{self.comic_obj.__str__} {x_title}"
-        scroll = ScrollView(
+        scroll = MyScrollView(
             size_hint=(1, 1),
             do_scroll_x=True,
             do_scroll_y=False,
@@ -176,7 +188,7 @@ class ServerComicBookScreen(Screen):
             scroll_type=["bars", "content"],
         )
         self.dynamic_ids["page_thumb_scroll"] = scroll
-        self.page_nav_popup = Popup(
+        self.page_nav_popup = MyPopup(
             id="page_nav_popup",
             title=x_title,
             pos_hint={"y": 0},
@@ -186,7 +198,7 @@ class ServerComicBookScreen(Screen):
         self.dynamic_ids["page_nav_popup"] = self.page_nav_popup
         self.page_nav_popup.add_widget(scroll)
         self.scroller = scroll
-        outer_grid = GridLayout(
+        outer_grid = MyGridLayout(
             rows=1,
             size_hint=(None, None),
             spacing=(5, 0),
@@ -286,7 +298,7 @@ class ServerComicBookScreen(Screen):
         Clock.schedule_once(refresh_callback, 1)
 
     def slide_changed(self, index):  # noqa
-        if self.app.open_comic_screen == 'None':
+        if self.app.open_comic_screen == "None":
             return
 
         def __update_page(key_val=None):
@@ -312,6 +324,7 @@ class ServerComicBookScreen(Screen):
                             self.comic_obj.Id, value
                         )
             db_item.save()
+
         if self.view_mode == "FileOpen" or (
             self.view_mode == "Sync" and self.comic_obj.is_sync
         ):
@@ -340,8 +353,10 @@ class ServerComicBookScreen(Screen):
                                 if child.zoom_state == "zoomed":
                                     child.do_zoom(False)
         else:
+
             def updated_progress(results):
                 pass
+
             if index is not None:
                 comic_book_carousel = self.ids.comic_book_carousel
                 current_page = comic_book_carousel.current_slide.comic_page
@@ -556,7 +571,7 @@ class ServerComicBookScreen(Screen):
             do_scroll_x=True,
             do_scroll_y=False,
         )
-        self.top_pop = Popup(
+        self.top_pop = MyPopup(
             id="page_pop",
             title="Comics in List",
             title_align="center",
@@ -636,9 +651,7 @@ class ServerComicBookScreen(Screen):
                 or self.view_mode == "FileOpen"
             ):
                 comic_name = str(comic.__str__)
-                s_url_part = (
-                    f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"
-                )  # noqa
+                s_url_part = f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"  # noqa
                 s_url_api = f"&apiKey={self.api_key}"
                 if self.view_mode == "FileOpen" or (
                     self.view_mode == "Sync" and comic.is_sync
@@ -865,7 +878,7 @@ class ServerComicBookScreen(Screen):
                 else:
                     dialog_title = "Load Next Comic"
 
-        self.next_dialog = Popup(
+        self.next_dialog = MyPopup(
             id="next_pop",
             title=dialog_title,
             content=content,
@@ -980,7 +993,7 @@ class ServerComicBookScreen(Screen):
                 dialog_title = "Load Prev Page"
             else:
                 dialog_title = "On First Comic"
-        self.prev_dialog = Popup(
+        self.prev_dialog = MyPopup(
             id="prev_pop",
             title=dialog_title,
             content=content,
@@ -1192,14 +1205,31 @@ class OptionToolBar(MDToolbarTooltips):
         # right side Action bar Icons
         self.right_action_items = [
             ["file-cabinet", "Open File", lambda x: app.file_manager_open()],
-            ["server", "ComicRack Reading Lists", lambda x: app.switch_server_lists_screen()],
-            ["view-list", "Current Server Reading List", lambda x: app.switch_readinglists_screen()],
-            ["folder-sync", "Local Reading Lists", lambda x: app.switch_local_lists_screen()],
             [
-                "playlist-check", "Current Server Reading List",
+                "server",
+                "ComicRack Reading Lists",
+                lambda x: app.switch_server_lists_screen(),
+            ],
+            [
+                "view-list",
+                "Current Server Reading List",
+                lambda x: app.switch_readinglists_screen(),
+            ],
+            [
+                "folder-sync",
+                "Local Reading Lists",
+                lambda x: app.switch_local_lists_screen(),
+            ],
+            [
+                "playlist-check",
+                "Current Server Reading List",
                 lambda x: app.switch_local_readinglists_screen(),
             ],
-            ["book-open-page-variant", "Open Comic Book", lambda x: app.switch_comic_reader()],
+            [
+                "book-open-page-variant",
+                "Open Comic Book",
+                lambda x: app.switch_comic_reader(),
+            ],
             ["close-box-outline", "Exit App", lambda x: app.stop()],
         ]
 

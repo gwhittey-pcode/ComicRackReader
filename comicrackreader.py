@@ -321,7 +321,7 @@ class ComicRackReader(MDApp):
             ["view-list", "Current Server Reading List", lambda x: self.switch_readinglists_screen()],
             ["folder-sync", "Local Reading Lists", lambda x: self.switch_local_lists_screen()],
             [
-                "playlist-check", "Current Server Reading List",
+                "playlist-check", "Current Local Reading List",
                 lambda x: self.switch_local_readinglists_screen(),
             ],
             ["book-open-page-variant", "Open Comic Book", lambda x: self.switch_comic_reader()],

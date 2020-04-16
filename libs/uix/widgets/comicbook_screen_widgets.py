@@ -26,6 +26,8 @@ from math import radians
 
 
 class MagnifyingGlassScatter(Scatter):
+    id = StringProperty()
+
     def __init__(self, **kwargs):
         super(MagnifyingGlassScatter, self).__init__(**kwargs)
         self.mag_glass_x = int(
@@ -68,6 +70,7 @@ class MagnifyingGlassScatter(Scatter):
 class ComicBookPageScatter(ScatterLayout):
     zoom_state = StringProperty()
     comic_page = NumericProperty()
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(ComicBookPageScatter, self).__init__(**kwargs)
@@ -256,6 +259,7 @@ class ComicBookPageImage(AsyncImage):
     comic_page = NumericProperty()
     comic_page_type = StringProperty
     proxyImage = ObjectProperty()
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(ComicBookPageImage, self).__init__(**kwargs)
@@ -330,10 +334,7 @@ class ComicBookPageImage(AsyncImage):
             p_height = proxyImage.image.texture.height
             c_width = self.texture.width
             c_height = self.texture.height
-            if (
-                p_width > p_height
-                and split_dbl_page == "1"
-            ):
+            if p_width > p_height and split_dbl_page == "1":
                 last_page = False
                 app = App.get_running_app()
                 carousel = (
@@ -360,6 +361,8 @@ class ComicBookPageImage(AsyncImage):
 
 
 class ComicCarousel(Carousel):
+    id = StringProperty()
+
     def on_touch_move(self, touch):  # noqa
         if not self.touch_mode_change:
             if self.ignore_perpendicular_swipes and self.direction in (
@@ -423,6 +426,7 @@ class ComicCarousel(Carousel):
 # Button for screen tapping control
 class ComicBookPageControlButton(Button):
     location = StringProperty()
+    id = StringProperty()
 
     def enable_me(self, instance):
         self.disabled = False
@@ -497,25 +501,26 @@ class ComicBookPageControlButton(Button):
 
 
 class ThumbPopPagePopup(Popup):
-    pass
+    id = StringProperty()
 
 
 class ThumbPopPageScroll(ScrollView):
-    pass
+    id = StringProperty()
 
 
 class ThumbPopPageOutterGrid(GridLayout):
-    pass
+    id = StringProperty()
 
 
 class ThumbPopPageInnerGrid(GridLayout):
-    pass
+    id = StringProperty()
 
 
 class ThumbPopPagebntlbl(MDRaisedButton):
     comic_slug = StringProperty()
     fetch_data = ObjectProperty()
     comic_page = NumericProperty()
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(ThumbPopPagebntlbl, self).__init__(**kwargs)
@@ -567,6 +572,7 @@ class ComicBookPageThumb(ButtonBehavior, AsyncImage):
     comic_slug = StringProperty()
     fetch_data = ObjectProperty()
     comic_page = NumericProperty()
+    id = StringProperty()
 
     def __init__(self, **kwargs):
         super(ComicBookPageThumb, self).__init__(**kwargs)
@@ -584,19 +590,19 @@ class ComicBookPageThumb(ButtonBehavior, AsyncImage):
 
 
 class CommonComicsScroll(ScrollView):
-    pass
+    id = StringProperty()
 
 
 class CommonComicsOuterGrid(GridLayout):
-    pass
+    id = StringProperty()
 
 
 class CommonComicsCoverLabel(Label):
-    pass
+    id = StringProperty()
 
 
 class CommonComicsCoverInnerGrid(GridLayout):
-    pass
+    id = StringProperty()
 
 
 class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
@@ -609,6 +615,7 @@ class CommonComicsCoverImage(ButtonBehavior, AsyncImage):
     last_section = NumericProperty()
     action_do = StringProperty()
     mode = StringProperty()
+    id = StringProperty()
 
     def enable_me(self, instance):
         self.disabled = False
