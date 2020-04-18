@@ -134,3 +134,6 @@ db/
 shell.sh
 shell
 kivy_env32/
+.vs/VSWorkspaceState.json
+.vs/slnx.sqlite
+.vs/ComicRackReader/v16/.suo
