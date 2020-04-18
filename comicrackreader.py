@@ -300,7 +300,7 @@ class ComicRackReader(MDApp):
         path = os.path.dirname(__file__)
         icon_path = os.path.join(path, f"data{os.sep}")
         self.icon = os.path.join(icon_path, f"icon.png")
-        self.title = "ComicRackReader 1.2"
+        self.title = "ComicRackReader 1.2.1"
         self.theme_cls.primary_palette = "Amber"
         self.load_all_kv_files(
             os.path.join(self.directory, "libs", "uix", "kv")
