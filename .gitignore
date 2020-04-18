@@ -133,3 +133,4 @@ archives/
 db/
 shell.sh
 shell
+kivy_env32/
