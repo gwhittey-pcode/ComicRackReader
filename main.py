@@ -17,6 +17,7 @@ from pathlib import Path
 from ast import literal_eval
 from shutil import copyfile
 from kivymd.uix.dialog import MDDialog
+
 # from kivymd.app import MDApp
 from kivy.app import App
 from kivymd.app import MDApp
@@ -228,6 +229,7 @@ class ComicRackReader(MDApp):
 
     def config_callback(self, section, key, value):
         if key == "storagedir":
+
             def __callback_for_please_wait_dialog(*args):
                 if args[0] == "Delete Database":
                     self.stop()
@@ -298,7 +300,7 @@ class ComicRackReader(MDApp):
         path = os.path.dirname(__file__)
         icon_path = os.path.join(path, f"data{os.sep}")
         self.icon = os.path.join(icon_path, f"icon.png")
-        self.title = "ComicRackReader 1.2.1"
+        self.title = "ComicRackReader 1.2.2"
         self.theme_cls.primary_palette = "Amber"
         self.load_all_kv_files(
             os.path.join(self.directory, "libs", "uix", "kv")
@@ -315,14 +317,31 @@ class ComicRackReader(MDApp):
         # right side Action bar Icons
         action_bar.right_action_items = [
             ["file-cabinet", "Open File", lambda x: self.file_manager_open()],
-            ["server", "ComicRack Reading Lists", lambda x: self.switch_server_lists_screen()],
-            ["view-list", "Current Server Reading List", lambda x: self.switch_readinglists_screen()],
-            ["folder-sync", "Local Reading Lists", lambda x: self.switch_local_lists_screen()],
             [
-                "playlist-check", "Current Local Reading List",
+                "server",
+                "ComicRack Reading Lists",
+                lambda x: self.switch_server_lists_screen(),
+            ],
+            [
+                "view-list",
+                "Current Server Reading List",
+                lambda x: self.switch_readinglists_screen(),
+            ],
+            [
+                "folder-sync",
+                "Local Reading Lists",
+                lambda x: self.switch_local_lists_screen(),
+            ],
+            [
+                "playlist-check",
+                "Current Local Reading List",
                 lambda x: self.switch_local_readinglists_screen(),
             ],
-            ["book-open-page-variant", "Open Comic Book", lambda x: self.switch_comic_reader()],
+            [
+                "book-open-page-variant",
+                "Open Comic Book",
+                lambda x: self.switch_comic_reader(),
+            ],
             ["close-box-outline", "Exit App", lambda x: self.stop()],
         ]
         self.config.add_callback(self.config_callback)

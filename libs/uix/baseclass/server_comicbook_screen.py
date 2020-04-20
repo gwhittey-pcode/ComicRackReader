@@ -396,7 +396,7 @@ class ServerComicBookScreen(Screen):
                             pass
 
     def add_pages(self, comic_book_carousel, outer_grid, comic_obj, i):
-
+        t_api_key = self.app.config.get("General", "api_key")
         # fire off dblpage split if server replies size of image is
         # width>height
 
@@ -450,18 +450,18 @@ class ServerComicBookScreen(Screen):
             s_keep_ratio = True
         if max_height == "Use Original Size":
             s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}"
-            s_url_api = f"?apiKey={self.api_key}"
+            s_url_api = f"?apiKey={t_api_key}"
         elif max_height == "Use Window Size":
             h = round(dp(Window.height))
             # w = round(dp(Window.height))
             s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={h}"
-            s_url_api = f"&apiKey={self.api_key}"
+            s_url_api = f"&apiKey={t_api_key}"
         else:
             s_max_height = round(dp(max_height))
             s_url_part = (
                 f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_max_height}"
             )
-            s_url_api = f"&apiKey={self.api_key}"
+            s_url_api = f"&apiKey={t_api_key}"
         if self.view_mode == "FileOpen" or self.comic_obj.is_sync:
             comic_page_source = get_comic_page(comic_obj, i)
         else:
@@ -480,7 +480,7 @@ class ServerComicBookScreen(Screen):
         s_height = round(dp(240))
 
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}?height={s_height}"
-        s_url_api = f"&apiKey={self.api_key}"
+        s_url_api = f"&apiKey={t_api_key}"
         if self.view_mode == "FileOpen" or comic_obj.is_sync:
             src_img = get_comic_page(comic_obj, i)
         else:
@@ -575,6 +575,7 @@ class ServerComicBookScreen(Screen):
         and links via cover image to open
         them
         """
+        t_api_key = self.app.config.get("General", "api_key")
         scroll = CommonComicsScroll(
             id="page_thumb_scroll",
             size_hint=(1, 1),
@@ -662,7 +663,7 @@ class ServerComicBookScreen(Screen):
             ):
                 comic_name = str(comic.__str__)
                 s_url_part = f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"  # noqa
-                s_url_api = f"&apiKey={self.api_key}"
+                s_url_api = f"&apiKey={t_api_key}"
                 if self.view_mode == "FileOpen" or (
                     self.view_mode == "Sync" and comic.is_sync
                 ):
@@ -840,8 +841,9 @@ class ServerComicBookScreen(Screen):
         else:
             c_new_page_num = page.number
         comic_name = str(comic.__str__)
+        t_api_key = self.app.config.get("General", "api_key")
         s_url_part = f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"
-        s_url_api = f"&apiKey={self.api_key}"
+        s_url_api = f"&apiKey={t_api_key}"
         if self.view_mode == "FileOpen" or comic.is_sync:
             src_thumb = get_comic_page(comic, 0)
         else:
@@ -941,6 +943,7 @@ class ServerComicBookScreen(Screen):
                     comic_thumb.bind(on_release=comic_thumb.do_action)
 
     def build_prev_comic_dialog(self):
+        t_api_key = self.app.config.get("General", "api_key")
         n_paginator = self.paginator_obj
         page = self.current_page
         comics_list = page.object_list
@@ -956,7 +959,7 @@ class ServerComicBookScreen(Screen):
             prev_page_number = page.previous_page_number()
         comic_name = str(comic.__str__)
         s_url_part = f"/Comics/{comic.Id}/Pages/0?height={round(dp(240))}"
-        s_url_api = f"&apiKey={self.api_key}"
+        s_url_api = f"&apiKey={t_api_key}"
         if self.view_mode == "FileOpen" or (
             self.view_mode == "Sync" and comic.is_sync
         ):
