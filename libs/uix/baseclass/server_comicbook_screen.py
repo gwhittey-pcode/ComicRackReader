@@ -87,8 +87,8 @@ class ServerComicBookScreen(Screen):
         super(ServerComicBookScreen, self).__init__(**kwargs)
         self.fetch_data = None
         self.app = App.get_running_app()
-        self.base_url = self.app.base_url
-        self.api_url = self.app.api_url
+        #        self.base_url = self.app.base_url
+        #        self.api_url = self.app.api_url
         self.current_page = None
         self.fetch_data = ComicServerConn()
         self.api_key = self.app.config.get("General", "api_key")
@@ -363,7 +363,7 @@ class ServerComicBookScreen(Screen):
                 current_page = comic_book_carousel.current_slide.comic_page
                 comic_obj = self.comic_obj
                 comic_Id = comic_obj.Id
-                update_url = f"{self.api_url}/Comics/{comic_Id}/Progress"
+                update_url = f"{self.app.api_url}/Comics/{comic_Id}/Progress"
                 if current_page > self.comic_obj.UserLastPageRead:
                     key_val = {
                         "UserLastPageRead": current_page,
@@ -465,7 +465,7 @@ class ServerComicBookScreen(Screen):
         if self.view_mode == "FileOpen" or self.comic_obj.is_sync:
             comic_page_source = get_comic_page(comic_obj, i)
         else:
-            comic_page_source = f"{self.api_url}{s_url_part}{s_url_api}"
+            comic_page_source = f"{self.app.api_url}{s_url_part}{s_url_api}"
         comic_page_image = ComicBookPageImage(
             comic_slug=comic_obj.slug,
             id="pi_" + str(i),
@@ -484,7 +484,7 @@ class ServerComicBookScreen(Screen):
         if self.view_mode == "FileOpen" or comic_obj.is_sync:
             src_img = get_comic_page(comic_obj, i)
         else:
-            src_img = f"{self.api_url}{s_url_part}{s_url_api}"
+            src_img = f"{self.app.api_url}{s_url_part}{s_url_api}"
         inner_grid = ThumbPopPageInnerGrid(
             id="inner_grid" + str(i), spacing=(0, 0)
         )
@@ -515,7 +515,7 @@ class ServerComicBookScreen(Screen):
         if comic_obj.PageCount - 1 == i:
             self.load_UserCurrentPage()
         s_url_part = f"/Comics/{comic_obj.Id}/Pages/{i}/size"
-        get_size_url = f"{self.api_url}{s_url_part}"
+        get_size_url = f"{self.app.api_url}{s_url_part}"
         if self.view_mode == "FileOpen" or self.comic_obj.is_sync:
             width, height = get_file_page_size(comic_page_source)
             data = {"width": width, "height": height}
@@ -668,7 +668,7 @@ class ServerComicBookScreen(Screen):
                 ):
                     src_thumb = get_comic_page(comic, 0)
                 else:
-                    src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
+                    src_thumb = f"{self.app.api_url}{s_url_part}{s_url_api}"
                 inner_grid = CommonComicsCoverInnerGrid(
                     id="inner_grid" + str(comic.Id), padding=(0, 0, 0, 0)
                 )
@@ -845,7 +845,7 @@ class ServerComicBookScreen(Screen):
         if self.view_mode == "FileOpen" or comic.is_sync:
             src_thumb = get_comic_page(comic, 0)
         else:
-            src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
+            src_thumb = f"{self.app.api_url}{s_url_part}{s_url_api}"
 
         inner_grid = CommonComicsCoverInnerGrid(
             id="inner_grid" + str(comic.Id),
@@ -962,7 +962,7 @@ class ServerComicBookScreen(Screen):
         ):
             src_thumb = get_comic_page(comic, 0)
         else:
-            src_thumb = f"{self.api_url}{s_url_part}{s_url_api}"
+            src_thumb = f"{self.app.api_url}{s_url_part}{s_url_api}"
         inner_grid = CommonComicsCoverInnerGrid(
             id="inner_grid" + str(comic.Id),
             pos_hint={"top": 0.99, "right": 0.1},

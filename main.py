@@ -228,9 +228,7 @@ class ComicRackReader(MDApp):
 
     def config_callback(self, section, key, value):
         if key == "storagedir":
-
             def __callback_for_please_wait_dialog(*args):
-
                 if args[0] == "Delete Database":
                     self.stop()
                 elif args[0] == "Move Database":
