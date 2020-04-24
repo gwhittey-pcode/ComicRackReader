@@ -4,7 +4,7 @@ from libs.utils.comicapi.comicarchive import MetaDataStyle, ComicArchive
 from kivy.logger import Logger
 from kivy.app import App
 from pathlib import Path
-from PIL import Image
+#from PIL import Image
 from libs.utils.comic_server_conn import ComicServerConn
 from kivy.utils import platform
 from kivy.core.image import Image as CoreImage
