@@ -58,6 +58,9 @@ See :mod:`kivymd.tools.packaging.pyinstaller` for more information."""
 
 datas = [
     (kivymd.fonts_path, join("kivymd", basename(dirname(kivymd.fonts_path)))),
-    (kivymd.images_path, join("kivymd", basename(dirname(kivymd.images_path)))),
+    (
+        kivymd.images_path,
+        join("kivymd", basename(dirname(kivymd.images_path))),
+    ),
 ]
-hiddenimports = ["PIL"]
+# hiddenimports = ["PIL"]

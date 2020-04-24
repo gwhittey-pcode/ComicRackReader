@@ -40,7 +40,8 @@ from libs.uix.baseclass.startscreen import StartScreen
 from kivy.logger import Logger
 from kivymd.theming import ThemeManager
 from kivymd.toast.kivytoast import toast
-from kivymd.uix.filemanager import MDFileManager
+
+# from kivymd.uix.filemanager import MDFileManager
 from libs.utils.db_functions import start_db
 
 # from dialogs import card
@@ -316,7 +317,7 @@ class ComicRackReader(MDApp):
         ]
         # right side Action bar Icons
         action_bar.right_action_items = [
-            ["file-cabinet", "Open File", lambda x: self.file_manager_open()],
+            # ["file-cabinet", "Open File", lambda x: self.file_manager_open()],
             [
                 "server",
                 "ComicRack Reading Lists",
@@ -529,100 +530,6 @@ class ComicRackReader(MDApp):
             Window.width,
             self.theme_cls.standard_increment,
         )
-
-    # FileManger
-    def file_manager_open(self):
-        previous = False
-        if not self.md_manager:
-            self.md_manager = ModalView(size_hint=(1, 1), auto_dismiss=False)
-            self.file_manager = MDFileManager(
-                exit_manager=self.exit_manager,
-                select_path=self.select_path,
-                previous=previous,
-            )
-            self.md_manager.add_widget(self.file_manager)
-
-            self.file_manager.show(self.sync_folder)
-        self.manager_open = True
-        self.md_manager.open()
-
-    def select_path(self, path):
-        """It will be called when you click on the file name
-        or the catalog selection button.
-        :type path: str;
-        :param path: path to the selected directory or file;
-        """
-        has_cb_files = False
-        self.exit_manager()
-        if os.path.isfile(path):
-            ext = os.path.splitext(path)[-1].lower()
-            if ext in (".cbz", ".cbr", ".cb7", ".cbp"):
-                has_cb_files = True
-                data = {"items": []}
-                comic_data = convert_comicapi_to_json(path)
-                data["items"].append(comic_data)
-                new_rl = ComicReadingList(
-                    name="Single_FileLoad",
-                    data=data,
-                    slug="FileOpen",
-                    mode="FileOpen",
-                )
-                new_comic = ComicBook(data["items"][0], mode="FileOpen")
-                new_rl.add_comic(new_comic)
-            else:
-                pass
-        elif os.path.isdir(path):
-            if os.path.isdir(path):
-                onlyfiles = [
-                    f
-                    for f in os.listdir(path)
-                    if os.path.isfile(os.path.join(path, f))
-                ]
-            data = {"items": []}
-            for file in onlyfiles:
-                ext = os.path.splitext(file)[-1].lower()
-                if ext in (".cbz", ".cbr", ".cb7", ".cbp"):
-                    file_path = os.path.join(path, file)
-                    comic_data = convert_comicapi_to_json(file_path)
-                    data["items"].append(comic_data)
-                    has_cb_files = True
-                else:
-                    pass
-            if has_cb_files is True:
-                new_rl = ComicReadingList(
-                    name=path, data=data, slug="path", mode="FileOpen"
-                )
-                for item in new_rl.comic_json:
-                    comic_index = new_rl.comic_json
-                    new_comic = ComicBook(
-                        item,
-                        readinglist_ob=new_rl,
-                        comic_index=comic_index,
-                        mode="FileOpen",
-                    )
-                    new_rl.add_comic(new_comic)
-        if has_cb_files is True:
-            max_books_page = int(self.config.get("General", "max_books_page"))
-            paginator_obj = Paginator(new_rl.comics, max_books_page)
-            screen = self.manager.get_screen("comic_book_screen")
-            screen.setup_screen(
-                readinglist_obj=new_rl,
-                comic_obj=new_rl.comics[0],
-                paginator_obj=paginator_obj,
-                pag_pagenum=1,
-                view_mode="FileOpen",
-            )
-            self.manager.current = "comic_book_screen"
-            toast(f"Opening {new_rl.comics[0].__str__}")
-        else:
-            toast("A vaild ComicBook File was not found")
-        self.md_manager = None
-
-    def exit_manager(self, *args):
-        """Called when the user reaches the root of the directory tree."""
-
-        self.md_manager.dismiss()
-        self.manager_open = False
 
     def delayed_work(self, func, items, delay=0):
         """Apply the func() on each item contained in items

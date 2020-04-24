@@ -1217,7 +1217,7 @@ class OptionToolBar(MDToolbarTooltips):
         ]
         # right side Action bar Icons
         self.right_action_items = [
-            ["file-cabinet", "Open File", lambda x: app.file_manager_open()],
+            # ["file-cabinet", "Open File", lambda x: app.file_manager_open()],
             [
                 "server",
                 "ComicRack Reading Lists",
