@@ -40,7 +40,7 @@ from kivymd.uix.label import MDIcon
 from kivymd.uix.list import ILeftBody, ILeftBodyTouch, IRightBodyTouch
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.selectioncontrol import MDCheckbox
-#from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
+from kivymd.uix.textfield import FixedHintTextInput, MDTextFieldRound
 from kivymd.utils import asynckivy
 from kivymd.uix.tooltip import MDTooltip
 from peewee import DataError, OperationalError, ProgrammingError
@@ -326,14 +326,14 @@ class AvatarSampleWidget(ILeftBody, MDIconButton):
     pass
 
 
-# class MyMDTextFieldRound(MDTextFieldRound, FixedHintTextInput):
-#     def __init__(self, **kwargs):
-#         super(MyMDTextFieldRound, self).__init__(**kwargs)
+class MyMDTextFieldRound(MDTextFieldRound, FixedHintTextInput):
+    def __init__(self, **kwargs):
+        super(MyMDTextFieldRound, self).__init__(**kwargs)
 
-#     helper_text = StringProperty("This field is required")
-#     helper_text_mode = OptionProperty(
-#         "none", options=["none", "on_error", "persistent", "on_focus"]
-#     )
+    helper_text = StringProperty("This field is required")
+    helper_text_mode = OptionProperty(
+        "none", options=["none", "on_error", "persistent", "on_focus"]
+    )
 
 
 class IconRightSampleWidget(IRightBodyTouch, MDCheckbox):

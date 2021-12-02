@@ -10,10 +10,10 @@
 
 from kivy.properties import ObjectProperty
 
-from kivymd.uix.navigationdrawer import MDNavigationLayout
+from kivymd.uix.navigationdrawer import NavigationLayout
 
 
-class NavDrawer(MDNavigationLayout):
+class NavDrawer(NavigationLayout):
     _app = ObjectProperty()
 
     def _toggle(self):
