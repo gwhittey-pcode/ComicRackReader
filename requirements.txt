@@ -1,0 +1,17 @@
+certifi==2021.10.8
+charset-normalizer==2.0.8
+docutils==0.18.1
+idna==3.3
+Kivy==2.0.0
+kivy-deps.angle==0.3.0
+kivy-deps.glew==0.3.0
+kivy-deps.sdl2==0.3.1
+Kivy-examples==2.0.0
+Kivy-Garden==0.1.4
+kivymd==0.102.1
+natsort==8.0.0
+peewee==3.14.8
+Pillow==8.4.0
+Pygments==2.10.0
+requests==2.26.0
+urllib3==1.26.7
