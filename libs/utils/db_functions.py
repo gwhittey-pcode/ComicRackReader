@@ -20,9 +20,10 @@ from playhouse.fields import PickleField  # noqa
 
 
 def start_db():
-    print("stardb")
+    print("stardb2")
     app = App.get_running_app()
     db_folder = app.my_data_dir
+    print("dd" + db_folder)
     db_file = os.path.join(db_folder, "ComicRackReader.db")
 
     database_proxy.initialize(SqliteDatabase(db_file))

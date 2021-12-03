@@ -285,7 +285,7 @@ class ComicRackReader(MDApp):
         from libs.uix.baseclass.local_readinglists_screen import (
             LocalReadingListsScreen,
         )
-        from libs.uix.baseclass.navdrawer import NavDrawer
+       # from libs.uix.baseclass.navdrawer import NavDrawer
         from libs.uix.baseclass.server_comicbook_screen import (
             ServerComicBookScreen,
         )
