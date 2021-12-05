@@ -120,6 +120,21 @@
                 text_color: app.theme_cls.primary_color
                 font_size: dp(35)
                 on_release:root.refresh_callback()
+            SyncButtonIcon:
+                #font_style: 'Icon'
+                id:sync_db
+                icon: 'delete-forever'
+                tooltip_text:'Delete Reading List Files'
+                size_hint: None,None
+                size:dp(50),dp(50)
+                padding: dp(10), dp(10)
+                center_x:main_stack.right - (self.width)
+                center_y:root.top - (self.height/2)
+                text: md_icons.get(self.icon_name) 
+                theme_text_color: 'Custom'
+                text_color: app.theme_cls.primary_color
+                font_size: dp(35)
+                on_release:self.del_rl_files()
             MDLabel:
                 #font_style: 'Icon'
                 id: sync_status_lbl

@@ -283,7 +283,14 @@ class SyncButtonIcon(MDIconButton, MDTooltip):
         the_screen = self.app.manager.get_screen("server_readinglists_screen")
         the_screen.new_readinglist.do_db_refresh(screen=the_screen)
 
+    def del_rl_files(self, *args):
+        the_screen = self.app.manager.get_screen("server_readinglists_screen")
+        import shutil
+        id_folder = os.path.join(self.app.sync_folder, the_screen.new_readinglist.slug)
+        print("id:" + id_folder)
+        shutil.rmtree(id_folder)
 
+        print(the_screen.new_readinglist.slug)
 class SynLimitButton(MDRaisedButton):
     def __init__(self, **kwargs):
         super(SynLimitButton, self).__init__(**kwargs)
