@@ -113,7 +113,7 @@ node_modules/
 fixtures/
 *.pyc
 *.swp
-.buildozer
+#.buildozer
 .idea
 build
 docs/_build
