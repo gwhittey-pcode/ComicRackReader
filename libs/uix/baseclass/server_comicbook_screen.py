@@ -347,12 +347,12 @@ class ServerComicBookScreen(Screen):
                     Clock.schedule_once(
                         lambda dt, key_value={}: __update_page(key_val=key_val)
                     )
-                for slide in comic_book_carousel.slides:
-                    for child in slide.walk():
-                        if child.id is not None:
-                            if "comic_scatter" in child.id:
-                                if child.zoom_state == "zoomed":
-                                    child.do_zoom(False)
+                # for slide in comic_book_carousel.slides:
+                #     for child in slide.walk():
+                #         if child.id is not None:
+                #             if "comic_scatter" in child.id:
+                #                 if child.zoom_state == "zoomed":
+                #                     child.do_zoom(False)
         else:
 
             def updated_progress(results):
